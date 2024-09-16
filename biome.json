@@ -12,19 +12,11 @@
 	"formatter": {
 		"enabled": true,
 		"indentStyle": "tab",
-		"ignore": [
-			"node_modules",
-			".next",
-			"dist"
-		]
+		"ignore": ["node_modules", ".next", "dist"]
 	},
 	"organizeImports": {
 		"enabled": true,
-		"ignore": [
-			"node_modules",
-			".next",
-			"dist"
-		]
+		"ignore": ["node_modules", ".next", "dist"]
 	},
 	"linter": {
 		"enabled": true,
