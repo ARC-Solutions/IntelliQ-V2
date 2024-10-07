@@ -1,5 +1,5 @@
 {
-  "name": "IntelliQ-V2",
+  "name": "intelliq-v2",
   "private": true,
   "scripts": {
     "build": "turbo build",
