@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@/src/components/ui/button";
-import { Switch } from "@/src/components/ui/switch";
-import { cn } from "@/src/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
 import { CheckIcon } from "@radix-ui/react-icons";
 import { motion } from "framer-motion";
 import { Loader } from "lucide-react";

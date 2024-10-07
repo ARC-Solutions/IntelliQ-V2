@@ -1,11 +1,11 @@
 "use client";
 
-import { BorderBeam } from "@/src/components/magicui/border-beam";
-import { Button } from "@/src/components/ui/button";
+import { BorderBeam } from "@/components/magicui/border-beam";
+import { Button } from "@/components/ui/button";
 import { ArrowRightIcon } from "@radix-ui/react-icons";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
-import ShinyButton from "@/src/components/magicui/shiny-button";
+import ShinyButton from "@/components/magicui/shiny-button";
 import Link from "next/link";
 
 export default function HeroSection() {
