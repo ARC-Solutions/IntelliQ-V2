@@ -1,6 +1,6 @@
-import { buttonVariants } from "@/src/components/ui/button";
-import { UserAuthForm } from "@/src/components/user-auth-form";
-import { cn } from "@/src/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
+import { UserAuthForm } from "@/components/user-auth-form";
+import { cn } from "@/lib/utils";
 import { ChevronLeft } from "lucide-react";
 import { Metadata } from "next";
 import Link from "next/link";
