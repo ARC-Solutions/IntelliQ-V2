@@ -35,9 +35,7 @@ export function SiteFooter() {
             <Logo />
           </div>
 
-          <div className="mt-2 ml-2">
-            &copy; Copyright ARC-Solutions 2024.
-          </div>
+          <div className="mt-2 ml-2">&copy; Copyright ARC-Solutions 2024.</div>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 items-start mt-10 sm:mt-0 md:mt-0">
           {/* <div className="flex justify-center space-y-4 flex-col w-full">
@@ -125,12 +123,7 @@ const Logo = () => {
       href="/"
       className="font-normal flex space-x-2 items-center text-sm mr-4  text-black px-2 py-1  relative z-20"
     >
-      <Image
-        src="/ARC-TextLogo.png"
-        alt="logo"
-        width={32}
-        height={32}
-      />
+      <Image src="/ARC-TextLogo.png" alt="logo" width={32} height={32} />
       <span className="font-medium text-black dark:text-white">IntelliQ</span>
     </Link>
   );

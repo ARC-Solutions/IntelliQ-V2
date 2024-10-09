@@ -1,7 +1,7 @@
-import { toast } from '@/components/ui/use-toast';
+import { toast } from "@/components/ui/use-toast";
 
 export const showToast = (
-  variant: 'default' | 'destructive' | 'success' | null | undefined,
+  variant: "default" | "destructive" | "success" | null | undefined,
   title: string,
   description: string,
 ) => {

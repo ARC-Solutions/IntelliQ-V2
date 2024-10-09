@@ -1,20 +1,28 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '../ui/input-otp';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "../ui/input-otp";
 
 export default function VerifyOTPForm() {
   return (
-    <div className='flex items-center justify-center min-h-screen bg-black text-white'>
-      <div className='w-full max-w-md p-8 space-y-6'>
-        <h1 className='text-4xl font-bold text-center mb-6'>Security code sent!</h1>
-        <p className='text-gray-400 text-center'>
-          To continue, please enter the 6 digit verification code sent to the provided email.
+    <div className="flex items-center justify-center min-h-screen bg-black text-white">
+      <div className="w-full max-w-md p-8 space-y-6">
+        <h1 className="text-4xl font-bold text-center mb-6">
+          Security code sent!
+        </h1>
+        <p className="text-gray-400 text-center">
+          To continue, please enter the 6 digit verification code sent to the
+          provided email.
         </p>
-        <div className='space-y-2'>
-          <Label htmlFor='otp-1' className='sr-only'>
+        <div className="space-y-2">
+          <Label htmlFor="otp-1" className="sr-only">
             OTP
           </Label>
           <InputOTP maxLength={6}>
@@ -31,19 +39,25 @@ export default function VerifyOTPForm() {
             </InputOTPGroup>
           </InputOTP>
         </div>
-        <div className='text-center'>
-          <Button onClick={() => {}} variant='link' className='text-gray-400 hover:text-white'>
+        <div className="text-center">
+          <Button
+            onClick={() => {}}
+            variant="link"
+            className="text-gray-400 hover:text-white"
+          >
             Didn't receive the code? Resend
           </Button>
         </div>
-        <Button className='w-full bg-primary text-black hover:bg-gray-200'>Continue</Button>
-        <p className='text-xs text-gray-500 text-center'>
-          By continuing, you agree to IntelliQ's{' '}
-          <a href='#' className='underline'>
+        <Button className="w-full bg-primary text-black hover:bg-gray-200">
+          Continue
+        </Button>
+        <p className="text-xs text-gray-500 text-center">
+          By continuing, you agree to IntelliQ's{" "}
+          <a href="#" className="underline">
             Terms of Service
-          </a>{' '}
-          and{' '}
-          <a href='#' className='underline'>
+          </a>{" "}
+          and{" "}
+          <a href="#" className="underline">
             Privacy Policy
           </a>
         </p>

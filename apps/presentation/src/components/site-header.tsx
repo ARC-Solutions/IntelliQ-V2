@@ -122,7 +122,7 @@ export function SiteHeader() {
             `fixed left-0 top-0 z-50 h-screen w-full overflow-auto bg-background/70 backdrop-blur-[12px] `,
             {
               "pointer-events-none": !hamburgerMenuIsOpen,
-            }
+            },
           )}
         >
           <div className="container flex h-[3.5rem] items-center justify-between">

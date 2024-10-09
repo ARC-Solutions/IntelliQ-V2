@@ -1,9 +1,9 @@
-import { QuizLogicValues, Action } from '@/contexts/quiz-logic-context';
+import { QuizLogicValues, Action } from "@/contexts/quiz-logic-context";
 
 export const quizLogicReducer = (state: QuizLogicValues, action: Action) => {
-  if (action.type === 'SET_SELECTED_ANSWER') {
+  if (action.type === "SET_SELECTED_ANSWER") {
     return { ...state, selectedAnswer: action.payload };
-  } else if (action.type === 'VALIDATE_ANSWER') {
+  } else if (action.type === "VALIDATE_ANSWER") {
     const { correctAnswer, userAnswer, question } = action.payload;
     let scoreCORRECT = state.correctAnswer;
     let scoreINCORRECT = state.wrongAnswer;
@@ -26,7 +26,7 @@ export const quizLogicReducer = (state: QuizLogicValues, action: Action) => {
         },
       ],
     };
-  } else if (action.type === 'RESET_GAME_LOGIC') {
+  } else if (action.type === "RESET_GAME_LOGIC") {
     return {
       quizFinished: false,
       selectedAnswer: null,
