@@ -104,6 +104,7 @@ export const AuthProvider = ({ children }: Props) => {
       setIsOTPVerified(true);
     } catch (error) {
       console.log(error);
+      setIsOTPVerified(false);
     }
   };
 
