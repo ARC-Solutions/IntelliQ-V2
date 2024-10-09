@@ -10,12 +10,16 @@
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.0",
+    "@splinetool/react-spline": "^4.0.0",
+    "@splinetool/runtime": "1.9.28",
     "@supabase/ssr": "^0.5.1",
     "@supabase/supabase-js": "^2.45.4",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "framer-motion": "^11.11.1",
     "lucide-react": "^0.447.0",
     "next": "14.2.11",
+    "next-themes": "^0.3.0",
     "react": "^18",
     "react-dom": "^18",
     "tailwind-merge": "^2.5.3",
@@ -28,6 +32,7 @@
     "@types/react-dom": "^18",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
+    "tailwindcss-debug-screens": "^2.2.1",
     "typescript": "^5"
   }
 }
