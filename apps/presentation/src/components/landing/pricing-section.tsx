@@ -131,7 +131,7 @@ export default function PricingSection() {
                 {
                   "border-2 border-[var(--color-one)] dark:border-[var(--color-one)]":
                     price.isMostPopular,
-                }
+                },
               )}
             >
               <div className="flex items-center">
@@ -178,7 +178,7 @@ export default function PricingSection() {
               <Button
                 className={cn(
                   "group relative w-full gap-2 overflow-hidden text-lg font-semibold tracking-tighter",
-                  "transform-gpu ring-offset-current transition-all duration-300 ease-out hover:ring-2 hover:ring-primary hover:ring-offset-2"
+                  "transform-gpu ring-offset-current transition-all duration-300 ease-out hover:ring-2 hover:ring-primary hover:ring-offset-2",
                 )}
                 disabled={isLoading}
                 onClick={() => void onSubscribeClick(price.id)}

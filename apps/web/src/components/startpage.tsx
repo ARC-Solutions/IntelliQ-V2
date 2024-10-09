@@ -16,7 +16,7 @@ export default function StartPage() {
         repeatDelay={1}
         className={cn(
           "[mask-image:radial-gradient(750px_circle_at_center,white,transparent)]",
-          "inset-x-0 inset-y-[-40%] h-[90%] skew-y-12 -z-10"
+          "inset-x-0 inset-y-[-40%] h-[90%] skew-y-12 -z-10",
         )}
       />
       <div className="mt-[300px]">
