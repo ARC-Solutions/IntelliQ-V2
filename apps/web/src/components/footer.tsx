@@ -9,11 +9,11 @@ export function Footer() {
       <div className="container mx-auto w-full">
         <div className="flex justify-between items-center border-border border-b-[1px] pb-10 md:pb-16 mb-12">
           <Link href="/" className="scale-50 -ml-[52px] md:ml-0 md:scale-100">
-            <Image src="/vercel.svg" alt="Midday" width={100} height={100} />
+            <Image src="/logo.svg" alt="Midday" width={100} height={100} />
           </Link>
 
           <span className="font-normal md:text-2xl text-right">
-            Run and never come back.
+            Lorem ipsum dolor sit amet.
           </span>
         </div>
         <div className="flex flex-col md:flex-row w-full">
