@@ -12,7 +12,7 @@ import {
 
 export default function VerifyOTPForm() {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-black text-white">
+    <div className="flex items-center justify-center min-h-screen text-white">
       <div className="w-full max-w-md p-8 space-y-6">
         <h1 className="text-4xl font-bold text-center mb-6">
           Security code sent!
