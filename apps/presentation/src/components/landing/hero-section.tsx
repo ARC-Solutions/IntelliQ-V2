@@ -18,7 +18,7 @@ export default function HeroSection() {
     >
       <h1 className="bg-gradient-to-br dark:from-white from-black from-30% dark:to-white/40 to-black/40 bg-clip-text py-6 text-5xl font-medium leading-none tracking-tighter text-transparent text-balance sm:text-6xl md:text-7xl lg:text-8xl translate-y-[-1rem] animate-fade-in opacity-0 [--animation-delay:200ms]">
         IntelliQ is the new way
-        <br className="hidden md:block" /> to quiz yourself. IDK MATE
+        <br className="hidden md:block" /> to quiz yourself.
       </h1>
       <p className="mb-12 text-lg tracking-tight text-gray-400 md:text-xl text-balance translate-y-[-1rem] animate-fade-in opacity-0 [--animation-delay:400ms]">
         Beautifully designed, made with love and tears
