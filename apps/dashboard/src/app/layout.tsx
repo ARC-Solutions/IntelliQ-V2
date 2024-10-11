@@ -5,7 +5,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 import { Inter } from "next/font/google";
 import { cn } from "@/lib/utils";
-//import Navbar from '@/components/ui/navbar';
 import { AuthProvider } from "@/contexts/user-context";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
