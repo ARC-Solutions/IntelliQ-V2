@@ -9,9 +9,18 @@ const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
 });
+
 export const metadata: Metadata = {
-  title: "IntelliQ | ARC-Solutions",
+  title: {
+    default: "IntelliQ",
+    template: "%s | ARC-Solutions",
+  },
   description: "This is just a presentation website for IntelliQ",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.png",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({
