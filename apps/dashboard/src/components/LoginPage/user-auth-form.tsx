@@ -11,12 +11,30 @@ import { LastUsed, useLastUsed } from "./last-used";
 import { useAuth } from "@/contexts/user-context";
 import VerifyOTPForm from "./verify-otp-form";
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
+const formSchema = z.object({
+  email: z.string().email(),
+  firstName: z
+    .string()
+    .min(3, { message: "First name must be at least 3 characters" }),
+  lastName: z
+    .string()
+    .min(3, { message: "Last name must be at least 3 characters" }),
+});
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const [lastUsed, setLastUsed] = useLastUsed();
-  const [firstName, setFirstName] = React.useState<string>("");
-  const [lastName, setLastName] = React.useState<string>("");
-  const [email, setEmail] = React.useState<string>("");
   const [mounted, setMounted] = React.useState<boolean>(false);
 
   React.useEffect(() => {
@@ -43,12 +61,27 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      firstName: "",
+      lastName: "",
+    },
+  });
+
+  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setIsLoading(true);
       setLastUsed("email");
-      signInWithOTP({ email, firstName, lastName }, isNewUser);
+      signInWithOTP(
+        {
+          email: values.email,
+          firstName: values.firstName,
+          lastName: values.lastName,
+        },
+        isNewUser
+      );
     } catch (err) {
       console.error(err);
       setIsLoading(false);
@@ -73,85 +106,100 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
       </div>
 
       <div className={cn("grid gap-6", className)} {...props}>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 flex-col">
-            {isNewUser && (
-              <div className="grid gap-1">
-                <div className="flex justify-between gap-5">
-                  <div>
-                    <Label className="text-gray-400" htmlFor="firstName">
-                      First Name
-                    </Label>
-
-                    <Input
-                      id="firstName"
-                      placeholder="John"
-                      type="text"
-                      autoCapitalize="none"
-                      autoCorrect="off"
-                      disabled={isLoading}
-                      className="mt-2"
-                      onChange={(e) => setFirstName(e.target.value)}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)}>
+            <div className="grid gap-4 flex-col">
+              {isNewUser && (
+                <div className="grid gap-1">
+                  <div className="flex justify-between gap-5">
+                    <FormField
+                      control={form.control}
+                      name="firstName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-400">
+                            First Name
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="John"
+                              {...field}
+                              disabled={isLoading}
+                              className="mt-2"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
-                  <div>
-                    <Label className="text-gray-400" htmlFor="email">
-                      Last Name
-                    </Label>
-                    <Input
-                      id="lastName"
-                      placeholder="Doe"
-                      type="text"
-                      autoCapitalize="none"
-                      autoCorrect="off"
-                      disabled={isLoading}
-                      className="mt-2"
-                      onChange={(e) => setLastName(e.target.value)}
+                    <FormField
+                      control={form.control}
+                      name="lastName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-400">
+                            Last Name
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Doe"
+                              {...field}
+                              disabled={isLoading}
+                              className="mt-2"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                   </div>
                 </div>
-              </div>
-            )}
-
-            <div className="grid gap-1">
-              {isNewUser && (
-                <Label className="text-gray-400" htmlFor="email">
-                  Email
-                </Label>
               )}
-              <Input
-                id="email"
-                placeholder="name@example.com"
-                type="email"
-                autoCapitalize="none"
-                autoComplete="email"
-                autoCorrect="off"
-                disabled={isLoading}
-                className="mt-2"
-                onChange={(e) => setEmail(e.target.value)}
+
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    {isNewUser && (
+                      <FormLabel className="text-gray-400">Email</FormLabel>
+                    )}
+                    <FormControl>
+                      <Input
+                        placeholder="name@example.com"
+                        type="email"
+                        {...field}
+                        disabled={isLoading}
+                        className="mt-2"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading && (
-                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              {isNewUser ? "Sign up" : "Sign in"} with Email
-              {lastUsed === "email" && mounted && <LastUsed />}
-            </Button>
 
-            <Label className="text-gray-400 " htmlFor="password">
-              {isNewUser
-                ? "Already have an account? "
-                : "Don't have an account? "}
-              <span
-                onClick={() => setIsNewUser(!isNewUser)}
-                className="text-primary cursor-pointer"
-              >
-                {isNewUser ? "Sign in" : "Sign up"}
-              </span>
-            </Label>
-          </div>
-        </form>
+              <Button type="submit" disabled={isLoading} className="relative">
+                {isLoading && (
+                  <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {isNewUser ? "Sign up" : "Sign in"} with Email
+                {lastUsed === "email" && mounted && <LastUsed />}
+              </Button>
+
+              <Label className="text-gray-400 " htmlFor="password">
+                {isNewUser
+                  ? "Already have an account? "
+                  : "Don't have an account? "}
+                <span
+                  onClick={() => setIsNewUser(!isNewUser)}
+                  className="text-primary cursor-pointer"
+                >
+                  {isNewUser ? "Sign in" : "Sign up"}
+                </span>
+              </Label>
+            </div>
+          </form>
+        </Form>
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
@@ -169,6 +217,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           onClick={() => {
             oauthSignIn();
           }}
+          className="relative"
         >
           {isLoading ? (
             <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
