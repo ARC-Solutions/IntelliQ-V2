@@ -36,7 +36,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <main className="container mx-auto overflow-visible">{children}</main>
+          <main className="container mx-auto overflow-hidden md:overflow-visible">
+            {children}
+          </main>
           <Footer />
         </ThemeProvider>
       </body>

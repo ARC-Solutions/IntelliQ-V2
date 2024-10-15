@@ -23,8 +23,8 @@ export default function Hero() {
         </Link>
 
         <h1 className="text-[30px] md:text-[90px] font-medium mt-6 leading-none">
-          Lorem Ipsum
-          <br /> dolor sit amet.
+          Start your
+          <br /> AI quiz today!
         </h1>
 
         <p className="mt-4 md:mt-6 max-w-[600px] text-[#878787]">
