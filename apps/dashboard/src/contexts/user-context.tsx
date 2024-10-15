@@ -1,9 +1,9 @@
-"use client";
-import { createContext, useContext, useEffect, useState } from "react";
-import { toast, useToast } from "@/components/ui/use-toast";
-import { ToastAction } from "@/components/ui/toast";
-import { useSupabase } from "./supabase-context";
-import { useRouter } from "next/navigation";
+'use client';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { toast, useToast } from '@/components/ui/use-toast';
+import { ToastAction } from '@/components/ui/toast';
+import { useSupabase } from './supabase-context';
+import { useRouter } from 'next/navigation';
 type Props = {
   children: React.ReactNode;
 };
@@ -69,16 +69,16 @@ export const AuthProvider = ({ children }: Props) => {
       });
       if (error) {
         toast({
-          title: "Error",
-          description: "Account not found, did you mean to sign up?",
-          variant: "destructive",
+          title: 'Error',
+          description: error.message,
+          variant: 'destructive',
         });
         setIsLoading(false);
         return;
       }
       toast({
-        title: "OTP sent to email",
-        description: "Please check your email for the OTP",
+        title: 'OTP sent to email',
+        description: 'Please check your email for the OTP',
       });
       setOtpSent(true);
     } catch (error) {
@@ -91,16 +91,20 @@ export const AuthProvider = ({ children }: Props) => {
       const { data, error } = await supabase.auth.verifyOtp({
         email,
         token: otp,
-        type: "email",
+        type: 'email',
       });
+
       if (error) {
         toast({
-          title: "Error",
+          title: 'Error',
           description: error.message,
-          variant: "destructive",
+          variant: 'destructive',
         });
+        setIsOTPVerified(false);
         return;
       }
+      console.log(data);
+
       setIsOTPVerified(true);
     } catch (error) {
       console.log(error);
@@ -111,17 +115,17 @@ export const AuthProvider = ({ children }: Props) => {
   const signinUsingOAuth = async () => {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
+        provider: 'google',
         options: {
-          redirectTo: "http://localhost:3000/dashboard",
+          redirectTo: 'http://localhost:3000/dashboard',
         },
       });
 
       if (error) {
         toast({
-          title: "Error",
+          title: 'Error',
           description: error.message,
-          variant: "destructive",
+          variant: 'destructive',
         });
         return;
       }
@@ -135,10 +139,10 @@ export const AuthProvider = ({ children }: Props) => {
       await supabase.auth.signOut();
       setCurrentUser(null);
       toast({
-        title: "User signed out",
-        description: "You have been signed out",
+        title: 'User signed out',
+        description: 'You have been signed out',
       });
-      router.push("/");
+      router.push('/');
     } catch (error) {
       console.log(error);
     }
@@ -153,9 +157,9 @@ export const AuthProvider = ({ children }: Props) => {
     }
     if (error) {
       toast({
-        title: "Error",
+        title: 'Error',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
     const user = session?.user;
@@ -194,7 +198,7 @@ export const AuthProvider = ({ children }: Props) => {
 export const useAuth = (): AuthContextValue => {
   const authContext = useContext(AuthContext);
   if (authContext === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return authContext as AuthContextValue;
 };

@@ -56,7 +56,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   };
 
   if (otpSent) {
-    return <VerifyOTPForm />;
+    return <VerifyOTPForm email={email} />;
   }
   return (
     <>
