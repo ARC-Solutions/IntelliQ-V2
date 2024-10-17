@@ -4,6 +4,7 @@ import { buttonVariants } from '@/components/ui/button';
 import { UserAuthForm } from '@/components/LoginPage/user-auth-form';
 import AvatarCircles from '@/components/avatar-circles';
 import { createClient } from '@/lib/supabase/supabase-server-side';
+import Image from 'next/image';
 
 export const metadata: Metadata = {
   title: 'Authentication',
