@@ -4,7 +4,7 @@ import Marquee from "@/components/ui/marquee";
 const reviews = [
   {
     name: "Pori Shobha",
-    username: "@jack",
+    username: "@pori_shobha",
     body: "For all the quiz lovers watch out this is a game changer and will increase your curiosity quotient and the game.",
     img: "/testimonials/pori-shobha.jpeg",
     alt: "Pori Shobha",
