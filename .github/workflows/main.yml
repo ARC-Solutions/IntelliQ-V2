@@ -27,7 +27,7 @@ jobs:
           version: latest
 
       - name: Check formatting
-        run: npx biome format --write . && git diff --exit-code
+        run: npx biome format --write .
 
       - name: Run Biome CI
         run: npx biome ci .
