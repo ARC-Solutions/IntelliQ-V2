@@ -58,9 +58,9 @@ export default function Hero() {
                       lg:-right-[450px] lg:scale-[0.3] lg:animate-[open-scale-up-fade_1.5s_ease-in-out]
                       xl:-right-[380px] xl:scale-[0.8] xl:-top-[400px]"
         >
-          <div className="clip-cube">
+          {/* <div className="clip-cube">
             <Cube />
-          </div>
+          </div> */}
         </div>
       </div>
     </section>
