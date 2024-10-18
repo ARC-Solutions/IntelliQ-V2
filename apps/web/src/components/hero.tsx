@@ -11,7 +11,8 @@ const Cube = dynamic(() => import("./cube").then((mod) => mod.Cube), {
 export default function Hero() {
   return (
     <section className="md:mt-[250px] relative md:min-h-[375px]">
-      <div className="hero-slide-up flex flex-col mt-[240px]">
+      <div className="flex flex-col mt-[240px]">
+      {/* <div className="hero-slide-up flex flex-col mt-[240px]"> */}
         <Link href="/">
           <Button
             variant="outline"
