@@ -11,8 +11,8 @@ const Cube = dynamic(() => import("./cube").then((mod) => mod.Cube), {
 export default function Hero() {
   return (
     <section className="md:mt-[250px] relative md:min-h-[375px]">
-      <div className="flex flex-col mt-[240px]">
       {/* <div className="hero-slide-up flex flex-col mt-[240px]"> */}
+      <div className="flex flex-col mt-[240px]">
         <Link href="/">
           <Button
             variant="outline"
@@ -52,15 +52,15 @@ export default function Hero() {
         </div>
         <div
           className="absolute pointer-events-none transform-gpu w-auto h-auto
-                      -top-[650px] -right-[600px] scale-[0.25]
-                      sm:-right-[500px] sm:scale-[0.25] sm:flex sm:-top-[350px]
-                      md:-top-[250px] md:-right-[500px] md:scale-[0.25] 
-                      lg:-right-[450px] lg:scale-[0.3] lg:animate-[open-scale-up-fade_1.5s_ease-in-out]
-                      xl:-right-[380px] xl:scale-[0.8] xl:-top-[400px]"
+                  -top-[325px] -right-[300px] scale-[0.5]
+                  sm:-right-[250px] sm:scale-[0.5] sm:flex sm:-top-[175px]
+                  md:-top-[125px] md:-right-[250px] md:scale-[0.5] 
+                  lg:-right-[225px] lg:scale-[0.6] lg:animate-[open-scale-up-fade_1.5s_ease-in-out]
+                  xl:-right-[190px] xl:scale-[1.6] xl:-top-[200px]"
         >
-          {/* <div className="clip-cube">
+          <div className="clip-cube">
             <Cube />
-          </div> */}
+          </div>
         </div>
       </div>
     </section>
