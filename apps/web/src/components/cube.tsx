@@ -6,7 +6,7 @@ export async function Cube() {
     <div className="animate-webgl-scale-in-fade">
       <Suspense fallback={<div>Loading...</div>}>
         <Spline
-          scene="https://prod.spline.design/7f3iuI3rFscphrdO/scene.splinecode"
+          scene="https://prod.spline.design/6en5-sGU9Wp4QI5m/scene.splinecode"
           style={{
             width: "auto",
             height: "auto",
