@@ -56,7 +56,7 @@ export default function Hero() {
                   sm:-right-[250px] sm:scale-[0.5] sm:flex sm:-top-[175px]
                   md:-top-[125px] md:-right-[250px] md:scale-[0.5] 
                   lg:-right-[225px] lg:scale-[0.6] lg:animate-[open-scale-up-fade_1.5s_ease-in-out]
-                  xl:-right-[190px] xl:scale-[1.6] xl:-top-[200px]"
+                  xl:-right-[190px] xl:scale-[1.6] xl:-top-[200px] grayscale"
         >
           <div className="clip-cube">
             <Cube />
