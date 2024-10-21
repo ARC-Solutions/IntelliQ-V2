@@ -22,6 +22,10 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({ name }) 
           <Text style={text}>
             Feel free to reach out if you have any further suggestions or questions.
           </Text>
+          <Text style={text}>
+            If you'd like to include an image with your testimonial, simply reply to this email
+            with your image attached. We'd love to feature it alongside your feedback!
+          </Text>
           <Text style={signature}>Best regards,</Text>
           <Text style={signature}>The IntelliQ Team at ARC Solutions</Text>
         </Section>
