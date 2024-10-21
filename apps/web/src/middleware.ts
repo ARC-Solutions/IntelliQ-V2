@@ -5,7 +5,7 @@ export function middleware(request: NextRequest) {
   const { device } = userAgent(request);
   const viewport = device.type === "mobile" ? "mobile" : "desktop";
   url.searchParams.set("viewport", viewport);
-  console.log(viewport);
+  // console.log(viewport);
   return NextResponse.rewrite(url);
 }
 
