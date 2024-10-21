@@ -6,10 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "format": "biome format --write ."
+    "format": "biome format --write .",
+    "email": "email dev --dir src/emails"
   },
   "dependencies": {
+    "@hookform/resolvers": "^3.9.0",
+    "@radix-ui/react-label": "^2.1.0",
     "@radix-ui/react-slot": "^1.1.0",
+    "@radix-ui/react-toast": "^1.2.2",
+    "@react-email/components": "0.0.25",
     "@splinetool/react-spline": "^4.0.0",
     "@splinetool/runtime": "1.9.32",
     "@supabase/ssr": "^0.5.1",
@@ -20,11 +25,14 @@
     "lucide-react": "^0.447.0",
     "next": "14.2.11",
     "next-themes": "^0.3.0",
-    "react": "^18",
-    "react-dom": "^18",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-hook-form": "^7.53.0",
+    "resend": "^4.0.0",
     "tailwind-merge": "^2.5.3",
     "tailwindcss-animate": "^1.0.7",
-    "ua-parser-js": "^1.0.39"
+    "ua-parser-js": "^1.0.39",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.1",
@@ -32,6 +40,7 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "postcss": "^8",
+    "react-email": "3.0.1",
     "tailwindcss": "^3.4.1",
     "tailwindcss-debug-screens": "^2.2.1",
     "typescript": "^5"
