@@ -17,6 +17,8 @@ export async function Cube() {
             src="/hero/cube-fallback.png"
             alt="Cube fallback"
             className="w-full h-auto"
+            width={600}
+            height={600}
           />
         }
       >
