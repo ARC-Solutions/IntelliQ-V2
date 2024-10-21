@@ -1,28 +1,29 @@
-"use client";
-
 import Spline from "@splinetool/react-spline/next";
 import React, { Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { headers } from "next/headers";
+import UAParser from "ua-parser-js";
 
 export async function Cube() {
-  const searchParams = useSearchParams();
-  const viewport = searchParams.get("viewport");
+  const { get } = headers();
+  const ua = get("user-agent");
+  const device = new UAParser(ua || "").getDevice();
+  const isMobile = device.type === 'mobile';
 
   return (
     <div className="animate-webgl-scale-in-fade">
-      {viewport === "mobile" ? (
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-auto max-w-[300px]"
-        >
-          <source src="/cubic.webm" type="video/webm" />
-          Your browser does not support the video tag.
-        </video>
-      ) : (
-        <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<div>Loading...</div>}>
+        {isMobile ? (
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-auto"
+          >
+            <source src="/cubic.webm" type="video/webm" />
+            Your browser does not support the video tag.
+          </video>
+        ) : (
           <Spline
             scene="https://prod.spline.design/H4VB9VxDKY26loFd/scene.splinecode"
             style={{
@@ -31,8 +32,8 @@ export async function Cube() {
               background: "transparent",
             }}
           />
-        </Suspense>
-      )}
+        )}
+      </Suspense>
     </div>
   );
 }
