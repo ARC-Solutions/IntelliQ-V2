@@ -25,9 +25,9 @@ const reviews = [
   },
   {
     name: "Nippon",
-    username: "@noppin",
-    body: "I'm at a loss for words. This is amazing. I love it.",
-    img: "https://avatar.vercel.sh/jill",
+    username: "@noppin7",
+    body: "Hey there! Lead Frontend Developer here. Developing IntelliQ with an incredible team has been an amazing journey!",
+    img: "/testimonials/nippon.jpg",
     alt: "Nippon",
   },
   {
