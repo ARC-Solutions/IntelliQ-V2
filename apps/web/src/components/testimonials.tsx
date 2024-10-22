@@ -33,16 +33,16 @@ const reviews = [
   {
     name: "Nikola",
     username: "@nikola-petro",
-    body: "I'm at a loss for words. This is amazing. I love it.",
+    body: "Just tagging along. Thanks for the great work and project!",
     img: "https://avatar.vercel.sh/jack",
     alt: "Nikola",
   },
   {
-    name: "James",
-    username: "@james",
-    body: "I'm at a loss for words. This is amazing. I love it.",
-    img: "https://avatar.vercel.sh/james",
-    alt: "James",
+    name: "Pauli",
+    username: "@lilshadowws",
+    body: "IntelliQ exceeded my expectations with its outstanding quality, ease of use, and impressive results!",
+    img: "/testimonials/pauli.jpeg",
+    alt: "Pauli",
   },
 ];
 
