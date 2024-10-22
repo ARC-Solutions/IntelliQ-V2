@@ -27,7 +27,8 @@ const formSchema = z.object({
   }),
   message: z
     .string()
-    .min(10, { message: "Message must be at least 10 characters" }),
+    .min(10, { message: "Message must be at least 10 characters" })
+    .max(115, { message: "Message must be less than 115 characters" }),
 });
 
 export function SupportForm() {
