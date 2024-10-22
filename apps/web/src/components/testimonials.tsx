@@ -27,14 +27,14 @@ const reviews = [
     name: "Nippon",
     username: "@noppin",
     body: "I'm at a loss for words. This is amazing. I love it.",
-    img: "/testimonials/nippon.jpg",
+    img: "https://avatar.vercel.sh/jill",
     alt: "Nippon",
   },
   {
     name: "Nikola",
     username: "@nikola-petro",
     body: "I'm at a loss for words. This is amazing. I love it.",
-    img: "/testimonials/nikola.jpg",
+    img: "https://avatar.vercel.sh/jack",
     alt: "Nikola",
   },
   {
