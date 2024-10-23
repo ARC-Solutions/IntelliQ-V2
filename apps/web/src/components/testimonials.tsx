@@ -17,11 +17,11 @@ const reviews = [
     alt: "Mark",
   },
   {
-    name: "Ricky",
-    username: "@rickyraveanu",
-    body: "Full-stack guy. It's been amazing to contribute across the entire project!",
-    img: "/testimonials/ricky.jpg",
-    alt: "Ricky",
+    name: "Pauli",
+    username: "@lilshadowws",
+    body: "IntelliQ exceeded my expectations with its outstanding quality, ease of use, and impressive results!",
+    img: "/testimonials/pauli.jpeg",
+    alt: "Pauli",
   },
   {
     name: "Nippon",
@@ -38,11 +38,18 @@ const reviews = [
     alt: "Nikola",
   },
   {
-    name: "Pauli",
-    username: "@lilshadowws",
-    body: "IntelliQ exceeded my expectations with its outstanding quality, ease of use, and impressive results!",
-    img: "/testimonials/pauli.jpeg",
-    alt: "Pauli",
+    name: "Ricky",
+    username: "@rickyraveanu",
+    body: "Full-stack guy. It's been amazing to contribute across the entire project!",
+    img: "/testimonials/ricky.jpg",
+    alt: "Ricky",
+  },
+  {
+    name: "Nataša",
+    username: "@tasa05",
+    body: "Just wow. IntelliQ is the perfect place for quiz lovers. Thanks to the team for their ambition and great work!",
+    img: "https://avatar.vercel.sh/rauchg",
+    alt: "Nataša",
   },
 ];
 
@@ -69,7 +76,7 @@ const ReviewCard = ({
         // light styles
         "border-gray-950/[.1] bg-gray-950/[.01] hover:bg-gray-950/[.05]",
         // dark styles
-        "dark:border-gray-50/[.1] dark:bg-gray-50/[.10] dark:hover:bg-gray-50/[.15]",
+        "dark:border-gray-50/[.1] dark:bg-gray-50/[.10] dark:hover:bg-gray-50/[.15]"
       )}
     >
       <div className="flex flex-row items-center gap-2">
