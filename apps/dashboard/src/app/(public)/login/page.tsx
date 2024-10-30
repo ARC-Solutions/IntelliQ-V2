@@ -1,9 +1,8 @@
 import { Metadata } from 'next';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
-import { UserAuthForm } from '@/components/LoginPage/user-auth-form';
+import { UserAuthForm } from '@/components/login-page/user-auth-form';
 import AvatarCircles from '@/components/avatar-circles';
-import { createClient } from '@/lib/supabase/supabase-server-side';
 import Image from 'next/image';
 
 export const metadata: Metadata = {
@@ -20,8 +19,6 @@ export default async function AuthenticationPage() {
     'https://avatars.githubusercontent.com/u/59228569',
   ];
 
-  const supabase = createClient();
-
   return (
     <>
       <div className='container relative hidden min-h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0'>
@@ -30,15 +27,10 @@ export default async function AuthenticationPage() {
             <UserAuthForm />
           </div>
         </div>
-        <div className="relative hidden h-full w-[50vw] flex-col bg-muted p-10 text-white dark:border-r lg:flex">
-          <div className="absolute inset-0 bg-zinc-900" />
-          <div className="relative z-20 flex items-center text-lg font-medium">
-            <Image
-              src="/logo-dark.svg"
-              alt="IntelliQ"
-              width={128}
-              height={128}
-            />
+        <div className='relative hidden h-full w-[50vw] flex-col bg-muted p-10 text-white dark:border-r lg:flex'>
+          <div className='absolute inset-0 bg-zinc-900' />
+          <div className='relative z-20 flex items-center text-lg font-medium'>
+            <Image src='/logo-dark.svg' alt='IntelliQ' width={128} height={128} />
           </div>
           <div className='flex flex-col justify-center items-center h-full relative'>
             <AvatarCircles numPeople={100} avatarUrls={avatarUrls} />

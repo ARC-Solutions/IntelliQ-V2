@@ -13,6 +13,7 @@ import { SupabaseProvider } from '@/contexts/supabase-context';
 import { QuizProvider } from '@/contexts/quiz-context';
 import QuizLogicContextProvider from '@/contexts/quiz-logic-context';
 import { Toaster } from '@/components/ui/toaster';
+import { QuizCreationProvider } from '@/contexts/quiz-creation-context';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -89,11 +90,14 @@ export default function RootLayout({
           <SupabaseProvider>
             <AuthProvider>
               <QuizProvider>
-                <QuizLogicContextProvider>
-                  {/*className="container mx-auto overflow-visible"*/}
-                  <main>{children}</main>
-                  <Toaster />
-                </QuizLogicContextProvider>
+                <QuizCreationProvider>
+                  <QuizLogicContextProvider>
+                    {/*className="container mx-auto overflow-visible"*/}
+
+                    <main>{children}</main>
+                    <Toaster />
+                  </QuizLogicContextProvider>
+                </QuizCreationProvider>
               </QuizProvider>
             </AuthProvider>
           </SupabaseProvider>
