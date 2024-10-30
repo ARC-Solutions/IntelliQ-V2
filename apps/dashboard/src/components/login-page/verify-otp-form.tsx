@@ -24,11 +24,6 @@ export default function VerifyOTPForm({ email }: { email: string }) {
     await verifyOTP(otp, email);
   };
 
-  useEffect(() => {
-    if (isOTPVerified) {
-      router.push('/');
-    }
-  }, [isOTPVerified]);
   return (
     <div className='flex items-center justify-center min-h-screen bg-black text-white'>
       <div className='w-full max-w-md p-8 space-y-6'>

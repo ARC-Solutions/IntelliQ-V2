@@ -10,8 +10,8 @@ type Props = {
 interface User {
   id: string;
   email: string;
-  img: string | null;
-  name: string | null;
+  img: string;
+  name: string;
 }
 
 interface AuthContextValue {
@@ -142,7 +142,7 @@ export const AuthProvider = ({ children }: Props) => {
         title: 'User signed out',
         description: 'You have been signed out',
       });
-      router.push('/');
+      router.push('/login');
     } catch (error) {
       console.log(error);
     }
@@ -170,8 +170,8 @@ export const AuthProvider = ({ children }: Props) => {
     setCurrentUser({
       id: userID,
       email: userEmail,
-      img: avatar || null,
-      name: name || null,
+      img: avatar,
+      name: name,
     });
   };
   const value = {

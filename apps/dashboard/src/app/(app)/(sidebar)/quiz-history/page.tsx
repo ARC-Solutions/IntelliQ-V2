@@ -1,12 +1,11 @@
-import { DashboardFeatures } from '@/components/dashboard/dashboard-features';
 import React from 'react';
 
-const Dashboard = async () => {
+const History = async () => {
   return (
     <div className='relative flex flex-col h-screen w-screen items-center justify-center  rounded-lg bg-background md:shadow-xl'>
-      <DashboardFeatures />
+      <h1>History</h1>
     </div>
   );
 };
 
-export default Dashboard;
+export default History;
