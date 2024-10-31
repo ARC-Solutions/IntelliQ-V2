@@ -1,10 +1,23 @@
+'use client';
 import { cn } from '@/lib/utils';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BentoGrid, BentoGridItem } from '../ui/bento-grid';
 import { UserRound, UsersRound, Paperclip, Dices } from 'lucide-react';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
+import { useQuiz } from '@/contexts/quiz-context';
 
 export function DashboardFeatures() {
+  const { isLoading, fetchingFinished: finished, currentQuiz, dispatch, summaryQuiz } = useQuiz();
+  useEffect(() => {
+    dispatch({ type: 'RESET_SUMMARY_QUIZ' });
+  }, []);
+  useEffect(() => {
+    if (currentQuiz) {
+      const url = `/single-player/quiz/play`;
+      redirect(url);
+    }
+  }, [currentQuiz, summaryQuiz]);
   return (
     <BentoGrid className='w-[60rem] mx-auto md:auto-rows-[20rem]'>
       {items.map((item, i) => {

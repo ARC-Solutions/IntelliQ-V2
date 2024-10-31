@@ -22,6 +22,7 @@ import { BookOpen, HelpCircle, Plus, Trash2, Tag, Hash } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useQuizCreation, Question } from '@/contexts/quiz-creation-context';
 import { useQuiz } from '@/contexts/quiz-context';
+import { redirect } from 'next/navigation';
 
 export default function QuizCreator() {
   const {
@@ -36,10 +37,13 @@ export default function QuizCreator() {
     errors,
     control,
   } = useQuizCreation();
-  const { isLoading } = useQuiz();
+  const { isLoading, fetchingFinished, currentQuiz } = useQuiz();
 
   const [newTag, setNewTag] = useState('');
   const [activeTab, setActiveTab] = useState('general');
+  if (fetchingFinished && currentQuiz) {
+    redirect('/single-player/quiz/play');
+  }
   if (isLoading) {
     return <p>LOading</p>;
   }
@@ -208,7 +212,7 @@ export default function QuizCreator() {
               <ScrollArea className='h-[500px] w-full'>
                 <div className='flex flex-col gap-4'>
                   {formValues.questions.map((question: Question, index: number) => (
-                    <div className='border p-4 rounded-lg space-y-4'>
+                    <div key={index} className='border p-4 rounded-lg space-y-4'>
                       <div className='flex justify-between items-center'>
                         <Label htmlFor={`question-${index}`}>Question {index + 1}</Label>
                         <Button
@@ -240,30 +244,33 @@ export default function QuizCreator() {
                       </Select>
                       {question.type === 'multiple-choice' && (
                         <div className='space-y-2'>
-                          {question.options?.map((option, optionIndex) => (
-                            <div key={optionIndex} className='flex items-center space-x-2'>
-                              <Input
-                                value={option}
-                                onChange={(e) =>
-                                  updateQuestion(index, 'options', [
-                                    ...question.options!.slice(0, optionIndex),
-                                    e.target.value,
-                                    ...question.options!.slice(optionIndex + 1),
-                                  ])
-                                }
-                                placeholder={`Option ${optionIndex + 1}`}
-                              />
-                              <RadioGroup
-                                onValueChange={(value) => updateQuestion(index, 'answer', value)}
-                                value={question.answer}
-                              >
-                                <RadioGroupItem
+                          {question.options?.map((option, optionIndex) => {
+                            
+                            return (
+                              <div key={optionIndex} className='flex items-center space-x-2'>
+                                <Input
                                   value={option}
-                                  id={`question-${index}-option-${optionIndex}`}
+                                  onChange={(e) =>
+                                    updateQuestion(index, 'options', [
+                                      ...question.options!.slice(0, optionIndex),
+                                      e.target.value,
+                                      ...question.options!.slice(optionIndex + 1),
+                                    ])
+                                  }
+                                  placeholder={'value'}
                                 />
-                              </RadioGroup>
-                            </div>
-                          ))}
+                                <RadioGroup
+                                  onValueChange={(value) => updateQuestion(index, 'answer', value)}
+                                  value={question.answer}
+                                >
+                                  <RadioGroupItem
+                                    value={option}
+                                    id={`question-${index}-option-${optionIndex}`}
+                                  />
+                                </RadioGroup>
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                       {question.type === 'true-false' && (

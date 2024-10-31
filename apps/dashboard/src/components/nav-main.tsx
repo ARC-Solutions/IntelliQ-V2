@@ -13,6 +13,8 @@ import {
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
+import { useQuiz } from '@/contexts/quiz-context';
+import { useQuizCreation } from '@/contexts/quiz-creation-context';
 
 export function NavMain({
   items,
@@ -23,12 +25,20 @@ export function NavMain({
     icon: LucideIcon;
   }[];
 }) {
+  const { dispatch } = useQuiz();
+  const { resetValues } = useQuizCreation();
   return (
     <SidebarGroup>
       <SidebarMenu>
         {items.map((item) => (
           <SidebarMenuItem key={item.title}>
-            <Link href={item.url}>
+            <Link
+              onClick={() => {
+                dispatch({ type: 'RESET_SUMMARY_QUIZ' });
+                resetValues();
+              }}
+              href={item.url}
+            >
               <SidebarMenuButton tooltip={item.title}>
                 <item.icon size={28} />
                 <span>{item.title}</span>
