@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller } from 'react-hook-form';
 
 import { Input } from '@/components/ui/input';
@@ -36,6 +36,7 @@ export default function QuizCreator() {
     register,
     errors,
     control,
+    resetValues,
   } = useQuizCreation();
   const { isLoading, fetchingFinished, currentQuiz } = useQuiz();
 
@@ -47,6 +48,8 @@ export default function QuizCreator() {
   if (isLoading) {
     return <p>LOading</p>;
   }
+
+
   return (
     <div className='container mx-auto p-6 flex flex-col justify-start'>
       <h1 className='text-3xl font-bold mb-6'>Create Your Quiz</h1>
@@ -245,7 +248,6 @@ export default function QuizCreator() {
                       {question.type === 'multiple-choice' && (
                         <div className='space-y-2'>
                           {question.options?.map((option, optionIndex) => {
-                            
                             return (
                               <div key={optionIndex} className='flex items-center space-x-2'>
                                 <Input
