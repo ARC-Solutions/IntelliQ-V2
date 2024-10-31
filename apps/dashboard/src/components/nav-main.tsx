@@ -15,6 +15,8 @@ import {
 import Link from 'next/link';
 import { useQuiz } from '@/contexts/quiz-context';
 import { useQuizCreation } from '@/contexts/quiz-creation-context';
+import { useQuizLogic } from '@/contexts/quiz-logic-context';
+import { useRouter } from 'next/navigation';
 
 export function NavMain({
   items,
@@ -25,17 +27,23 @@ export function NavMain({
     icon: LucideIcon;
   }[];
 }) {
-  const { dispatch } = useQuiz();
   const { resetValues } = useQuizCreation();
+  const { dispatch } = useQuiz();
+  const router = useRouter();
   return (
     <SidebarGroup>
       <SidebarMenu>
         {items.map((item) => (
           <SidebarMenuItem key={item.title}>
             <Link
-              onClick={() => {
-                dispatch({ type: 'RESET_SUMMARY_QUIZ' });
+              onClick={(e) => {
+                e.preventDefault();
                 resetValues();
+                dispatch({ type: 'RESET_SUMMARY_QUIZ' });
+
+                setTimeout(() => {
+                  router.push(item.url);
+                }, 0);
               }}
               href={item.url}
             >

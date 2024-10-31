@@ -6,7 +6,6 @@ import { useSupabase } from './supabase-context';
 import { quizReducer } from '@/utils/reducers/quiz-reducer';
 import { UserAnswer } from '@/contexts/quiz-logic-context';
 import { QuizData } from './quiz-creation-context';
-import { log } from 'console';
 
 type Props = {
   children: React.ReactNode;
@@ -69,7 +68,74 @@ const initialState: QuizContextValue = {
   isLoading: false,
   fetchingFinished: false,
   currentQuiz: null,
+  // currentQuiz: {
+  //   topic: 'C#',
+  //   showCorrectAnswers: true,
+  //   quiz: [
+  //     {
+  //       questionTitle: 'Nice',
+  //       correctAnswer: 'c) string',
+  //       options: ['a) int', 'b) float', 'c) string', 'd) boolean'],
+  //       text: 'Which of the following is NOT a primitive data type in C#?',
+  //     },
+  //     {
+  //       questionTitle: 'Nice',
+  //       correctAnswer: 'a) class',
+  //       options: ['a) class', 'b) struct', 'c) interface', 'd) enum'],
+  //       text: 'Which keyword is used to define a class in C#?',
+  //     },
+  //     {
+  //       questionTitle: 'Nice',
+  //       correctAnswer: 'c) To import a namespace',
+  //       options: [
+  //         'a) To declare a new variable.',
+  //         'b) To define a class',
+  //         'c) To import a namespace',
+  //         'd) To create a loop',
+  //       ],
+  //       text: 'What is the purpose of the using directive in C#?',
+  //     },
+  //     {
+  //       questionTitle: 'Nice',
+  //       correctAnswer: 'c) To import a namespace',
+  //       options: [
+  //         'a) To declare a new variable.',
+  //         'b) To define a class',
+  //         'c) To import a namespace',
+  //         'd) To create a loop',
+  //       ],
+  //       text: 'What is the purpose of the using directive in C#?',
+  //     },
+  //     {
+  //       questionTitle: 'Nice',
+  //       correctAnswer: 'c) To import a namespace',
+  //       options: [
+  //         'a) To declare a new variable.',
+  //         'b) To define a class',
+  //         'c) To import a namespace',
+  //         'd) To create a loop',
+  //       ],
+  //       text: 'What is the purpose of the using directive in C#?',
+  //     },
+  //   ],
+  // },
+
   summaryQuiz: null,
+  // summaryQuiz: {
+  //   quiz_id: '123',
+  //   rawQuestions: {
+  //     timeTaken: 123,
+  //     quiz_title: 'HEHE',
+  //     correctAnswersCount: 3,
+  //     questions: [
+  //       { text: 'hehe', correctAnswer: 'haha', userAnswer: 'hehe' },
+  //       { text: 'hehe', correctAnswer: 'haha', userAnswer: 'haha' },
+  //       { text: 'hehe', correctAnswer: 'haha', userAnswer: 'hehe' },
+  //       { text: 'hehe', correctAnswer: 'haha', userAnswer: 'haha' },
+  //       { text: 'hehe', correctAnswer: 'haha', userAnswer: 'haha' },
+  //     ],
+  //   },
+  // },
   quizzes: null,
 };
 
@@ -121,8 +187,7 @@ export const QuizProvider = ({ children }: Props) => {
         topic,
         showCorrectAnswers,
       };
-      console.log(quiz);
-
+      
       dispatch({ type: 'FETCH_QUIZ_SUCCESS', payload: quiz });
     } catch (error: any) {
       dispatch({ type: 'FETCH_QUIZ_ERROR' });
@@ -159,7 +224,7 @@ export const QuizProvider = ({ children }: Props) => {
         body: JSON.stringify({ rawQuestions }),
       });
       const data = (await response.json()) as QuizHistory;
-      console.log(data);
+     
 
       dispatch({ type: 'SUBMIT_QUIZ_SUCESS', payload: data });
     } catch (error: any) {
@@ -185,7 +250,7 @@ export const QuizProvider = ({ children }: Props) => {
       });
 
       const data = (await response.json()) as QuizHistory;
-      console.log(data);
+     
       dispatch({ type: 'SUBMIT_QUIZ_SUCESS', payload: data });
     } catch (error: any) {
       toast(error.message);

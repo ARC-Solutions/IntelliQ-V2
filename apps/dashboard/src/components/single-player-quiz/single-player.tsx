@@ -10,9 +10,11 @@ import { Timer, CircleCheck, CircleX, ChevronRight } from 'lucide-react';
 import QAndA from './q-and-a';
 import Lottie from 'lottie-react';
 import Summarizing from '../../../public/IntelliQ summarizing.json';
+import { Progress } from '@/components/ui/progress';
 
 const Quiz = () => {
-  const { currentQuiz, submitQuiz, summaryQuiz } = useQuiz();
+  const { currentQuiz, submitQuiz, summaryQuiz, dispatch: dispatchQuiz } = useQuiz();
+
   const {
     questionNumber,
     setQuestionNumber,
@@ -21,6 +23,10 @@ const Quiz = () => {
     correctAnswer,
     wrongAnswer,
     userAnswer,
+    setProgressValue,
+    progressValue,
+    setShowCorrectAnswer,
+    showCorrectAnswer,
   } = useQuizLogic();
   const [time, setTime] = useState({ minutes: 0, seconds: 0 });
   const [quizFinished, setQuizFinished] = useState(false);
@@ -49,6 +55,7 @@ const Quiz = () => {
   }
   if (summaryQuiz) {
     setQuizFinished(false);
+    setShowCorrectAnswer(false);
     setTime({ minutes: 0, seconds: 0 });
     dispatch({ type: 'RESET_GAME_LOGIC' });
     setQuestionNumber(0);
@@ -62,6 +69,10 @@ const Quiz = () => {
       }, 3000);
     }
   }, [quizFinished]);
+
+  useEffect(() => {
+    setProgressValue(((questionNumber + 1) / currentQuiz.quiz.length) * 100);
+  }, [questionNumber]);
 
   if (quizFinished) {
     return (
@@ -97,15 +108,54 @@ const Quiz = () => {
             </div>
           </Card>
         </div>
-
         <CardDescription className='my-3 flex items-start text-sm sm:text-base'>
           <span>{questionNumber + 1}</span>&nbsp;out of {currentQuiz.quiz.length} Questions
         </CardDescription>
-        <QAndA quiz={currentQuiz.quiz} questionNumber={questionNumber} />
+        <Progress
+          value={progressValue}
+          className='w-full mb-4 outline outline-1 outline-slate-500'
+        />
+
+        <QAndA
+          quiz={currentQuiz.quiz}
+          questionNumber={questionNumber}
+          showCorrectAnswers={currentQuiz?.showCorrectAnswers || undefined}
+          userAnswer={selectedAnswer}
+          correctAnswer={currentQuiz.quiz[questionNumber].correctAnswer.slice(3)}
+        />
+
         <Button
           disabled={quizFinished}
           onClick={() => {
-            if (selectedAnswer) {
+            const checkQuizFinished = () => {
+              if (questionNumber >= currentQuiz.quiz.length - 1) {
+                setQuizFinished(true);
+                setTotalTimeInSeconds(time.minutes * 60 + time.seconds);
+              }
+            };
+            if (currentQuiz.showCorrectAnswers) {
+              if (selectedAnswer && !showCorrectAnswer) {
+                dispatch({
+                  type: 'VALIDATE_ANSWER',
+                  payload: {
+                    question: currentQuiz.quiz[questionNumber].text,
+                    correctAnswer: currentQuiz.quiz[questionNumber].correctAnswer.slice(3),
+                    userAnswer: selectedAnswer,
+                  },
+                });
+                setShowCorrectAnswer(true);
+              }
+              if (selectedAnswer && showCorrectAnswer) {
+                setQuestionNumber((prevQuestionNumber) => {
+                  return prevQuestionNumber >= currentQuiz.quiz.length - 1
+                    ? prevQuestionNumber
+                    : prevQuestionNumber + 1;
+                });
+                setShowCorrectAnswer(false);
+                dispatch({ type: 'RESET_SELECTED_ANSWER' });
+                checkQuizFinished();
+              }
+            } else if (selectedAnswer && !currentQuiz.showCorrectAnswers) {
               dispatch({
                 type: 'VALIDATE_ANSWER',
                 payload: {
@@ -114,17 +164,16 @@ const Quiz = () => {
                   userAnswer: selectedAnswer,
                 },
               });
+
               setQuestionNumber((prevQuestionNumber) => {
                 return prevQuestionNumber >= currentQuiz.quiz.length - 1
                   ? prevQuestionNumber
                   : prevQuestionNumber + 1;
               });
 
-              if (questionNumber >= currentQuiz.quiz.length - 1) {
-                setQuizFinished(true);
-                setTotalTimeInSeconds(time.minutes * 60 + time.seconds);
-              }
-            } else {
+              checkQuizFinished();
+            }
+            if (!selectedAnswer && !showCorrectAnswer) {
               showToast('destructive', 'WARNING!', 'Please choose an answer before proceeding');
             }
           }}

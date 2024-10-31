@@ -5,7 +5,6 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useQuiz } from './quiz-context';
-import { log } from 'console';
 
 const QuestionSchema = z.object({
   type: z.enum(['multiple-choice', 'true-false', 'short-answer']),
