@@ -107,12 +107,12 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             <div className='grid gap-4 flex-col'>
               {isNewUser && (
                 <div className='grid gap-1'>
-                  <div className='flex justify-between gap-5'>
+                  <div className='flex flex-col md:flex-row gap-4'>
                     <FormField
                       control={form.control}
                       name='firstName'
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className='flex-1'>
                           <FormLabel className='text-gray-400'>First Name</FormLabel>
                           <FormControl>
                             <Input
@@ -130,7 +130,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                       control={form.control}
                       name='lastName'
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className='flex-1'>
                           <FormLabel className='text-gray-400'>Last Name</FormLabel>
                           <FormControl>
                             <Input
