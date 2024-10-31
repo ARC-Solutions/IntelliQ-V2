@@ -170,7 +170,7 @@ const Quiz = () => {
                   ? prevQuestionNumber
                   : prevQuestionNumber + 1;
               });
-
+              dispatch({ type: 'RESET_SELECTED_ANSWER' });
               checkQuizFinished();
             }
             if (!selectedAnswer && !showCorrectAnswer) {
