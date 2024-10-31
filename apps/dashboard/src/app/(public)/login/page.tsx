@@ -21,7 +21,7 @@ export default async function AuthenticationPage() {
 
   return (
     <>
-      <div className='container relative hidden min-h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0'>
+      <div className=' relative min-h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0'>
         <div className='lg:p-8 '>
           <div className='mx-auto flex w-[50vw] flex-col justify-center space-y-6 sm:w-[350px]'>
             <UserAuthForm />
@@ -50,3 +50,4 @@ export default async function AuthenticationPage() {
     </>
   );
 }
+
