@@ -6,6 +6,7 @@ import { useSupabase } from './supabase-context';
 import { quizReducer } from '@/utils/reducers/quiz-reducer';
 import { UserAnswer } from '@/contexts/quiz-logic-context';
 import { QuizData } from './quiz-creation-context';
+import { log } from 'console';
 
 type Props = {
   children: React.ReactNode;
@@ -79,6 +80,8 @@ export const QuizProvider = ({ children }: Props) => {
   const { supabase } = useSupabase();
   const fetchQuestions = async (userQuizData: QuizData) => {
     try {
+      console.log('generating...');
+
       const {
         topic: interests,
         number: numberOfQuestions,
@@ -104,11 +107,22 @@ export const QuizProvider = ({ children }: Props) => {
 
       const { quizTitle: topic, questions } = data.rawQuestions[0];
 
+      const userQuizQuestions = userQuestions.map((question) => {
+        return {
+          correctAnswer: question.answer,
+          options: question.options,
+          questionTitle: question.text,
+          text: question.text,
+        };
+      });
+      questions.push(...userQuizQuestions);
       const quiz: CurrentQuiz = {
         quiz: questions,
         topic,
         showCorrectAnswers,
       };
+      console.log(quiz);
+
       dispatch({ type: 'FETCH_QUIZ_SUCCESS', payload: quiz });
     } catch (error: any) {
       dispatch({ type: 'FETCH_QUIZ_ERROR' });

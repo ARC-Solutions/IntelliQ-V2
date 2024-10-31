@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useQuiz } from './quiz-context';
+import { log } from 'console';
 
 const QuestionSchema = z.object({
   type: z.enum(['multiple-choice', 'true-false', 'short-answer']),
@@ -41,6 +42,7 @@ interface QuizContextValues {
   onSubmit: () => void;
   register: any;
   control: any;
+  resetValues: () => void;
 }
 
 const initialState = {
@@ -62,6 +64,7 @@ export const QuizCreationProvider = ({ children }: Props) => {
     control,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<QuizData>({
     resolver: zodResolver(QuizDataSchema),
@@ -106,8 +109,26 @@ export const QuizCreationProvider = ({ children }: Props) => {
 
   const onSubmit = handleSubmit((data: QuizData) => {
     console.log('Quiz Data:', data);
-    //fetchQuestions(data);
+    const questions = data.questions.map((question, index) => {
+      let answerLabel;
+      const options = question.options?.map((option, optionIndex) => {
+        const optionLabel = String.fromCharCode(97 + optionIndex); // 97 is the ASCII code for 'a'
+        const finalAnswer = `${optionLabel}) ${option}`;
+        if (question.answer === option) {
+          answerLabel = finalAnswer;
+        }
+        return finalAnswer;
+      });
+      return { ...question, options, answer: answerLabel };
+    });
+    setValue('questions', questions);
+
+    fetchQuestions({ ...data, questions });
   });
+
+  const resetValues = () => {
+    reset(initialState);
+  };
 
   return (
     <QuizCreationContext.Provider
@@ -122,6 +143,7 @@ export const QuizCreationProvider = ({ children }: Props) => {
         onSubmit,
         register,
         control,
+        resetValues,
       }}
     >
       {children}
