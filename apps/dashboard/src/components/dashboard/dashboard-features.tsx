@@ -6,12 +6,12 @@ import { UserRound, UsersRound, Paperclip, Dices } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { useQuiz } from '@/contexts/quiz-context';
+import { useAuth } from '@/contexts/user-context';
 
 export function DashboardFeatures() {
   const { isLoading, fetchingFinished: finished, currentQuiz, dispatch, summaryQuiz } = useQuiz();
-  useEffect(() => {
-    dispatch({ type: 'RESET_SUMMARY_QUIZ' });
-  }, []);
+  const { getUserInfo } = useAuth();
+
   useEffect(() => {
     if (currentQuiz) {
       const url = `/single-player/quiz/play`;

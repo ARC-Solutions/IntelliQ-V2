@@ -113,7 +113,7 @@ const Quiz = () => {
         </CardDescription>
         <Progress
           value={progressValue}
-          className='w-full mb-4 outline outline-1 outline-slate-500'
+          className='w-full mb-4 outline outline-1 outline-slate-600'
         />
 
         <QAndA

@@ -125,14 +125,34 @@ const initialState: QuizContextValue = {
   //   quiz_id: '123',
   //   rawQuestions: {
   //     timeTaken: 123,
-  //     quiz_title: 'HEHE',
+  //     quiz_title: 'HEHE QUIZ',
   //     correctAnswersCount: 3,
   //     questions: [
-  //       { text: 'hehe', correctAnswer: 'haha', userAnswer: 'hehe' },
-  //       { text: 'hehe', correctAnswer: 'haha', userAnswer: 'haha' },
-  //       { text: 'hehe', correctAnswer: 'haha', userAnswer: 'hehe' },
-  //       { text: 'hehe', correctAnswer: 'haha', userAnswer: 'haha' },
-  //       { text: 'hehe', correctAnswer: 'haha', userAnswer: 'haha' },
+  //       {
+  //         text: 'Which of the following is NOT a primitive data type in C#?',
+  //         correctAnswer: 'string',
+  //         userAnswer: 'hehe',
+  //       },
+  //       {
+  //         text: 'What is the purpose of the using directive in C#?',
+  //         correctAnswer: 'To import a namespace',
+  //         userAnswer: 'To import a namespace',
+  //       },
+  //       {
+  //         text: 'Which keyword is used to define a class in C#?',
+  //         correctAnswer: 'class',
+  //         userAnswer: 'hehe',
+  //       },
+  //       {
+  //         text: 'Which keyword is used to define a class in C#?',
+  //         correctAnswer: 'class',
+  //         userAnswer: 'class',
+  //       },
+  //       {
+  //         text: 'Which keyword is used to define a class in C#?',
+  //         correctAnswer: 'class',
+  //         userAnswer: 'hehe',
+  //       },
   //     ],
   //   },
   // },
@@ -187,7 +207,7 @@ export const QuizProvider = ({ children }: Props) => {
         topic,
         showCorrectAnswers,
       };
-      
+
       dispatch({ type: 'FETCH_QUIZ_SUCCESS', payload: quiz });
     } catch (error: any) {
       dispatch({ type: 'FETCH_QUIZ_ERROR' });
@@ -224,7 +244,6 @@ export const QuizProvider = ({ children }: Props) => {
         body: JSON.stringify({ rawQuestions }),
       });
       const data = (await response.json()) as QuizHistory;
-     
 
       dispatch({ type: 'SUBMIT_QUIZ_SUCESS', payload: data });
     } catch (error: any) {
@@ -250,7 +269,7 @@ export const QuizProvider = ({ children }: Props) => {
       });
 
       const data = (await response.json()) as QuizHistory;
-     
+
       dispatch({ type: 'SUBMIT_QUIZ_SUCESS', payload: data });
     } catch (error: any) {
       toast(error.message);

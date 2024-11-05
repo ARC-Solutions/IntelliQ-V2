@@ -1,25 +1,38 @@
 'use client';
+import { useEffect } from 'react';
 import { useQuiz } from '@/contexts/quiz-context';
 import { createClient } from '@/lib/supabase/supabase-client-side';
 import { redirect } from 'next/navigation';
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardHeader, CardDescription } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatTime } from '@/lib/format-time';
+import QuestionsList from './summary-questions'; // Assuming this component displays questions list
+import Image from 'next/image';
+import { Award, Clock } from 'lucide-react';
+import { Progress } from '../ui/progress';
+
 const Summary = () => {
   const { dispatch, summaryQuiz } = useQuiz();
+  const [isMounted, setIsMounted] = useState(false); // State to track if component has mounted
+
+  useEffect(() => {
+    setIsMounted(true);
+    dispatch({ type: 'RESET_QUIZ' });
+  }, []);
 
   if (!summaryQuiz) {
     redirect('/');
   }
+
   const correctAnswersCount = summaryQuiz.rawQuestions.correctAnswersCount;
   const totalQuestions = summaryQuiz.rawQuestions.questions.length;
   const correctPercentage = (correctAnswersCount / totalQuestions) * 100;
   const timeTaken = summaryQuiz.rawQuestions.timeTaken;
-  useEffect(() => {
-    dispatch({ type: 'RESET_QUIZ' });
-  }, []);
-  let descriptionText = '';
 
+  // This will be modified once i work with the new database
+  let descriptionText = '';
   if (correctPercentage >= 70) {
     descriptionText =
       '👏 Excellent work! Your understanding of the topic is impressive. Keep it up! 👏';
@@ -29,54 +42,98 @@ const Summary = () => {
     descriptionText = '😊 Nice try! Keep practicing to improve your score. 😊';
   }
 
-  // Messages based on time taken
-  let timeMessage = '';
+  // Filter questions
+  const allQuestions = summaryQuiz.rawQuestions.questions;
+  const correctQuestions = allQuestions.filter((q) => q.userAnswer === q.correctAnswer);
+  const incorrectQuestions = allQuestions.filter((q) => q.userAnswer !== q.correctAnswer);
 
-  if (timeTaken < 60) {
-    timeMessage = '⏱️ Wow, you finished so quickly! Impressive speed! ⚡';
-  } else if (timeTaken < 180) {
-    timeMessage = '⏱️ Good job! You completed the quiz at a steady pace. 🚀';
-  } else {
-
-    timeMessage =
-      "⏱️ Well done! You're as thoughtful as a wise tortoise in approaching each question. 🐢";
-  }
   return (
-    <div className='mx-auto flex w-full flex-col items-center justify-center px-6 py-4 text-white sm:w-10/12'>
-      <header className='mb-14 flex w-full flex-row items-center justify-between'>
-        <h1 className='text-4xl font-bold sm:text-5xl'>{summaryQuiz.rawQuestions.quiz_title}</h1>
+    <div className='mx-auto flex w-full flex-col px-6 py-3 text-white sm:w-10/12'>
+      <header className='mb-14 flex w-full flex-col items-center justify-center'>
+        <Image src='/logo-dark.svg' alt='IntelliQ' width={250} height={250} />
+        <h1 className='text-2xl font-bold sm:text-4xl text-primary'>
+          {summaryQuiz.rawQuestions.quiz_title}
+        </h1>
       </header>
 
-      {/* Metrics */}
-      <div className=' flex w-full flex-wrap justify-between gap-4'>
-        {/* Score section */}
-        <Card
-          id='score'
-          className='w-full flex-nowrap border-b-[0.5px] border-white border-opacity-[.15] p-4 pb-0 pt-0 md:w-5/12'
-        >
-          <CardHeader className='flex flex-row items-center'>
-            {/* <BsFillMortarboardFill className='mr-3 text-5xl' /> */}
-            &nbsp;
-            <span className='text-3xl'>Score:&nbsp; </span>
-            <span className='text-3xl text-primary'>
-              {summaryQuiz.rawQuestions.correctAnswersCount}
-            </span>
-          </CardHeader>
-          <CardDescription className='p-6 text-xl'>{descriptionText}</CardDescription>
-        </Card>
+      <Card className='w-full border-b-[0.5px] border-white border-opacity-[.15] p-4'>
+        <CardHeader>
+          <div className='flex items-center justify-between'>
+            <div className='flex items-center justify-center gap-2'>
+              <Award size={35} className='text-primary' />
+              <div className='flex flex-col justify-center text-5xl mb-2'>
+                <span className='text-xl'>Your Score</span>
+                <span className='text-primary text-4xl font-bold'>{correctPercentage}%</span>
+              </div>
+            </div>
+            <div className='flex items-center justify-center gap-6'>
+              <div className='flex items-center justify-center gap-2'>
+                <Clock className='text-primary' />
+                <div className='flex flex-col justify-center'>
+                  <span className='text-lg'>Total Time</span>
+                  <span className='text-primary text-2xl font-semibold'>
+                    {formatTime(timeTaken)}
+                  </span>
+                </div>
+              </div>
+              <div className='flex items-center justify-center gap-2'>
+                <Clock className='text-primary' />
+                <div className='flex flex-col justify-center'>
+                  <span className='text-lg'>Correct Answers</span>
+                  <span className='text-primary text-2xl font-semibold'>
+                    {correctAnswersCount}/{totalQuestions}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardDescription className='flex flex-col justify-between items-center px-6 gap-2'>
+          {isMounted && (
+            <>
+              <Progress
+                className='w-full mb-4 outline outline-1 outline-slate-600'
+                value={(100 / totalQuestions) * correctAnswersCount}
+              />
+              <h4 className='text-lg text-primary font-semibold'>
+                {(100 / totalQuestions) * correctAnswersCount > 70 ? 'YOU PASSED!' : 'YOU FAILED!'}
+              </h4>
+            </>
+          )}
+          <span className='text-lg text-white'>{descriptionText}</span>
+        </CardDescription>
+      </Card>
 
-        {/* time section */}
-        <Card
-          id='time'
-          className='w-full flex-nowrap border-b-[0.5px] border-white border-opacity-[.15] p-4 pb-1 pt-0 md:w-5/12'
-        >
-          <CardHeader className='flex flex-row items-center'>
-            <span className='text-3xl text-primary'>{formatTime(timeTaken)}</span>
-            &nbsp;
-            {/* <BiSolidTimer className='text-5xl' /> */}
-          </CardHeader>
-          <CardDescription className='p-4 text-xl'>{timeMessage}</CardDescription>
-        </Card>
+      <div className='mt-6'>
+        <Tabs defaultValue='all'>
+          <TabsList className='flex justify-around'>
+            <TabsTrigger className='w-full' value='all'>
+              All Questions
+            </TabsTrigger>
+            <TabsTrigger className='w-full' value='correct'>
+              Correct
+            </TabsTrigger>
+            <TabsTrigger className='w-full' value='incorrect'>
+              Incorrect
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value='all'>
+            <ScrollArea className='h-[350px] w-full'>
+              <QuestionsList questions={allQuestions} />
+            </ScrollArea>
+          </TabsContent>
+          <TabsContent value='correct'>
+            <ScrollArea className='h-[350px] w-full'>
+              <QuestionsList questions={correctQuestions} />
+            </ScrollArea>
+          </TabsContent>
+          <TabsContent value='incorrect'>
+            <ScrollArea className='h-[350px] w-full'>
+              <QuestionsList questions={incorrectQuestions} />
+            </ScrollArea>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
