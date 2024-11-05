@@ -1,8 +1,6 @@
-import { Metadata } from 'next';
-import { cn } from '@/lib/utils';
-import { buttonVariants } from '@/components/ui/button';
-import { UserAuthForm } from '@/components/login-page/user-auth-form';
 import AvatarCircles from '@/components/avatar-circles';
+import { UserAuthForm } from '@/components/login-page/user-auth-form';
+import { Metadata } from 'next';
 import Image from 'next/image';
 
 export const metadata: Metadata = {
