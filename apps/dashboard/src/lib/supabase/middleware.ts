@@ -31,6 +31,11 @@ export async function updateSession(request: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
+  // allow access to login API endpoint without authentication
+  if (request.nextUrl.pathname === '/api/v1/login') {
+    return supabaseResponse;
+  }
+
   if (!session && request.nextUrl.pathname !== '/login') {
     return NextResponse.redirect(new URL('/login', request.url));
   }
