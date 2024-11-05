@@ -7,7 +7,6 @@ import { useForm } from 'react-hook-form';
 import { useQuiz } from './quiz-context';
 
 const QuestionSchema = z.object({
-  type: z.enum(['multiple-choice', 'true-false', 'short-answer']),
   text: z.string().min(1, { message: 'Question text is required' }),
   options: z.array(z.string()).optional(),
   answer: z.string().optional(),
@@ -76,7 +75,7 @@ export const QuizCreationProvider = ({ children }: Props) => {
 
   const addQuestion = () => {
     const questions = formValues.questions || [];
-    const newQuestion: Question = { type: 'multiple-choice', text: '', options: ['', '', '', ''] };
+    const newQuestion: Question = { text: '', options: ['', '', '', ''] };
     setValue('questions', [...questions, newQuestion]);
   };
 

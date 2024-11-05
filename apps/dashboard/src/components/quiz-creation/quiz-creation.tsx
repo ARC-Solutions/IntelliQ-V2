@@ -49,7 +49,6 @@ export default function QuizCreator() {
     return <p>LOading</p>;
   }
 
-
   return (
     <div className='container mx-auto p-6 flex flex-col justify-start'>
       <h1 className='text-3xl font-bold mb-6'>Create Your Quiz</h1>
@@ -233,63 +232,35 @@ export default function QuizCreator() {
                         placeholder='Enter your question'
                         rows={3}
                       />
-                      <Select
-                        onValueChange={(value) => updateQuestion(index, 'type', value)}
-                        defaultValue={question.type}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder='Select question type' />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value='multiple-choice'>Multiple Choice</SelectItem>
-                          <SelectItem value='true-false'>True/False</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {question.type === 'multiple-choice' && (
-                        <div className='space-y-2'>
-                          {question.options?.map((option, optionIndex) => {
-                            return (
-                              <div key={optionIndex} className='flex items-center space-x-2'>
-                                <Input
+
+                      <div className='space-y-2'>
+                        {question.options?.map((option, optionIndex) => {
+                          return (
+                            <div key={optionIndex} className='flex items-center space-x-2'>
+                              <Input
+                                value={option}
+                                onChange={(e) =>
+                                  updateQuestion(index, 'options', [
+                                    ...question.options!.slice(0, optionIndex),
+                                    e.target.value,
+                                    ...question.options!.slice(optionIndex + 1),
+                                  ])
+                                }
+                                placeholder={'value'}
+                              />
+                              <RadioGroup
+                                onValueChange={(value) => updateQuestion(index, 'answer', value)}
+                                value={question.answer}
+                              >
+                                <RadioGroupItem
                                   value={option}
-                                  onChange={(e) =>
-                                    updateQuestion(index, 'options', [
-                                      ...question.options!.slice(0, optionIndex),
-                                      e.target.value,
-                                      ...question.options!.slice(optionIndex + 1),
-                                    ])
-                                  }
-                                  placeholder={'value'}
+                                  id={`question-${index}-option-${optionIndex}`}
                                 />
-                                <RadioGroup
-                                  onValueChange={(value) => updateQuestion(index, 'answer', value)}
-                                  value={question.answer}
-                                >
-                                  <RadioGroupItem
-                                    value={option}
-                                    id={`question-${index}-option-${optionIndex}`}
-                                  />
-                                </RadioGroup>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                      {question.type === 'true-false' && (
-                        <RadioGroup
-                          onValueChange={(value) => updateQuestion(index, 'answer', value)}
-                          value={question.answer}
-                        >
-                          <div className='flex items-center space-x-2'>
-                            <RadioGroupItem value='true' id={`question-${index}-true`} />
-                            <Label htmlFor={`question-${index}-true`}>True</Label>
-                          </div>
-                          <div className='flex items-center space-x-2'>
-                            <RadioGroupItem value='false' id={`question-${index}-false`} />
-                            <Label htmlFor={`question-${index}-false`}>False</Label>
-                          </div>
-                        </RadioGroup>
-                      )}
+                              </RadioGroup>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -348,21 +319,17 @@ export default function QuizCreator() {
                       {formValues.questions.map((question, index) => (
                         <li key={index} className='border p-4 rounded-lg'>
                           <p className='font-medium'>{question.text}</p>
-                          {question.type === 'multiple-choice' && (
-                            <ul className='list-disc list-inside ml-4 mt-2'>
-                              {question.options?.map((option, optionIndex) => (
-                                <li
-                                  key={optionIndex}
-                                  className={option === question.answer ? 'font-bold' : ''}
-                                >
-                                  {option}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                          {question.type === 'true-false' && (
-                            <p className='mt-2'>Answer: {question.answer}</p>
-                          )}
+
+                          <ul className='list-disc list-inside ml-4 mt-2'>
+                            {question.options?.map((option, optionIndex) => (
+                              <li
+                                key={optionIndex}
+                                className={option === question.answer ? 'font-bold' : ''}
+                              >
+                                {option}
+                              </li>
+                            ))}
+                          </ul>
                         </li>
                       ))}
                     </ol>
