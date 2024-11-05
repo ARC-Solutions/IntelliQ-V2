@@ -13,7 +13,7 @@ export default function VerifyOTPForm({ email }: { email: string }) {
   const [otp, setOtp] = useState<string>('');
   const router = useRouter();
   const { toast } = useToast();
-  const handleContinue = async () => {
+  const handleContinue =  () => {
     if (otp.length !== 6) {
       toast({
         title: 'Please Complete the OTP',
@@ -21,7 +21,7 @@ export default function VerifyOTPForm({ email }: { email: string }) {
       });
       return;
     }
-    await verifyOTP(otp, email);
+     verifyOTP(otp, email);
   };
 
   return (

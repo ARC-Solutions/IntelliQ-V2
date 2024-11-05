@@ -13,18 +13,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {/* Main Content */}
         <div className='flex-1 overflow-hidden'>
           <SidebarTrigger />
-          <main className='relative flex h-full w-full items-center justify-center'>
+          <main className='relative flex h-full w-full items-start justify-center'>
             {children}
-            <AnimatedGridPattern
+            {/* <AnimatedGridPattern
               numSquares={30}
               maxOpacity={0.3}
               duration={3}
               repeatDelay={1}
               className={cn(
                 '[mask-image:radial-gradient(750px_circle_at_center,white,transparent)]',
-                'inset-x-0 inset-y-[0%] h-[80%] skew-y-12',
+                'inset-x-0 inset-y-[0%] h-[80%] skew-y-12 -z-10',
               )}
-            />
+            /> */}
           </main>
         </div>
       </div>

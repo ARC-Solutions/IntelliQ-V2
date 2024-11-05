@@ -4,6 +4,7 @@ import { toast, useToast } from '@/components/ui/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { useSupabase } from './supabase-context';
 import { useRouter } from 'next/navigation';
+import { log } from 'console';
 type Props = {
   children: React.ReactNode;
 };
@@ -27,6 +28,7 @@ interface AuthContextValue {
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
   isNewUser: boolean;
   setIsNewUser: React.Dispatch<React.SetStateAction<boolean>>;
+  getUserInfo: () => void;
 }
 
 interface UserInput {
@@ -57,12 +59,12 @@ export const AuthProvider = ({ children }: Props) => {
           ? {
               data: {
                 email: userInput.email,
-                firstName: userInput.firstName,
-                lastName: userInput.lastName,
+                name: `${userInput.firstName} ${userInput.lastName}`,
               },
             }
           : {}),
       };
+
       const { data, error } = await supabase.auth.signInWithOtp({
         email: userInput.email,
         options: options,
@@ -103,9 +105,8 @@ export const AuthProvider = ({ children }: Props) => {
         setIsOTPVerified(false);
         return;
       }
-      console.log(data);
-
       setIsOTPVerified(true);
+      router.refresh();
     } catch (error) {
       console.log(error);
       setIsOTPVerified(false);
@@ -163,8 +164,10 @@ export const AuthProvider = ({ children }: Props) => {
       });
     }
     const user = session?.user;
+    console.log(user);
+
     const avatar = user.user_metadata.avatar_url as string;
-    const name = user.user_metadata.full_name as string;
+    const name = user.user_metadata.name as string;
     const userID = user?.id as string;
     const userEmail = user?.email as string;
     setCurrentUser({
@@ -187,6 +190,7 @@ export const AuthProvider = ({ children }: Props) => {
     setIsLoading,
     isNewUser,
     setIsNewUser,
+    getUserInfo,
   };
 
   useEffect(() => {
