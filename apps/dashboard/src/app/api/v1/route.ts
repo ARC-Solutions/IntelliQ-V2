@@ -8,5 +8,6 @@ export const GET = async () => {
       email: users.email,
     })
     .from(users);
+  // going mad at this point
   return NextResponse.json(result);
 };
