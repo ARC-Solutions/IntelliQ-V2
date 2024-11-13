@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 
-import { cn } from '@/lib/utils';
-import { Icons } from '@/components/icons';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { LastUsed, useLastUsed } from './last-used';
-import { useAuth } from '@/contexts/user-context';
-import VerifyOTPForm from './verify-otp-form';
+import { cn } from "@/lib/utils";
+import { Icons } from "@/components/icons";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { LastUsed, useLastUsed } from "./last-used";
+import { signInWithOTP, signInWithGoogle } from "@/actions/auth-action";
+import VerifyOTPForm from "./verify-otp-form";
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
 import {
   Form,
   FormControl,
@@ -21,105 +21,155 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
+} from "@/components/ui/form";
+import { useToast } from "@/components/ui/use-toast";
 
-const formSchema = z.object({
+// Separate schemas for new and existing users
+const newUserSchema = z.object({
   email: z.string().email(),
-  firstName: z.string().min(3, { message: 'First name must be at least 3 characters' }),
-  lastName: z.string().min(3, { message: 'Last name must be at least 3 characters' }),
+  firstName: z
+    .string()
+    .min(3, { message: "First name must be at least 3 characters" }),
+  lastName: z
+    .string()
+    .min(3, { message: "Last name must be at least 3 characters" }),
+});
+
+const existingUserSchema = z.object({
+  email: z.string().email(),
 });
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const [lastUsed, setLastUsed] = useLastUsed();
   const [mounted, setMounted] = React.useState<boolean>(false);
+  const [isNewUser, setIsNewUser] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [otpSent, setOtpSent] = React.useState(false);
+  const { toast } = useToast();
 
   React.useEffect(() => {
     setMounted(true);
   }, []);
-  const {
-    signInWithOTP,
-    signinUsingOAuth,
-    isOTPVerified,
-    otpSent,
-    isLoading,
-    setIsLoading,
-    isNewUser,
-    setIsNewUser,
-  } = useAuth();
-  const oauthSignIn = async () => {
-    try {
-      setIsLoading(true);
-      setLastUsed('google');
-      signinUsingOAuth();
-    } catch (err) {
-      console.error(err);
-      setIsLoading(false);
-    }
-  };
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  // Use different form schema based on isNewUser
+  const form = useForm<
+    z.infer<typeof newUserSchema> | z.infer<typeof existingUserSchema>
+  >({
+    resolver: zodResolver(isNewUser ? newUserSchema : existingUserSchema),
     defaultValues: {
-      email: '',
-      firstName: '',
-      lastName: '',
+      email: "",
+      ...(isNewUser && { firstName: "", lastName: "" }),
     },
   });
 
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+  async function handleSubmit(values: any) {
+    setIsLoading(true);
+    setLastUsed("email");
+
+    const formData = new FormData();
+    formData.append("email", values.email);
+    formData.append("isNewUser", isNewUser.toString());
+
+    if (isNewUser) {
+      formData.append("firstName", values.firstName);
+      formData.append("lastName", values.lastName);
+    }
+
     try {
-      setIsLoading(true);
-      setLastUsed('email');
-      signInWithOTP(
-        {
-          email: values.email,
-          firstName: values.firstName,
-          lastName: values.lastName,
-        },
-        isNewUser,
-      );
+      const result = await signInWithOTP(formData);
+      if (result.error) {
+        if (result.error.includes("User already registered")) {
+          setIsNewUser(false);
+          form.reset({ email: values.email });
+          toast({
+            title: "Account Exists",
+            description: "Please sign in with your existing account",
+          });
+        } else {
+          toast({
+            title: result.error,
+            description: result.error,
+            variant: "destructive",
+          });
+        }
+      } else {
+        setOtpSent(true);
+        toast({
+          title: "OTP sent to email",
+          description: "Please check your email for the OTP",
+        });
+      }
     } catch (err) {
       console.error(err);
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
     }
-  };
+  }
+
+  // Reset form when switching between new and existing user
+  React.useEffect(() => {
+    form.reset({
+      email: form.getValues("email"),
+      ...(isNewUser && { firstName: "", lastName: "" }),
+    });
+  }, [isNewUser]);
+
+  async function handleOAuthSignIn() {
+    try {
+      setIsLoading(true);
+      setLastUsed("google");
+      await signInWithGoogle();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   if (otpSent) {
-    return <VerifyOTPForm email={form.getValues('email')} />;
+    return <VerifyOTPForm email={form.getValues("email")} />;
   }
+
   return (
     <>
-      <div className='flex flex-col space-y-2 text-center'>
-        <h1 className='text-2xl font-semibold tracking-tight'>
-          {' '}
-          {isNewUser ? 'Create an account' : 'Sign in to your account'}
+      <div className="flex flex-col space-y-2 text-center">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {" "}
+          {isNewUser ? "Create an account" : "Sign in to your account"}
         </h1>
-        <p className='text-sm text-muted-foreground'>
+        <p className="text-sm text-muted-foreground">
           {isNewUser
-            ? 'Enter your email below to create your account'
-            : 'Enter your email below to sign in to your account'}
+            ? "Enter your email below to create your account"
+            : "Enter your email below to sign in to your account"}
         </p>
       </div>
 
-      <div className={cn('grid gap-6', className)} {...props}>
+      <div className={cn("grid gap-6", className)} {...props}>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)}>
-            <div className='grid gap-4 flex-col'>
+            <div className="grid gap-4 flex-col">
               {isNewUser && (
-                <div className='grid gap-1'>
-                  <div className='flex flex-col md:flex-row gap-4'>
+                <div className="grid gap-1">
+                  <div className="flex flex-col md:flex-row gap-4">
                     <FormField
                       control={form.control}
-                      name='firstName'
+                      name="firstName"
                       render={({ field }) => (
-                        <FormItem className='flex-1'>
-                          <FormLabel className='text-gray-400'>First Name</FormLabel>
+                        <FormItem className="flex-1">
+                          <FormLabel className="text-gray-400">
+                            First Name
+                          </FormLabel>
                           <FormControl>
                             <Input
-                              placeholder='John'
+                              placeholder="John"
                               {...field}
                               disabled={isLoading}
-                              className='mt-2'
+                              className="mt-2"
                             />
                           </FormControl>
                           <FormMessage />
@@ -128,16 +178,18 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                     />
                     <FormField
                       control={form.control}
-                      name='lastName'
+                      name="lastName"
                       render={({ field }) => (
-                        <FormItem className='flex-1'>
-                          <FormLabel className='text-gray-400'>Last Name</FormLabel>
+                        <FormItem className="flex-1">
+                          <FormLabel className="text-gray-400">
+                            Last Name
+                          </FormLabel>
                           <FormControl>
                             <Input
-                              placeholder='Doe'
+                              placeholder="Doe"
                               {...field}
                               disabled={isLoading}
-                              className='mt-2'
+                              className="mt-2"
                             />
                           </FormControl>
                           <FormMessage />
@@ -150,17 +202,19 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
 
               <FormField
                 control={form.control}
-                name='email'
+                name="email"
                 render={({ field }) => (
                   <FormItem>
-                    {isNewUser && <FormLabel className='text-gray-400'>Email</FormLabel>}
+                    {isNewUser && (
+                      <FormLabel className="text-gray-400">Email</FormLabel>
+                    )}
                     <FormControl>
                       <Input
-                        placeholder='name@example.com'
-                        type='email'
+                        placeholder="name@example.com"
+                        type="email"
                         {...field}
                         disabled={isLoading}
-                        className='mt-2'
+                        className="mt-2"
                       />
                     </FormControl>
                     <FormMessage />
@@ -168,53 +222,63 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                 )}
               />
 
-              <Button type='submit' disabled={isLoading} className='relative'>
-                {isLoading && <Icons.spinner className='mr-2 h-4 w-4 animate-spin' />}
-                {isNewUser ? 'Sign up' : 'Sign in'} with Email
-                {lastUsed === 'email' && mounted && <LastUsed />}
+              <Button type="submit" disabled={isLoading} className="relative">
+                {isLoading && (
+                  <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {isNewUser ? "Sign up" : "Sign in"} with Email
+                {lastUsed === "email" && mounted && <LastUsed />}
               </Button>
 
-              <Label className='text-gray-400 ' htmlFor='password'>
-                {isNewUser ? 'Already have an account? ' : "Don't have an account? "}
+              <Label className="text-gray-400 " htmlFor="password">
+                {isNewUser
+                  ? "Already have an account? "
+                  : "Don't have an account? "}
                 <span
                   onClick={() => setIsNewUser(!isNewUser)}
-                  className='text-primary cursor-pointer'
+                  className="text-primary cursor-pointer"
                 >
-                  {isNewUser ? 'Sign in' : 'Sign up'}
+                  {isNewUser ? "Sign in" : "Sign up"}
                 </span>
               </Label>
             </div>
           </form>
         </Form>
-        <div className='relative'>
-          <div className='absolute inset-0 flex items-center'>
-            <span className='w-full border-t' />
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
           </div>
-          <div className='relative flex justify-center text-xs uppercase'>
-            <span className='bg-background px-2 text-muted-foreground'>Or continue with</span>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">
+              Or continue with
+            </span>
           </div>
         </div>
         <Button
-          variant='outline'
-          type='button'
+          variant="outline"
+          type="button"
           disabled={isLoading}
-          onClick={() => {
-            oauthSignIn();
-          }}
-          className='relative'
+          onClick={handleOAuthSignIn}
+          className="relative"
         >
           {isLoading ? (
-            <Icons.spinner className='mr-2 h-4 w-4 animate-spin' />
+            <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
           ) : (
-            <Icons.google className='mr-2 h-4 w-4' />
-          )}{' '}
-          Google {lastUsed === 'google' && mounted && <LastUsed />}
+            <Icons.google className="mr-2 h-4 w-4" />
+          )}{" "}
+          Google {lastUsed === "google" && mounted && <LastUsed />}
         </Button>
       </div>
-      <p className='px-8 text-center text-sm text-muted-foreground'>
-        By clicking continue, you agree to our{' '}
-        <span className='underline underline-offset-4 hover:text-primary'>Terms of Service</span>{' '}
-        and <span className='underline underline-offset-4 hover:text-primary'>Privacy Policy</span>.
+      <p className="px-8 text-center text-sm text-muted-foreground">
+        By clicking continue, you agree to our{" "}
+        <span className="underline underline-offset-4 hover:text-primary">
+          Terms of Service
+        </span>{" "}
+        and{" "}
+        <span className="underline underline-offset-4 hover:text-primary">
+          Privacy Policy
+        </span>
+        .
       </p>
     </>
   );

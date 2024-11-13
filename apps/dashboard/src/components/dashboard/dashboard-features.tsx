@@ -10,7 +10,6 @@ import { useAuth } from '@/contexts/user-context';
 
 export function DashboardFeatures() {
   const { isLoading, fetchingFinished: finished, currentQuiz, dispatch, summaryQuiz } = useQuiz();
-  const { getUserInfo } = useAuth();
 
   useEffect(() => {
     if (currentQuiz) {

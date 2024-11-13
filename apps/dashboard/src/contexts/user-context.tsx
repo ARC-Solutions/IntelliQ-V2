@@ -1,13 +1,12 @@
 'use client';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { toast, useToast } from '@/components/ui/use-toast';
-import { ToastAction } from '@/components/ui/toast';
+import { useToast } from '@/components/ui/use-toast';
 import { useSupabase } from './supabase-context';
-import { useRouter } from 'next/navigation';
-import { log } from 'console';
+
 type Props = {
   children: React.ReactNode;
 };
+
 interface User {
   id: string;
   email: string;
@@ -18,158 +17,34 @@ interface User {
 interface AuthContextValue {
   currentUser: User | null;
   setCurrentUser: React.Dispatch<React.SetStateAction<User | null>>;
-  signinUsingOAuth: () => void;
-  signout: () => void;
-  signInWithOTP: (userInput: UserInput, isNewUser: boolean) => void;
-  isOTPVerified: boolean;
-  verifyOTP: (otp: string, email: string) => void;
-  otpSent: boolean;
-  isLoading: boolean;
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  isNewUser: boolean;
-  setIsNewUser: React.Dispatch<React.SetStateAction<boolean>>;
   getUserInfo: () => void;
 }
 
-interface UserInput {
-  email: string;
-  firstName: string;
-  lastName: string;
-}
-
 const AuthContext = createContext<AuthContextValue | null>(null);
+
 export const AuthProvider = ({ children }: Props) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isNewUser, setIsNewUser] = useState<boolean>(true);
-  const [isOTPVerified, setIsOTPVerified] = useState<boolean>(false);
-  const [otpSent, setOtpSent] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const { supabase } = useSupabase();
-  const router = useRouter();
+  const { toast } = useToast();
 
-  const signInWithOTP = async (userInput: UserInput, isNewUser: boolean) => {
-    setIsOTPVerified(false);
-    setOtpSent(false);
-    try {
-      console.log(userInput.email);
-      console.log(isNewUser);
-      const options = {
-        shouldCreateUser: isNewUser,
-        ...(isNewUser
-          ? {
-              data: {
-                email: userInput.email,
-                name: `${userInput.firstName} ${userInput.lastName}`,
-              },
-            }
-          : {}),
-      };
-
-      const { data, error } = await supabase.auth.signInWithOtp({
-        email: userInput.email,
-        options: options,
-      });
-      if (error) {
-        toast({
-          title: 'Error',
-          description: error.message,
-          variant: 'destructive',
-        });
-        setIsLoading(false);
-        return;
-      }
-      toast({
-        title: 'OTP sent to email',
-        description: 'Please check your email for the OTP',
-      });
-      setOtpSent(true);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const verifyOTP = async (otp: string, email: string) => {
-    try {
-      const { data, error } = await supabase.auth.verifyOtp({
-        email,
-        token: otp,
-        type: 'email',
-      });
-
-      if (error) {
-        toast({
-          title: 'Error',
-          description: error.message,
-          variant: 'destructive',
-        });
-        setIsOTPVerified(false);
-        return;
-      }
-      setIsOTPVerified(true);
-      router.refresh();
-    } catch (error) {
-      console.log(error);
-      setIsOTPVerified(false);
-    }
-  };
-
-  const signinUsingOAuth = async () => {
-    try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: 'http://localhost:3000/dashboard',
-        },
-      });
-
-      if (error) {
-        toast({
-          title: 'Error',
-          description: error.message,
-          variant: 'destructive',
-        });
-        return;
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const signout = async () => {
-    try {
-      await supabase.auth.signOut();
-      setCurrentUser(null);
-      toast({
-        title: 'User signed out',
-        description: 'You have been signed out',
-      });
-      router.push('/login');
-    } catch (error) {
-      console.log(error);
-    }
-  };
   const getUserInfo = async () => {
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.getSession();
-    if (!session) {
-      return;
-    }
+    const { data, error } = await supabase.auth.getSession();
     if (error) {
+      console.log(error);
       toast({
         title: 'Error',
         description: error.message,
         variant: 'destructive',
       });
     }
-    const user = session?.user;
+    
+    const user = data?.session?.user;
     console.log(user);
-
-    const avatar = user.user_metadata.avatar_url as string;
-    const name = user.user_metadata.name as string;
+    const avatar = user?.user_metadata.avatar_url as string;
+    const name = user?.user_metadata.name as string;
     const userID = user?.id as string;
     const userEmail = user?.email as string;
+    
     setCurrentUser({
       id: userID,
       email: userEmail,
@@ -177,25 +52,32 @@ export const AuthProvider = ({ children }: Props) => {
       name: name,
     });
   };
+
   const value = {
     currentUser,
     setCurrentUser,
-    signinUsingOAuth,
-    signout,
-    signInWithOTP,
-    isOTPVerified,
-    verifyOTP,
-    otpSent,
-    isLoading,
-    setIsLoading,
-    isNewUser,
-    setIsNewUser,
     getUserInfo,
   };
 
   useEffect(() => {
     getUserInfo();
+
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session) {
+          getUserInfo();
+        } else {
+          setCurrentUser(null);
+        }
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 

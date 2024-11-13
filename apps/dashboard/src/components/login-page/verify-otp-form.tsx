@@ -7,13 +7,14 @@ import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '../ui/
 import { useAuth } from '@/contexts/user-context';
 import { useRouter } from 'next/navigation';
 import { toast, useToast } from '@/components/ui/use-toast';
+import { verifyOTP } from '@/actions/auth-action';
 
 export default function VerifyOTPForm({ email }: { email: string }) {
-  const { verifyOTP, isOTPVerified } = useAuth();
   const [otp, setOtp] = useState<string>('');
-  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const handleContinue =  () => {
+
+  const handleContinue = async () => {
     if (otp.length !== 6) {
       toast({
         title: 'Please Complete the OTP',
@@ -21,7 +22,31 @@ export default function VerifyOTPForm({ email }: { email: string }) {
       });
       return;
     }
-     verifyOTP(otp, email);
+
+    setIsLoading(true);
+    const formData = new FormData();
+    formData.append('email', email);
+    formData.append('otp', otp);
+
+    try {
+      const result = await verifyOTP(formData);
+      if (result?.error) {
+        toast({
+          title: 'Verification Failed',
+          description: result.error,
+          variant: 'destructive',
+        });
+      }
+      // Successful verification will automatically redirect to dashboard
+    } catch (error) {
+      toast({
+        title: 'Something went wrong',
+        description: 'Please try again later',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -54,11 +79,15 @@ export default function VerifyOTPForm({ email }: { email: string }) {
             Didn't receive the code? Resend
           </Button>
         </div>
-        <Button onClick={handleContinue} className='w-full bg-primary text-black hover:bg-gray-200'>
-          Continue
+        <Button 
+          onClick={handleContinue} 
+          className='w-full bg-primary text-black hover:bg-gray-200'
+          disabled={isLoading}
+        >
+          {isLoading ? 'Verifying...' : 'Continue'}
         </Button>
         <p className='text-xs text-gray-500 text-center'>
-          By continuing, you agree to IntelliQ's{' '}
+          By continuing, you agree to IntelliQ&copy;s
           <a href='#' className='underline'>
             Terms of Service
           </a>{' '}
