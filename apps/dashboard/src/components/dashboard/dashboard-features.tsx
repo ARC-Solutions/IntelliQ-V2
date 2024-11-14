@@ -19,34 +19,35 @@ export function DashboardFeatures() {
     }
   }, [currentQuiz, summaryQuiz]);
   return (
-    <BentoGrid className='w-[60rem] mx-auto md:auto-rows-[20rem]'>
-      {items.map((item, i) => {
-        if (item.url) {
-          return (
-            <Link key={i} href={item.url}>
-              <BentoGridItem
-                title={item.title}
-                description={item.description}
-                header={item.header}
-                className={item.className}
-                icon={item.icon}
-              />
-            </Link>
-          );
-        } else {
-          return (
-            <BentoGridItem
-              key={i}
-              title={item.title}
-              description={item.description}
-              header={item.header}
-              className={item.className}
-              icon={item.icon}
-            />
-          );
-        }
-      })}
-    </BentoGrid>
+    <div className='h-screen w-full overflow-hidden'>
+      <div className='max-w-4xl mx-auto h-full overflow-y-auto px-4 py-6'>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-6 pb-6'>
+          {items.map((item, i) => (
+            <div key={i} className='h-[20rem]'>
+              {item.url ? (
+                <Link href={item.url} className='h-full block'>
+                  <BentoGridItem
+                    title={item.title}
+                    description={item.description}
+                    header={item.header}
+                    className={cn('h-full', item.className)}
+                    icon={item.icon}
+                  />
+                </Link>
+              ) : (
+                <BentoGridItem
+                  title={item.title}
+                  description={item.description}
+                  header={item.header}
+                  className={cn('h-full', item.className)}
+                  icon={item.icon}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 const Skeleton = () => (
@@ -84,5 +85,6 @@ const items = [
     header: <Skeleton />,
     className: 'md:col-span-1',
     icon: <Dices className='h-4 w-4 text-neutral-500' />,
+    url: '/random-quiz',
   },
 ];
