@@ -2,18 +2,8 @@
 
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { LastUsed, useLastUsed } from './last-used';
-import { useAuth } from '@/contexts/user-context';
-import VerifyOTPForm from './verify-otp-form';
-interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
 import {
   Form,
   FormControl,
@@ -22,6 +12,16 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useAuth } from '@/contexts/user-context';
+import { cn } from '@/lib/utils';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { LastUsed, useLastUsed } from './last-used';
+import VerifyOTPForm from './verify-otp-form';
+interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 const formSchema = z.object({
   email: z.string().email(),
