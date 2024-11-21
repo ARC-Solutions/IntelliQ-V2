@@ -7,13 +7,16 @@ import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '../ui/
 import { useAuth } from '@/contexts/user-context';
 import { useRouter } from 'next/navigation';
 import { toast, useToast } from '@/components/ui/use-toast';
+import { Icons } from '@/components/icons';
 
 export default function VerifyOTPForm({ email }: { email: string }) {
-  const { verifyOTP, isOTPVerified } = useAuth();
+  const { verifyOTP } = useAuth();
   const [otp, setOtp] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const handleContinue =  () => {
+
+  const handleContinue = async () => {
     if (otp.length !== 6) {
       toast({
         title: 'Please Complete the OTP',
@@ -21,7 +24,19 @@ export default function VerifyOTPForm({ email }: { email: string }) {
       });
       return;
     }
-     verifyOTP(otp, email);
+
+    try {
+      setIsLoading(true);
+      await verifyOTP(otp, email);
+    } catch (error) {
+      toast({
+        title: 'Verification Failed',
+        description: error instanceof Error ? error.message : 'Please try again',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -54,8 +69,19 @@ export default function VerifyOTPForm({ email }: { email: string }) {
             Didn't receive the code? Resend
           </Button>
         </div>
-        <Button onClick={handleContinue} className='w-full bg-primary text-black hover:bg-gray-200'>
-          Continue
+        <Button 
+          onClick={handleContinue} 
+          className='w-full bg-primary text-black hover:bg-gray-200'
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <Icons.spinner className='mr-2 h-4 w-4 animate-spin' />
+              Verifying...
+            </>
+          ) : (
+            'Continue'
+          )}
         </Button>
         <p className='text-xs text-gray-500 text-center'>
           By continuing, you agree to IntelliQ's{' '}
