@@ -6,13 +6,16 @@ import Particles from "@/components/magicui/particles";
 import { SphereMask } from "@/components/magicui/sphere-mask";
 import PoweringIntelliq from "@/components/landing/powering-intelliq";
 import MembersSection from "@/components/landing/members-section";
+import VisualEnhance from "@/components/landing/visual-section"
+
 export default async function Page() {
   return (
     <>
       <HeroSection />
+      <VisualEnhance />
+
       <PoweringIntelliq />
       <MembersSection />
-
       <SphereMask />
       {/* <CallToActionSection /> */}
       <Particles

@@ -28,7 +28,7 @@ export default function MembersSection() {
 
   return (
     <section className="relative py-32 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-black/[0.02] to-transparent dark:from-white/[0.02] pointer-events-none" />
+      <div className="absolute inset-0  from-black/[0.02] to-transparent dark:from-white/[0.02] pointer-events-none" />
       <div className="absolute inset-0 bg-grid-white/[0.02] bg-[length:20px_20px] pointer-events-none" />
       
       <div ref={ref} className="relative mx-auto max-w-7xl px-6 lg:px-8">
