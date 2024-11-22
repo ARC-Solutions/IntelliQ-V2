@@ -44,7 +44,7 @@ export default function Hero() {
               </Button>
             </Link>
 
-            <a href="/login">
+            <a href="https://app.intelliq.dev">
               <Button className="h-12 px-5">Get Started</Button>
             </a>
           </div>
