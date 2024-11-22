@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Controller } from 'react-hook-form';
-
+import Lottie from 'lottie-react';
+import Loading from '../../../public/Loading.json';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -46,7 +47,11 @@ export default function QuizCreator() {
     redirect('/single-player/quiz/play');
   }
   if (isLoading) {
-    return <p>LOading</p>;
+    return (
+      <div className='absolute left-1/2 top-1/2 flex w-[40] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[30vw]'>
+        <Lottie animationData={Loading} />
+      </div>
+    );
   }
 
   return (
