@@ -11,12 +11,12 @@ export default function MembersSection() {
   const members = [
     {
       name: 'Ricky Raveanu',
-      image: './rickyPFP.png',
+      image: './ricky.jpg',
       skills: ['Lead DevOps', 'DB Admin', 'Lead Backend Developer'],
     },
     {
       name: 'Nippon Lama',
-      image: './nipponPFP.png',
+      image: './nippon.jpg',
       skills: ['Product Owner', 'UI/UX Designer', 'Lead Front End Developer',],
     },
     {
