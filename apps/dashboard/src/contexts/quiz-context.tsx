@@ -178,7 +178,7 @@ export const QuizProvider = ({ children }: Props) => {
         data: { session },
       } = await supabase.auth.getSession();
       const accessToken = session?.access_token;
-      const URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/quiz`;
+      const URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/quiz`
       dispatch({ type: 'FETCH_QUIZ_REQUEST' });
       const url = `${URL}?numberOfQuestions=${numberOfQuestions}&interests=${interests}`;
       const response = await fetch(url, {
