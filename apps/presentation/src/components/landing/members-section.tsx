@@ -12,7 +12,7 @@ export default function MembersSection() {
     {
       name: 'Ricky Raveanu',
       image: './ricky.jpg',
-      skills: ['Lead DevOps', 'DB Admin', 'Lead Backend Developer'],
+      skills: ['Lead DevOps', 'Database Admin', 'Lead Backend Developer'],
     },
     {
       name: 'Nippon Lama',
