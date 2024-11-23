@@ -70,7 +70,7 @@ export default function RootLayout({
   return (
     <html lang='en' suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased debug-screens overflow-x-hidden`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased ${process.env.NODE_ENV === 'development' ? 'debug-screens' : ''} overflow-x-hidden`}
       >
         <ThemeProvider
           attribute='class'
