@@ -23,10 +23,14 @@ import { LastUsed, useLastUsed } from './last-used';
 import VerifyOTPForm from './verify-otp-form';
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-const formSchema = z.object({
+const signUpSchema = z.object({
   email: z.string().email(),
   firstName: z.string().min(3, { message: 'First name must be at least 3 characters' }),
   lastName: z.string().min(3, { message: 'Last name must be at least 3 characters' }),
+});
+
+const signInSchema = z.object({
+  email: z.string().email(),
 });
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
@@ -57,8 +61,8 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     }
   };
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof signUpSchema> | z.infer<typeof signInSchema>>({
+    resolver: zodResolver(isNewUser ? signUpSchema : signInSchema),
     defaultValues: {
       email: '',
       firstName: '',
@@ -66,7 +70,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     },
   });
 
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = async (values: z.infer<typeof signUpSchema> | z.infer<typeof signInSchema>) => {
     try {
       setIsLoading(true);
       setLastUsed('email');
