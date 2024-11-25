@@ -21,8 +21,6 @@ interface AuthContextValue {
   signinUsingOAuth: () => void;
   signout: () => void;
   signInWithOTP: (userInput: UserInput, isNewUser: boolean) => void;
-  isOTPVerified: boolean;
-  verifyOTP: (otp: string, email: string) => void;
   otpSent: boolean;
   isLoading: boolean;
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
@@ -31,31 +29,35 @@ interface AuthContextValue {
   getUserInfo: () => void;
 }
 
-interface UserInput {
+interface SignUpInput {
   email: string;
   firstName: string;
   lastName: string;
 }
 
+interface SignInInput {
+  email: string;
+}
+
+type UserInput = SignUpInput | SignInInput;
+
 const AuthContext = createContext<AuthContextValue | null>(null);
 export const AuthProvider = ({ children }: Props) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isNewUser, setIsNewUser] = useState<boolean>(true);
-  const [isOTPVerified, setIsOTPVerified] = useState<boolean>(false);
   const [otpSent, setOtpSent] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { supabase } = useSupabase();
   const router = useRouter();
 
   const signInWithOTP = async (userInput: UserInput, isNewUser: boolean) => {
-    setIsOTPVerified(false);
     setOtpSent(false);
     try {
       console.log(userInput.email);
       console.log(isNewUser);
       const options = {
         shouldCreateUser: isNewUser,
-        ...(isNewUser
+        ...(isNewUser && 'firstName' in userInput
           ? {
               data: {
                 email: userInput.email,
@@ -71,16 +73,16 @@ export const AuthProvider = ({ children }: Props) => {
       });
       if (error) {
         toast({
-          title: 'Error',
+          title: "Error",
           description: error.message,
-          variant: 'destructive',
+          variant: "destructive",
         });
         setIsLoading(false);
         return;
       }
       toast({
-        title: 'OTP sent to email',
-        description: 'Please check your email for the OTP',
+        title: "OTP sent to email",
+        description: "Please check your email for the OTP",
       });
       setOtpSent(true);
     } catch (error) {
@@ -88,45 +90,20 @@ export const AuthProvider = ({ children }: Props) => {
     }
   };
 
-  const verifyOTP = async (otp: string, email: string) => {
-    try {
-      const { data, error } = await supabase.auth.verifyOtp({
-        email,
-        token: otp,
-        type: 'email',
-      });
-
-      if (error) {
-        toast({
-          title: 'Error',
-          description: error.message,
-          variant: 'destructive',
-        });
-        setIsOTPVerified(false);
-        return;
-      }
-      setIsOTPVerified(true);
-      router.refresh();
-    } catch (error) {
-      console.log(error);
-      setIsOTPVerified(false);
-    }
-  };
-
   const signinUsingOAuth = async () => {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
+        provider: "google",
         options: {
-          redirectTo: 'http://localhost:3000/dashboard',
+          redirectTo: "http://localhost:3000/dashboard",
         },
       });
 
       if (error) {
         toast({
-          title: 'Error',
+          title: "Error",
           description: error.message,
-          variant: 'destructive',
+          variant: "destructive",
         });
         return;
       }
@@ -138,12 +115,13 @@ export const AuthProvider = ({ children }: Props) => {
   const signout = async () => {
     try {
       await supabase.auth.signOut();
-      setCurrentUser(null);
+      setOtpSent(false);
+      setIsLoading(false);
       toast({
-        title: 'User signed out',
-        description: 'You have been signed out',
+        title: "User signed out",
+        description: "You have been signed out",
       });
-      router.push('/login');
+      router.push("/login");
     } catch (error) {
       console.log(error);
     }
@@ -158,9 +136,9 @@ export const AuthProvider = ({ children }: Props) => {
     }
     if (error) {
       toast({
-        title: 'Error',
+        title: "Error",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     }
     const user = session?.user;
@@ -183,8 +161,6 @@ export const AuthProvider = ({ children }: Props) => {
     signinUsingOAuth,
     signout,
     signInWithOTP,
-    isOTPVerified,
-    verifyOTP,
     otpSent,
     isLoading,
     setIsLoading,
