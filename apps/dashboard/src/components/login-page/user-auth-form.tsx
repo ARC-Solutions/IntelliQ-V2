@@ -43,7 +43,6 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const {
     signInWithOTP,
     signinUsingOAuth,
-    isOTPVerified,
     otpSent,
     isLoading,
     setIsLoading,
@@ -74,14 +73,12 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     try {
       setIsLoading(true);
       setLastUsed('email');
-      signInWithOTP(
-        {
-          email: values.email,
-          firstName: values.firstName,
-          lastName: values.lastName,
-        },
-        isNewUser,
-      );
+      
+      if (isNewUser) {
+        signInWithOTP(values as z.infer<typeof signUpSchema>, isNewUser);
+      } else {
+        signInWithOTP({ email: values.email }, isNewUser);
+      }
     } catch (err) {
       console.error(err);
       setIsLoading(false);
