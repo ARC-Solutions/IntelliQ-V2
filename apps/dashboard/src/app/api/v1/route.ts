@@ -1,6 +1,6 @@
 import { db } from "@/db/index";
 import { NextResponse } from "next/server";
-import { users } from "../../../../drizzle/schema";
+import { users } from "@/../drizzle/schema";
 
 export const GET = async () => {
   const result = await db
