@@ -3,7 +3,7 @@ import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { quizGenerationRequestSchema, quizSchema } from "@/app/api/v1/schemas";
 import { generateQuizPrompt } from "@/app/api/v1/prompts";
-import { createClient } from "../../../../../lib/supabase/supabase-server-side";
+import { createClient } from "@/lib/supabase/supabase-server-side";
 
 export const GET = async (request: NextRequest) => {
   try {
@@ -11,6 +11,7 @@ export const GET = async (request: NextRequest) => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
+
     const { searchParams } = request.nextUrl;
     const result = quizGenerationRequestSchema.safeParse({
       quizTopic: searchParams.get("quizTopic"),
