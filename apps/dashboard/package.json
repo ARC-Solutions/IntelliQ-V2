@@ -10,6 +10,7 @@
     "db-introspect": "npx drizzle-kit pull"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^1.0.5",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-avatar": "^1.1.1",
     "@radix-ui/react-collapsible": "^1.1.1",
@@ -32,6 +33,7 @@
     "@supabase/ssr": "^0.5.1",
     "@supabase/supabase-js": "^2.45.4",
     "@tabler/icons-react": "^3.20.0",
+    "ai": "^4.0.7",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "dotenv": "^16.4.5",
