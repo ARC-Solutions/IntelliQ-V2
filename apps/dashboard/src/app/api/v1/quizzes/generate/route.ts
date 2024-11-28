@@ -13,6 +13,7 @@ import { userUsageData } from "@drizzle/schema";
 import { createTranslateClient, translateQuiz } from "./utils/translator";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { generateQuiz } from "./services/quiz-generator.service";
 
 const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
@@ -27,6 +28,7 @@ export const GET = async (request: NextRequest) => {
       data: { user },
     } = await supabase.auth.getUser();
 
+    // Rate limiting
     const { success } = await ratelimit.limit(user?.id!);
 
     if (!success) {
@@ -64,35 +66,22 @@ export const GET = async (request: NextRequest) => {
       language,
     } = result.data;
 
-    // Generate quiz
-    const GPT_MODEL = process.env.GPT_MODEL;
-    const startTime = process.hrtime();
-    const generatedQuiz = await generateObject({
-      model: openai(GPT_MODEL!, {
-        structuredOutputs: true,
-      }),
-      schemaName: "quizzes",
-      schemaDescription: "A quiz.",
-      schema: quizSchema,
-      prompt: generateQuizPrompt(
-        quizTopic,
-        quizDescription,
-        numberOfQuestions,
-        quizTags
-      ),
-      maxTokens: 1024,
-    });
-    const endTime = process.hrtime(startTime);
-    const durationInSeconds = endTime[0] + endTime[1] / 1e9;
+    // Generate quiz using service
+    const { quiz, metrics } = await generateQuiz(
+      quizTopic,
+      quizDescription,
+      numberOfQuestions,
+      quizTags!
+    );
 
     // Log usage
     const usage = await db.insert(userUsageData).values({
       userId: user?.id!,
-      promptTokens: generatedQuiz.usage.promptTokens,
-      completionTokens: generatedQuiz.usage.completionTokens,
-      totalTokens: generatedQuiz.usage.totalTokens,
-      responseTimeTaken: durationInSeconds,
-      usedModel: GPT_MODEL!,
+      promptTokens: metrics.usage.promptTokens,
+      completionTokens: metrics.usage.completionTokens,
+      totalTokens: metrics.usage.totalTokens,
+      responseTimeTaken: metrics.durationInSeconds,
+      usedModel: process.env.GPT_MODEL!,
       countQuestions: numberOfQuestions,
       prompt: generateQuizPrompt(
         quizTopic,
@@ -107,7 +96,7 @@ export const GET = async (request: NextRequest) => {
     if (result.data.language !== supportedLanguages.Enum.en) {
       const translateClient = createTranslateClient();
       const translatedQuiz = await translateQuiz(
-        generatedQuiz.object,
+        quiz,
         language,
         translateClient
       );
@@ -115,7 +104,7 @@ export const GET = async (request: NextRequest) => {
     }
 
     return NextResponse.json({
-      rawQuestions: generatedQuiz.object,
+      rawQuestions: quiz,
     });
   } catch (error) {
     console.error("Error generating quiz:", error);

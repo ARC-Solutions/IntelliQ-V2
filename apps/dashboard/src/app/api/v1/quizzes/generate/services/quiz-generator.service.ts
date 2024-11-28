@@ -1,0 +1,53 @@
+import { openai } from "@ai-sdk/openai";
+import { generateObject } from "ai";
+import { quizSchema } from "@/app/api/v1/schemas";
+import { generateQuizPrompt } from "@/app/api/v1/prompts";
+
+export interface QuizGenerationResult {
+  quiz: any; // Replace 'any' with your actual quiz type
+  metrics: {
+    durationInSeconds: number;
+    usage: {
+      promptTokens: number;
+      completionTokens: number;
+      totalTokens: number;
+    };
+  };
+}
+
+export async function generateQuiz(
+  quizTopic: string,
+  quizDescription: string,
+  numberOfQuestions: number,
+  quizTags: string[]
+): Promise<QuizGenerationResult> {
+  const GPT_MODEL = process.env.GPT_MODEL;
+  const startTime = process.hrtime();
+
+  const generatedQuiz = await generateObject({
+    model: openai(GPT_MODEL!, {
+      structuredOutputs: true,
+    }),
+    schemaName: "quizzes",
+    schemaDescription: "A quiz.",
+    schema: quizSchema,
+    prompt: generateQuizPrompt(
+      quizTopic,
+      quizDescription,
+      numberOfQuestions,
+      quizTags
+    ),
+    maxTokens: 1024,
+  });
+
+  const endTime = process.hrtime(startTime);
+  const durationInSeconds = endTime[0] + endTime[1] / 1e9;
+
+  return {
+    quiz: generatedQuiz.object,
+    metrics: {
+      durationInSeconds,
+      usage: generatedQuiz.usage,
+    },
+  };
+} 
