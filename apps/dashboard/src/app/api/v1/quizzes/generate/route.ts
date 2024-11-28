@@ -4,6 +4,8 @@ import { generateObject } from "ai";
 import { quizGenerationRequestSchema, quizSchema } from "@/app/api/v1/schemas";
 import { generateQuizPrompt } from "@/app/api/v1/prompts";
 import { createClient } from "@/lib/supabase/supabase-server-side";
+import { db } from "@/db";
+import { userUsageData } from "@drizzle/schema";
 
 export const GET = async (request: NextRequest) => {
   try {
@@ -11,6 +13,8 @@ export const GET = async (request: NextRequest) => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
+
+    const GPT_MODEL = process.env.GPT_MODEL;
 
     const { searchParams } = request.nextUrl;
     const result = quizGenerationRequestSchema.safeParse({
@@ -35,7 +39,7 @@ export const GET = async (request: NextRequest) => {
 
     const startTime = process.hrtime();
     const generatedQuiz = await generateObject({
-      model: openai("gpt-4o-mini", {
+      model: openai(GPT_MODEL!, {
         structuredOutputs: true,
       }),
       schemaName: "quizzes",
@@ -47,14 +51,24 @@ export const GET = async (request: NextRequest) => {
         numberOfQuestions,
         quizTags
       ),
+      maxTokens: 1024,
     });
     const endTime = process.hrtime(startTime);
     const durationInSeconds = endTime[0] + endTime[1] / 1e9;
 
+    const usage = await db.insert(userUsageData).values({
+      userId: user?.id!,
+      promptTokens: generatedQuiz.usage.promptTokens,
+      completionTokens: generatedQuiz.usage.completionTokens,
+      totalTokens: generatedQuiz.usage.totalTokens,
+      responseTimeTaken: durationInSeconds,
+      usedModel: GPT_MODEL!,
+      countQuestions: numberOfQuestions,
+    });
+
     return NextResponse.json({
       rawQuestions: generatedQuiz.object,
-      durationInSeconds,
-    });
+      });
   } catch (error) {
     console.error("Error generating quiz:", error);
     return NextResponse.json(
