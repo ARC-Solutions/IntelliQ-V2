@@ -2,9 +2,13 @@ import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { quizSchema } from "@/app/api/v1/schemas";
 import { generateQuizPrompt } from "@/app/api/v1/prompts";
+import { z } from "zod";
+
+// Use the quiz schema to infer the type
+type Quiz = z.infer<typeof quizSchema>;
 
 export interface QuizGenerationResult {
-  quiz: any; // Replace 'any' with your actual quiz type
+  quiz: Quiz;
   metrics: {
     durationInSeconds: number;
     usage: {
