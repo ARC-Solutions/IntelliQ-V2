@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { users, documents, quizzes, questions, userUsageData, userResponses, rooms, bookmarks } from "./schema";
+import { users, documents, quizzes, questions, userResponses, rooms, bookmarks, userUsageData } from "./schema";
 
 export const documentsRelations = relations(documents, ({one}) => ({
 	user: one(users, {
@@ -11,10 +11,10 @@ export const documentsRelations = relations(documents, ({one}) => ({
 export const usersRelations = relations(users, ({many}) => ({
 	documents: many(documents),
 	quizzes: many(quizzes),
-	userUsageData: many(userUsageData),
 	userResponses: many(userResponses),
 	rooms: many(rooms),
 	bookmarks: many(bookmarks),
+	userUsageData: many(userUsageData),
 }));
 
 export const quizzesRelations = relations(quizzes, ({one, many}) => ({
@@ -34,13 +34,6 @@ export const questionsRelations = relations(questions, ({one, many}) => ({
 		references: [quizzes.id]
 	}),
 	userResponses: many(userResponses),
-}));
-
-export const userUsageDataRelations = relations(userUsageData, ({one}) => ({
-	user: one(users, {
-		fields: [userUsageData.userId],
-		references: [users.id]
-	}),
 }));
 
 export const userResponsesRelations = relations(userResponses, ({one}) => ({
@@ -81,6 +74,13 @@ export const bookmarksRelations = relations(bookmarks, ({one}) => ({
 	}),
 	user: one(users, {
 		fields: [bookmarks.userId],
+		references: [users.id]
+	}),
+}));
+
+export const userUsageDataRelations = relations(userUsageData, ({one}) => ({
+	user: one(users, {
+		fields: [userUsageData.userId],
 		references: [users.id]
 	}),
 }));
