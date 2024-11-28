@@ -1,4 +1,4 @@
-import { pgTable, foreignKey, pgPolicy, bigint, uuid, text, jsonb, vector, timestamp, smallint, boolean, unique, integer, real, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, foreignKey, pgPolicy, bigint, uuid, text, jsonb, vector, timestamp, smallint, integer, real, boolean, unique, pgEnum } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const quizType = pgEnum("quiz_type", ['singleplayer', 'multiplayer', 'document', 'random'])
@@ -78,6 +78,28 @@ export const users = pgTable("users", {
 }, (table) => {
 	return {
 		usersCanUpdateOwnProfile: pgPolicy("Users can update own profile", { as: "permissive", for: "update", to: ["authenticated"], using: sql`(auth.uid() = id)` }),
+	}
+});
+
+export const userUsageData = pgTable("user_usage_data", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	userId: uuid("user_id").notNull(),
+	promptTokens: integer("prompt_tokens").notNull(),
+	completionTokens: integer("completion_tokens").notNull(),
+	totalTokens: integer("total_tokens").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	usedModel: text("used_model").notNull(),
+	countQuestions: integer("count_Questions").notNull(),
+	responseTimeTaken: real("response_time_taken").notNull(),
+	prompt: text().notNull(),
+	language: text().notNull(),
+}, (table) => {
+	return {
+		userUsageDataUserIdFkey: foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "user_usage_data_user_id_fkey"
+		}).onUpdate("cascade").onDelete("cascade"),
 	}
 });
 
@@ -167,26 +189,5 @@ export const bookmarks = pgTable("bookmarks", {
 		usersCanViewTheirOwnBookmarks: pgPolicy("Users can view their own bookmarks", { as: "permissive", for: "select", to: ["authenticated"], using: sql`(auth.uid() = user_id)` }),
 		usersCanManageTheirOwnBookmarks: pgPolicy("Users can manage their own bookmarks", { as: "permissive", for: "insert", to: ["authenticated"] }),
 		usersCanDeleteTheirOwnBookmarks: pgPolicy("Users can delete their own bookmarks", { as: "permissive", for: "delete", to: ["authenticated"] }),
-	}
-});
-
-export const userUsageData = pgTable("user_usage_data", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	userId: uuid("user_id").notNull(),
-	promptTokens: integer("prompt_tokens").notNull(),
-	completionTokens: integer("completion_tokens").notNull(),
-	totalTokens: integer("total_tokens").notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	usedModel: text("used_model").notNull(),
-	countQuestions: integer("count_Questions").notNull(),
-	responseTimeTaken: real("response_time_taken").notNull(),
-	prompt: text().notNull(),
-}, (table) => {
-	return {
-		userUsageDataUserIdFkey: foreignKey({
-			columns: [table.userId],
-			foreignColumns: [users.id],
-			name: "user_usage_data_user_id_fkey"
-		}).onUpdate("cascade").onDelete("cascade"),
 	}
 });
