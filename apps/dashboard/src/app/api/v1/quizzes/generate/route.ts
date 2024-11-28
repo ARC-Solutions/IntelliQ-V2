@@ -28,7 +28,8 @@ export const GET = async (request: NextRequest) => {
       numberOfQuestions: searchParams.get("numberOfQuestions"),
       quizTags: searchParams.get("quizTags"),
       language:
-        searchParams.get("language") || supportedLanguages.Enum.en,
+        searchParams.get("language")?.toLowerCase() ||
+        supportedLanguages.Enum.en,
     });
 
     if (!result.success) {
