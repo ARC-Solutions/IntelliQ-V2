@@ -94,7 +94,7 @@ export const GET = async (request: NextRequest) => {
       const translateClient = createTranslateClient();
       const translatedQuiz = await translateQuiz(
         generatedQuiz.object,
-        result.data.language,
+        language,
         translateClient
       );
       return NextResponse.json({ rawQuestions: translatedQuiz });
