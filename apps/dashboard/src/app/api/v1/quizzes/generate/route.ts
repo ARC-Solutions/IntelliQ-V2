@@ -1,27 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
-import { quizGenerationRequestSchema, quizSchema } from "@/app/api/v1/schemas";
+import {
+  quizGenerationRequestSchema,
+  quizSchema,
+  supportedLanguages,
+} from "@/app/api/v1/schemas";
 import { generateQuizPrompt } from "@/app/api/v1/prompts";
 import { createClient } from "@/lib/supabase/supabase-server-side";
 import { db } from "@/db";
 import { userUsageData } from "@drizzle/schema";
+import { createTranslateClient, translateQuiz } from "./utils/translator";
 
 export const GET = async (request: NextRequest) => {
   try {
+    // Get user
     const supabase = createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const GPT_MODEL = process.env.GPT_MODEL;
-
+    // Validate request
     const { searchParams } = request.nextUrl;
     const result = quizGenerationRequestSchema.safeParse({
       quizTopic: searchParams.get("quizTopic"),
       quizDescription: searchParams.get("quizDescription"),
       numberOfQuestions: searchParams.get("numberOfQuestions"),
       quizTags: searchParams.get("quizTags"),
+      language: searchParams.get("language"),
     });
 
     if (!result.success) {
@@ -34,9 +40,16 @@ export const GET = async (request: NextRequest) => {
       );
     }
 
-    const { quizTopic, quizDescription, numberOfQuestions, quizTags } =
-      result.data;
+    const {
+      quizTopic,
+      quizDescription,
+      numberOfQuestions,
+      quizTags,
+      language,
+    } = result.data;
 
+    // Generate quiz
+    const GPT_MODEL = process.env.GPT_MODEL;
     const startTime = process.hrtime();
     const generatedQuiz = await generateObject({
       model: openai(GPT_MODEL!, {
@@ -56,6 +69,7 @@ export const GET = async (request: NextRequest) => {
     const endTime = process.hrtime(startTime);
     const durationInSeconds = endTime[0] + endTime[1] / 1e9;
 
+    // Log usage
     const usage = await db.insert(userUsageData).values({
       userId: user?.id!,
       promptTokens: generatedQuiz.usage.promptTokens,
@@ -70,7 +84,19 @@ export const GET = async (request: NextRequest) => {
         numberOfQuestions,
         quizTags
       ),
+      language: result.data.language,
     });
+
+    // Translate if needed
+    if (result.data.language !== supportedLanguages.Enum.en) {
+      const translateClient = createTranslateClient();
+      const translatedQuiz = await translateQuiz(
+        generatedQuiz.object,
+        result.data.language,
+        translateClient
+      );
+      return NextResponse.json({ rawQuestions: translatedQuiz });
+    }
 
     return NextResponse.json({
       rawQuestions: generatedQuiz.object,
