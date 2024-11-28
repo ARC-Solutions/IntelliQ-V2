@@ -28,5 +28,5 @@ export const quizGenerationRequestSchema = z.object({
     .transform((tags) =>
       tags ? tags.split(",").map((tag) => tag.trim()) : undefined
     ),
-  language: supportedLanguages.default("en"),
+  language: supportedLanguages.default(supportedLanguages.Enum.en),
 });

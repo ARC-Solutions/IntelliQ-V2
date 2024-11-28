@@ -27,7 +27,8 @@ export const GET = async (request: NextRequest) => {
       quizDescription: searchParams.get("quizDescription"),
       numberOfQuestions: searchParams.get("numberOfQuestions"),
       quizTags: searchParams.get("quizTags"),
-      language: searchParams.get("language"),
+      language:
+        searchParams.get("language") || supportedLanguages.Enum.en,
     });
 
     if (!result.success) {
