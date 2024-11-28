@@ -64,11 +64,17 @@ export const GET = async (request: NextRequest) => {
       responseTimeTaken: durationInSeconds,
       usedModel: GPT_MODEL!,
       countQuestions: numberOfQuestions,
+      prompt: generateQuizPrompt(
+        quizTopic,
+        quizDescription,
+        numberOfQuestions,
+        quizTags
+      ),
     });
 
     return NextResponse.json({
       rawQuestions: generatedQuiz.object,
-      });
+    });
   } catch (error) {
     console.error("Error generating quiz:", error);
     return NextResponse.json(
