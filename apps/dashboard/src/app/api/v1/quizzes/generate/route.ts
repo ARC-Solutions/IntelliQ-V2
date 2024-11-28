@@ -11,6 +11,13 @@ import { createClient } from "@/lib/supabase/supabase-server-side";
 import { db } from "@/db";
 import { userUsageData } from "@drizzle/schema";
 import { createTranslateClient, translateQuiz } from "./utils/translator";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(2, "30 s"),
+});
 
 export const GET = async (request: NextRequest) => {
   try {
@@ -19,6 +26,13 @@ export const GET = async (request: NextRequest) => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
+
+    const { success } = await ratelimit.limit(user?.id!);
+
+    if (!success) {
+      console.log("Unable to process at this time");
+      return NextResponse.json({ error: "Quota exceeded" }, { status: 429 });
+    }
 
     // Validate request
     const { searchParams } = request.nextUrl;
