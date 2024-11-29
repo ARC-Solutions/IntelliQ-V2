@@ -1,16 +1,16 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
+    "title": "IntelliQ API",
+    "description": "API documentation for IntelliQ Dashboard",
     "license": {
-      "name": "MIT"
+      "name": "AGPL-3.0"
     },
     "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "/api/v1"
     }
   ],
   "security": [
@@ -19,29 +19,146 @@
     }
   ],
   "paths": {
-    "/plants": {
+    "/quizzes/generate": {
       "get": {
-        "description": "Returns all plants from the system that the user has access to",
+        "description": "Generates a new quiz based on provided parameters",
         "parameters": [
           {
-            "name": "limit",
+            "name": "quizTopic",
             "in": "query",
-            "description": "The maximum number of results to return",
+            "description": "The main topic of the quiz",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Formula One"
+          },
+          {
+            "name": "quizDescription",
+            "in": "query",
+            "description": "A brief description of the quiz content",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Hungarian Grand Prix 2024"
+          },
+          {
+            "name": "numberOfQuestions",
+            "in": "query",
+            "description": "The number of questions to include in the quiz",
+            "required": true,
             "schema": {
               "type": "integer",
-              "format": "int32"
-            }
+              "minimum": 1,
+              "maximum": 10
+            },
+            "example": 14
+          },
+          {
+            "name": "quizTags",
+            "in": "query",
+            "description": "The tags to include in the quiz",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "example": ["Formula One", "2024", "Hungarian Grand Prix"]
+          },
+          {
+            "name": "language",
+            "in": "query",
+            "description": "The language to generate the quiz in (ISO 639-1 code)",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["en", "de", "es", "fr"],
+              "default": "en"
+            },
+            "example": "de"
           }
         ],
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "Generated quiz response",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
+                  "type": "object",
+                  "properties": {
+                    "rawQuestions": {
+                      "type": "object",
+                      "properties": {
+                        "quizTitle": {
+                          "type": "string",
+                          "description": "The title of the quiz",
+                          "example": "GP Ungarn 2024"
+                        },
+                        "questions": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "questionTitle": {
+                                "type": "string",
+                                "description": "The title/category of the question",
+                                "example": "Das Erbe der Rennstrecke"
+                              },
+                              "text": {
+                                "type": "string",
+                                "description": "The actual question text",
+                                "example": "Wie heißt die Rennstrecke, auf der der Große Preis von Ungarn stattfindet?"
+                              },
+                              "options": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "description": "List of possible answers with letter prefixes",
+                                "example": [
+                                  "a) Circuit de Barcelona-Catalunya",
+                                  "b) Hungaroring",
+                                  "c) Silverstone Circuit",
+                                  "d) Rennstrecke von Monza"
+                                ]
+                              },
+                              "correctAnswer": {
+                                "type": "string",
+                                "description": "The correct answer with letter prefix",
+                                "example": "b) Hungaroring"
+                              }
+                            },
+                            "required": [
+                              "questionTitle",
+                              "text",
+                              "options",
+                              "correctAnswer"
+                            ]
+                          }
+                        }
+                      },
+                      "required": ["quizTitle", "questions"]
+                    }
+                  },
+                  "required": ["rawQuestions"]
+                },
+                "example": {
+                  "rawQuestions": {
+                    "quizTitle": "GP Ungarn 2024",
+                    "questions": [
+                      {
+                        "questionTitle": "Das Erbe der Rennstrecke",
+                        "text": "Wie heißt die Rennstrecke, auf der der Große Preis von Ungarn stattfindet?",
+                        "options": [
+                          "a) Circuit de Barcelona-Catalunya",
+                          "b) Hungaroring",
+                          "c) Silverstone Circuit",
+                          "d) Rennstrecke von Monza"
+                        ],
+                        "correctAnswer": "b) Hungaroring"
+                      }
+                    ]
                   }
                 }
               }
@@ -58,122 +175,25 @@
             }
           }
         }
-      },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Plant"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
       }
     }
   },
   "components": {
     "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
+      "User": {
         "type": "object",
+        "required": ["email"],
         "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User's email address"
           }
         }
       },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
-          }
-        ]
-      },
       "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
         "type": "object",
+        "required": ["error", "message"],
         "properties": {
           "error": {
             "type": "integer",
@@ -188,7 +208,8 @@
     "securitySchemes": {
       "bearerAuth": {
         "type": "http",
-        "scheme": "bearer"
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
       }
     }
   }
