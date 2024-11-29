@@ -10,7 +10,12 @@
   },
   "servers": [
     {
-      "url": "/api/v1"
+      "url": "http://localhost:3000/api/v1",
+      "description": "Local development server"
+    },
+    {
+      "url": "https://app.intelliq.dev/api/v1",
+      "description": "Production server"
     }
   ],
   "security": [
@@ -21,6 +26,8 @@
   "paths": {
     "/quizzes/generate": {
       "get": {
+        "tags": ["Quiz Generation"],
+        "summary": "Generate a new quiz",
         "description": "Generates a new quiz based on provided parameters",
         "parameters": [
           {
@@ -169,7 +176,17 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "object",
+                  "required": ["error", "message"],
+                  "properties": {
+                    "error": {
+                      "type": "integer",
+                      "format": "int32"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
                 }
               }
             }
@@ -179,32 +196,6 @@
     }
   },
   "components": {
-    "schemas": {
-      "User": {
-        "type": "object",
-        "required": ["email"],
-        "properties": {
-          "email": {
-            "type": "string",
-            "format": "email",
-            "description": "User's email address"
-          }
-        }
-      },
-      "Error": {
-        "type": "object",
-        "required": ["error", "message"],
-        "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
-          }
-        }
-      }
-    },
     "securitySchemes": {
       "bearerAuth": {
         "type": "http",
