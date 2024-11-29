@@ -18,8 +18,12 @@ export const POST = async (request: NextRequest) => {
       return NextResponse.json({ errors: error.errors }, { status: 400 });
     }
 
+    console.error('Login error:', error);
     return NextResponse.json(
-      { message: "Internal server error" },
+      { 
+        message: 'An unexpected error occurred',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
