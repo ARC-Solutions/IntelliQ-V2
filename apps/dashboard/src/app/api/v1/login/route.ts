@@ -19,14 +19,17 @@ export const POST = async (request: NextRequest) => {
     return NextResponse.json({ message: "User logged in successfully" });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ errors: error.errors }, { status: 400 });
+      return NextResponse.json(
+        { errors: error instanceof Error ? error.message : "Unknown error" },
+        { status: 400 }
+      );
     }
 
-    console.error('Login error:', error);
+    console.error("Login error:", error);
     return NextResponse.json(
-      { 
-        message: 'An unexpected error occurred',
-        error: error instanceof Error ? error.message : 'Unknown error'
+      {
+        message: "An unexpected error occurred",
+        error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );
