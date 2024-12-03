@@ -1,21 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
-import { openai } from "@ai-sdk/openai";
-import { generateObject } from "ai";
+import { generateQuizPrompt } from "@/app/api/v1/prompts";
 import {
   quizGenerationRequestSchema,
-  quizSchema,
-  supportedLanguages,
+  supportedLanguages
 } from "@/app/api/v1/schemas";
-import { generateQuizPrompt } from "@/app/api/v1/prompts";
-import { createClient } from "@/lib/supabase/supabase-server-side";
 import { db } from "@/db";
+import { createClient } from "@/lib/supabase/supabase-server-side";
 import { userUsageData } from "@drizzle/schema";
-import { createTranslateClient, translateQuiz } from "./utils/translator";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { NextRequest, NextResponse } from "next/server";
 import { generateQuiz } from "./services/quiz-generator.service";
-
-export const dynamic = "force-dynamic";
+import { createTranslateClient, translateQuiz } from "./utils/translator";
 
 const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
