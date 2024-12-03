@@ -1,7 +1,7 @@
 import { generateQuizPrompt } from "@/app/api/v1/prompts";
 import {
   quizGenerationRequestSchema,
-  supportedLanguages
+  supportedLanguages,
 } from "@/app/api/v1/schemas";
 import { db } from "@/db";
 import { createClient } from "@/lib/supabase/supabase-server-side";
@@ -17,6 +17,7 @@ import { createTranslateClient, translateQuiz } from "./utils/translator";
 //   limiter: Ratelimit.slidingWindow(2, "30 s"),
 // });
 
+export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
 export const GET = async (request: NextRequest) => {
