@@ -17,10 +17,6 @@ import { createTranslateClient, translateQuiz } from "./utils/translator";
 //   limiter: Ratelimit.slidingWindow(2, "30 s"),
 // });
 
-export const dynamic = "force-dynamic";
-export const fetchCache = "force-no-store";
-export const revalidate = 0;
-
 export const GET = async (request: NextRequest) => {
   try {
     // Get user
