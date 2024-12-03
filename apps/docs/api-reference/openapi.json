@@ -29,6 +29,7 @@
         "tags": ["Authentication"],
         "summary": "User Login",
         "description": "Authenticate a user with email and password",
+        "security": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -115,6 +116,11 @@
         "tags": ["Quiz Generation"],
         "summary": "Generate a new quiz",
         "description": "Generates a new quiz based on provided parameters",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "quizTopic",
