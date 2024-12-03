@@ -109,7 +109,10 @@ export const GET = async (request: NextRequest) => {
   } catch (error) {
     console.error("Error generating quiz:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        message: "An unexpected error occurred",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }
