@@ -13,6 +13,7 @@ import { generateQuiz } from "./services/quiz-generator.service";
 import { createTranslateClient, translateQuiz } from "./utils/translator";
 
 export const dynamic = "force-dynamic";
+export const runtime = 'nodejs';
 
 const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
