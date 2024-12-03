@@ -12,13 +12,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateQuiz } from "./services/quiz-generator.service";
 import { createTranslateClient, translateQuiz } from "./utils/translator";
 
-export const dynamic = "force-dynamic";
-export const runtime = 'nodejs';
+// const ratelimit = new Ratelimit({
+//   redis: Redis.fromEnv(),
+//   limiter: Ratelimit.slidingWindow(2, "30 s"),
+// });
 
-const ratelimit = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(2, "30 s"),
-});
+export const dynamic = "force-dynamic";
 
 export const GET = async (request: NextRequest) => {
   try {
@@ -29,12 +28,12 @@ export const GET = async (request: NextRequest) => {
     } = await supabase.auth.getUser();
 
     // Rate limiting
-    const { success } = await ratelimit.limit(user?.id!);
+    // const { success } = await ratelimit.limit(user?.id!);
 
-    if (!success) {
-      console.log("Unable to process at this time");
-      return NextResponse.json({ error: "Quota exceeded" }, { status: 429 });
-    }
+    // if (!success) {
+    //   console.log("Unable to process at this time");
+    //   return NextResponse.json({ error: "Quota exceeded" }, { status: 429 });
+    // }
 
     // Validate request
     const { searchParams } = request.nextUrl;
