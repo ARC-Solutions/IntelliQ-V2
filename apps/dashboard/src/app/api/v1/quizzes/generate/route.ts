@@ -17,7 +17,7 @@ import { createTranslateClient, translateQuiz } from "./utils/translator";
 //   limiter: Ratelimit.slidingWindow(2, "30 s"),
 // });
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export const GET = async (request: NextRequest) => {
