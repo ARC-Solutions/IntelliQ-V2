@@ -33,7 +33,7 @@ export async function updateSession(request: NextRequest) {
 
   // allow access to login API endpoint without authentication 
   // TODO: ACTUALLY TAKE CARE OF THE ENDPOINTS
-  if (request.nextUrl.pathname === '/api') {
+  if (request.nextUrl.pathname === '/api/v1') {
     return supabaseResponse;
   }
 
