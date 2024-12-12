@@ -73,7 +73,7 @@ export const GET = async (request: NextRequest) => {
       quizTags!
     );
 
-    const mockUserId = "0423cd51-27aa-4749-9318-b8e98f10bbda";
+    const mockUserId = "15bad7bc-8e09-48d8-aa43-4018a7e9d104";
     // Log usage
     const usage = await db.insert(userUsageData).values({
       userId: mockUserId,
