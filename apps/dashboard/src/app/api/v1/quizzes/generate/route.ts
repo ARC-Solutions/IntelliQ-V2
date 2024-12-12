@@ -12,10 +12,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateQuiz } from "./services/quiz-generator.service";
 import { createTranslateClient, translateQuiz } from "./utils/translator";
 
-// const ratelimit = new Ratelimit({
-//   redis: Redis.fromEnv(),
-//   limiter: Ratelimit.slidingWindow(2, "30 s"),
-// });
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(2, "30 s"),
+});
 
 export const dynamic = "force-dynamic";
 
@@ -27,13 +27,14 @@ export const GET = async (request: NextRequest) => {
     //   data: { user },
     // } = await supabase.auth.getUser();
 
+    const mockUserId = "15bad7bc-8e09-48d8-aa43-4018a7e9d104";
     // Rate limiting
-    // const { success } = await ratelimit.limit(user?.id!);
+    const { success } = await ratelimit.limit(mockUserId);
 
-    // if (!success) {
-    //   console.log("Unable to process at this time");
-    //   return NextResponse.json({ error: "Quota exceeded" }, { status: 429 });
-    // }
+    if (!success) {
+      console.log("Unable to process at this time");
+      return NextResponse.json({ error: "Quota exceeded" }, { status: 429 });
+    }
 
     // Validate request
     const { searchParams } = request.nextUrl;
@@ -73,7 +74,6 @@ export const GET = async (request: NextRequest) => {
       quizTags!
     );
 
-    const mockUserId = "15bad7bc-8e09-48d8-aa43-4018a7e9d104";
     // Log usage
     const usage = await db.insert(userUsageData).values({
       userId: mockUserId,
