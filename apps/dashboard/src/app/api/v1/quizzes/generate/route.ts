@@ -21,15 +21,32 @@ export const dynamic = "force-dynamic";
 
 export const GET = async (request: NextRequest) => {
   try {
-    // Get user
-    // const supabase = createClient();
-    // const {
-    //   data: { user },
-    // } = await supabase.auth.getUser();
+    // Get user with error handling
+    let user;
+    try {
+      const supabase = createClient();
+      const authResponse = await supabase.auth.getUser();
+      user = authResponse.data.user;
+      
+      if (!user) {
+        return NextResponse.json(
+          { error: "Authentication failed - no user found" },
+          { status: 401 }
+        );
+      }
+    } catch (authError) {
+      console.error("Auth error details:", authError);
+      return NextResponse.json(
+        { 
+          error: "Authentication failed",
+          details: authError instanceof Error ? authError.message : "Unknown auth error"
+        },
+        { status: 401 }
+      );
+    }
 
-    const mockUserId = "15bad7bc-8e09-48d8-aa43-4018a7e9d104";
     // Rate limiting
-    const { success } = await ratelimit.limit(mockUserId);
+    const { success } = await ratelimit.limit(user.id);
 
     if (!success) {
       console.log("Unable to process at this time");
@@ -76,7 +93,7 @@ export const GET = async (request: NextRequest) => {
 
     // Log usage
     const usage = await db.insert(userUsageData).values({
-      userId: mockUserId,
+      userId: user.id,
       promptTokens: metrics.usage.promptTokens,
       completionTokens: metrics.usage.completionTokens,
       totalTokens: metrics.usage.totalTokens,
@@ -112,6 +129,7 @@ export const GET = async (request: NextRequest) => {
       {
         message: "An unexpected error occurred",
         error: error instanceof Error ? error.message : "Unknown error",
+        stack: error instanceof Error ? error.stack : undefined,
       },
       { status: 500 }
     );
