@@ -22,10 +22,10 @@ export const dynamic = "force-dynamic";
 export const GET = async (request: NextRequest) => {
   try {
     // Get user
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    // const supabase = createClient();
+    // const {
+    //   data: { user },
+    // } = await supabase.auth.getUser();
 
     // Rate limiting
     // const { success } = await ratelimit.limit(user?.id!);
@@ -73,9 +73,10 @@ export const GET = async (request: NextRequest) => {
       quizTags!
     );
 
+    const mockUserId = "test-user-id";
     // Log usage
     const usage = await db.insert(userUsageData).values({
-      userId: user?.id!,
+      userId: mockUserId,
       promptTokens: metrics.usage.promptTokens,
       completionTokens: metrics.usage.completionTokens,
       totalTokens: metrics.usage.totalTokens,
