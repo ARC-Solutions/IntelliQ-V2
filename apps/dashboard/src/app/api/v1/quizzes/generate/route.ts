@@ -22,10 +22,10 @@ export const dynamic = "force-dynamic";
 export const GET = async (request: NextRequest) => {
   try {
     // Get user
-    // const supabase = createClient();
-    // const {
-    //   data: { user },
-    // } = await supabase.auth.getUser();
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     const mockUserId = "15bad7bc-8e09-48d8-aa43-4018a7e9d104";
     // Rate limiting
