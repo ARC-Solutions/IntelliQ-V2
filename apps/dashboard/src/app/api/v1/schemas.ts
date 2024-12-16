@@ -13,7 +13,7 @@ export const quizSchema = z.object({
 });
 
 // EN, DE, FR, ES, IT because most of our users are from these countries
-export const supportedLanguages = z.enum(["en", "de", "fr", "es", "it"]);
+export const supportedLanguages = z.enum(["en", "de", "fr", "es", "it", "ja", "ro", "sr"]);
 export const quizGenerationRequestSchema = z.object({
   quizTopic: z.string().min(1, "Quiz topic is required"),
   quizDescription: z.string().min(1, "Quiz description is required"),
