@@ -27,9 +27,8 @@ export const GET = async (request: NextRequest) => {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const mockUserId = "15bad7bc-8e09-48d8-aa43-4018a7e9d104";
     // Rate limiting
-    const { success } = await ratelimit.limit(mockUserId);
+    const { success } = await ratelimit.limit(user?.id!);
 
     if (!success) {
       console.log("Unable to process at this time");
@@ -76,7 +75,7 @@ export const GET = async (request: NextRequest) => {
 
     // Log usage
     const usage = await db.insert(userUsageData).values({
-      userId: mockUserId,
+      userId: user?.id!,
       promptTokens: metrics.usage.promptTokens,
       completionTokens: metrics.usage.completionTokens,
       totalTokens: metrics.usage.totalTokens,
