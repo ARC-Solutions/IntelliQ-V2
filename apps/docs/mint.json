@@ -1,14 +1,14 @@
 {
   "$schema": "https://mintlify.com/schema.json",
-  "name": "Starter Kit",
+  "name": "Knowledge Base",
   "logo": {
-    "dark": "/logo/dark.svg",
-    "light": "/logo/light.svg"
+    "dark": "/logo/arc-dark.svg",
+    "light": "/logo/arc-light.svg"
   },
   "favicon": "/favicon.svg",
   "colors": {
     "primary": "#C8B6FF",
-    "light": "#07C983",
+    "light": "#C8B6FF",
     "dark": "#0D9373",
     "anchors": {
       "from": "#0D9373",
@@ -18,7 +18,7 @@
   "topbarLinks": [
     {
       "name": "Support",
-      "url": "mailto:hi@mintlify.com"
+      "url": "mailto:contact@arc-solutions.xyz"
     }
   ],
   "topbarCtaButton": {
@@ -71,8 +71,7 @@
     }
   ],
   "footerSocials": {
-    "x": "https://x.com/mintlify",
-    "github": "https://github.com/mintlify",
-    "linkedin": "https://linkedin.com/company/mintlify"
+    "twitter": "https://twitter.com/ARCTeamGroup",
+    "github": "https://github.com/ARC-Solutions"
   }
 }
