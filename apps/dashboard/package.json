@@ -57,7 +57,8 @@
     "tailwind-merge": "^2.5.3",
     "tailwindcss-animate": "^1.0.7",
     "usehooks-ts": "^3.1.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "aws-amplify": "^6.6.6"
   },
   "devDependencies": {
     "@aws-amplify/backend": "^1.5.1",
