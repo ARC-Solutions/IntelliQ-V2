@@ -1,11 +1,7 @@
 import React from 'react';
-
+import LobbyCreation from '@/components/multiplayer-page/lobby-creation';
 const MultiPlayer = async () => {
-  return (
-    <div className='relative flex flex-col h-screen w-screen items-center justify-center  rounded-lg bg-background md:shadow-xl'>
-      <h1>Multiplayer</h1>
-    </div>
-  );
+  return <LobbyCreation />;
 };
 
 export default MultiPlayer;

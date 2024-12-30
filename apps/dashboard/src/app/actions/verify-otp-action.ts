@@ -1,9 +1,9 @@
-"use server";
+'use server';
 
-import { createClient } from "@/lib/supabase/supabase-server-side";
-import { redirect } from "next/navigation";
-import { actionClient } from "./safe-action";
-import { verifyOtpSchema } from "./schemas/auth-schema";
+import { createClient } from '@/lib/supabase/supabase-server-side';
+import { redirect } from 'next/navigation';
+import { actionClient } from './safe-action';
+import { verifyOtpSchema } from './schemas/auth-schema';
 
 export const verifyOtpAction = actionClient
   .schema(verifyOtpSchema)
@@ -13,12 +13,12 @@ export const verifyOtpAction = actionClient
     const { error } = await supabase.auth.verifyOtp({
       email,
       token,
-      type: "email",
+      type: 'email',
     });
 
     if (error) {
       throw new Error(error.message);
     }
 
-    redirect("/");
+    redirect('/');
   });

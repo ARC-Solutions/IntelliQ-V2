@@ -47,6 +47,8 @@ export const AuthProvider = ({ children }: Props) => {
   const [isNewUser, setIsNewUser] = useState<boolean>(true);
   const [otpSent, setOtpSent] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLobbyCreator, setIsLobbyCreator] = useState<boolean>(false);
+  
   const { supabase } = useSupabase();
   const router = useRouter();
 
@@ -73,16 +75,16 @@ export const AuthProvider = ({ children }: Props) => {
       });
       if (error) {
         toast({
-          title: "Error",
+          title: 'Error',
           description: error.message,
-          variant: "destructive",
+          variant: 'destructive',
         });
         setIsLoading(false);
         return;
       }
       toast({
-        title: "OTP sent to email",
-        description: "Please check your email for the OTP",
+        title: 'OTP sent to email',
+        description: 'Please check your email for the OTP',
       });
       setOtpSent(true);
     } catch (error) {
@@ -93,17 +95,17 @@ export const AuthProvider = ({ children }: Props) => {
   const signinUsingOAuth = async () => {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
+        provider: 'google',
         options: {
-          redirectTo: "http://localhost:3000/dashboard",
+          redirectTo: 'http://localhost:3000/dashboard',
         },
       });
 
       if (error) {
         toast({
-          title: "Error",
+          title: 'Error',
           description: error.message,
-          variant: "destructive",
+          variant: 'destructive',
         });
         return;
       }
@@ -118,10 +120,10 @@ export const AuthProvider = ({ children }: Props) => {
       setOtpSent(false);
       setIsLoading(false);
       toast({
-        title: "User signed out",
-        description: "You have been signed out",
+        title: 'User signed out',
+        description: 'You have been signed out',
       });
-      router.push("/login");
+      router.push('/login');
     } catch (error) {
       console.log(error);
     }
@@ -136,9 +138,9 @@ export const AuthProvider = ({ children }: Props) => {
     }
     if (error) {
       toast({
-        title: "Error",
+        title: 'Error',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
     const user = session?.user;
