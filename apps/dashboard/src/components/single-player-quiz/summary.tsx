@@ -63,7 +63,9 @@ const Summary = () => {
               <Award size={35} className='text-primary' />
               <div className='flex flex-col justify-center text-5xl mb-2'>
                 <span className='text-xl'>Your Score</span>
-                <span className='text-primary text-4xl font-bold'>{correctPercentage.toFixed(2)}%</span>
+                <span className='text-primary text-4xl font-bold'>
+                  {correctPercentage.toFixed(2)}%
+                </span>
               </div>
             </div>
             <div className='flex items-center justify-center gap-6'>
