@@ -68,13 +68,15 @@ export default function Lobby() {
                 id: player?.presence_ref,
                 email: player.currentUser.email,
                 isCreator: true,
+                userName: player.currentUser.name,
               } as Player;
             }
-            setIsCreator(false);
+
             return {
               id: player?.presence_ref,
               email: player.currentUser.email,
               isCreator: false,
+              userName: player.currentUser.name,
             } as Player;
           }),
         );
@@ -84,6 +86,7 @@ export default function Lobby() {
         // console.log('join', key, newPresences);
       })
       .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+        setIsCreator(false);
         // console.log('leave', key, leftPresences);
       })
       .subscribe(async (status) => {
@@ -152,19 +155,37 @@ export default function Lobby() {
 
             <div className='space-y-2'>
               {[...Array(maxPlayers)].map((_, i) => {
-                if (i === 0) {
+                if (i === 0 && players.length > 0) {
+                  // Render the leader of the lobby
+                  const leader = players[0];
                   return (
                     <div key={i} className='flex items-center gap-2 p-2 rounded-lg bg-gray-900/50'>
                       <Avatar className='h-8 w-8'>
-                        <AvatarFallback className='bg-primary/20 text-primary'>O</AvatarFallback>
+                        <AvatarFallback className='bg-primary/20 text-primary'>
+                          {leader.email.charAt(0)}
+                        </AvatarFallback>
                       </Avatar>
-                      <span>Owner</span>
+                      <span>{leader?.userName} </span>
                       <div className='flex gap-1 ml-auto'>
                         <Crown className='w-4 h-4 text-primary' />
                       </div>
                     </div>
                   );
+                } else if (i < players.length) {
+                  // Render other players
+                  const player = players[i];
+                  return (
+                    <div key={i} className='flex items-center gap-2 p-2 rounded-lg bg-gray-900/50'>
+                      <Avatar className='h-8 w-8'>
+                        <AvatarFallback className='bg-primary/20 text-primary'>
+                          {player.email.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span>{player?.userName}</span>
+                    </div>
+                  );
                 }
+                // Render empty slots for remaining slots
                 return (
                   <div key={i} className='flex items-center gap-2 p-2 rounded-lg bg-gray-900/50'>
                     <div className='h-8 w-8 rounded-full border border-gray-800' />
