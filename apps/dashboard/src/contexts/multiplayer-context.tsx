@@ -1,12 +1,12 @@
 'use client';
 import { RealtimeChannel } from '@supabase/supabase-js';
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-
+import React, { createContext, useContext, useState, ReactNode, useReducer } from 'react';
+// import { quizReducer } from '@/utils/reducers/quiz-reducer';
 export type Player = {
   id: string;
   userName: string;
   email: string;
-  leader?: boolean;
+  isCreator?: boolean;
   score?: number;
 } | null;
 
@@ -17,17 +17,35 @@ type MultiContextType = {
   setIsCreator: (isCreator: boolean) => void;
   channel: RealtimeChannel | null;
   setChannel: (channel: RealtimeChannel) => void;
+  maxPlayers: number;
+  setMaxPlayers: (maxPlayers: number) => void;
+};
+type GameState = {
+  status: 'idle' | 'started' | 'finished';
+  startTime?: Date;
+  endTime?: Date;
 };
 
 const MultiplayerContext = createContext<MultiContextType | undefined>(undefined);
 
 export const MultiplayerProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  // const [state, dispatch] = useReducer(multiplayerGameReducer, initialState);
   const [players, setPlayers] = useState<Player[]>([]);
   const [isCreator, setIsCreator] = useState<boolean>(false);
   const [channel, setChannel] = useState<RealtimeChannel | null>(null);
+  const [maxPlayers, setMaxPlayers] = useState<number>(5);
   return (
     <MultiplayerContext.Provider
-      value={{ players, setPlayers, isCreator, setIsCreator, channel, setChannel }}
+      value={{
+        players,
+        setPlayers,
+        isCreator,
+        setIsCreator,
+        channel,
+        setChannel,
+        maxPlayers,
+        setMaxPlayers,
+      }}
     >
       {children}
     </MultiplayerContext.Provider>

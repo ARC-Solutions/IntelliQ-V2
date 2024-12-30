@@ -14,6 +14,7 @@ import { QuizProvider } from '@/contexts/quiz-context';
 import QuizLogicContextProvider from '@/contexts/quiz-logic-context';
 import { Toaster } from '@/components/ui/toaster';
 import { QuizCreationProvider } from '@/contexts/quiz-creation-context';
+import { MultiplayerProvider } from '@/contexts/multiplayer-context';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -79,7 +80,9 @@ export default function RootLayout({
   return (
     <html lang='en' suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${process.env.NODE_ENV === 'development' ? 'debug-screens' : ''} overflow-x-hidden`}
+        className={`${geistSans.variable} ${geistMono.variable} ${
+          process.env.NODE_ENV === 'development' ? 'debug-screens' : ''
+        } overflow-x-hidden`}
       >
         <ThemeProvider
           attribute='class'
@@ -90,14 +93,16 @@ export default function RootLayout({
           <SupabaseProvider>
             <AuthProvider>
               <QuizProvider>
-                <QuizCreationProvider>
-                  <QuizLogicContextProvider>
-                    {/*className="container mx-auto overflow-visible"*/}
+                <MultiplayerProvider>
+                  <QuizCreationProvider>
+                    <QuizLogicContextProvider>
+                      {/*className="container mx-auto overflow-visible"*/}
 
-                    <main>{children}</main>
-                    <Toaster />
-                  </QuizLogicContextProvider>
-                </QuizCreationProvider>
+                      <main>{children}</main>
+                      <Toaster />
+                    </QuizLogicContextProvider>
+                  </QuizCreationProvider>
+                </MultiplayerProvider>
               </QuizProvider>
             </AuthProvider>
           </SupabaseProvider>
