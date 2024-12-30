@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }: Props) => {
   const [otpSent, setOtpSent] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isLobbyCreator, setIsLobbyCreator] = useState<boolean>(false);
-  
+
   const { supabase } = useSupabase();
   const router = useRouter();
 
@@ -144,7 +144,6 @@ export const AuthProvider = ({ children }: Props) => {
       });
     }
     const user = session?.user;
-    console.log(user);
 
     const avatar = user.user_metadata.avatar_url as string;
     const name = user.user_metadata.name as string;
