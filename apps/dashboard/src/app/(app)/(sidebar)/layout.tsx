@@ -11,7 +11,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <AppSidebar />
 
         {/* Main Content */}
-        <div className='flex-1 overflow-hidden'>
+        <div className='flex-1 overflow-auto'>
           <SidebarTrigger />
           <main className='relative flex h-full w-full items-start justify-center'>
             {children}

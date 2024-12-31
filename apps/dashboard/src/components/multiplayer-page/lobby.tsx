@@ -37,62 +37,58 @@ export default function Lobby() {
   const router = useRouter();
   const roomCode = routerParams['roomCode'] as string;
   const supabase = createClient();
-  // useEffect(() => {
-  //   const fetchGame = async () => {
-  //     const game = await getGame(roomCode);
-  //     if (!game) {
-  //       router.push('/?error=game-not-found');
-  //       return;
-  //     }
-  //     const user = await supabase.auth.getUser();
 
-  //     if (user && user.data.user?.id === game.host_id) {
-  //       setIsCreator(true);
-  //     }
-  //   };
-  //   fetchGame();
-  // }, [isCreator]);
   useEffect(() => {
     const roomChannel = supabase.channel(roomCode);
     setChannel(roomChannel);
+
     roomChannel
       .on('presence', { event: 'sync' }, () => {
         const newState = roomChannel.presenceState();
-        // console.log('Presence state:', newState);
 
-        const playersList = Object.values(newState).flatMap((players, index) =>
-          players.map((player) => {
-            if (index === 0) {
-              setIsCreator(true);
-              return {
+        // Convert presence state to players array
+        const playersList = Object.entries(newState).flatMap(([_, players]) =>
+          players.map(
+            (player) =>
+              ({
                 id: player?.presence_ref,
                 email: player.currentUser.email,
-                isCreator: true,
                 userName: player.currentUser.name,
-              } as Player;
-            }
-
-            return {
-              id: player?.presence_ref,
-              email: player.currentUser.email,
-              isCreator: false,
-              userName: player.currentUser.name,
-            } as Player;
-          }),
+              } as Player),
+          ),
         );
-        setPlayers(playersList);
+
+        // First player in the list is the leader
+        const updatedPlayers = playersList.map((player, index) => ({
+          ...player,
+          isCreator: index === 0,
+        }));
+
+        setPlayers(updatedPlayers);
+
+        // Update isCreator status for current user
+        if (currentUser && updatedPlayers.length > 0) {
+          setIsCreator(updatedPlayers[0].email === currentUser.email);
+        }
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-        // console.log('join', key, newPresences);
+        // Optional: Add any specific join handling if needed
       })
       .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-        setIsCreator(false);
-        // console.log('leave', key, leftPresences);
+        const newState = roomChannel.presenceState();
+        if (Object.keys(newState).length === 0) {
+          setIsCreator(false);
+          setPlayers([]);
+        }
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           if (currentUser) {
-            const presenceTrackStatus = await roomChannel.track({ currentUser });
+            await roomChannel.track({
+              currentUser: {
+                ...currentUser,
+              },
+            });
           }
         }
       });
@@ -106,16 +102,7 @@ export default function Lobby() {
         supabase.removeChannel(roomChannel);
       }
     };
-  }, [roomCode, router, currentUser, isCreator]);
-
-  const getGame = async (gameId: string) => {
-    const gameResult = await supabase.from('rooms').select().eq('code', gameId).single();
-    if (gameResult.error) {
-      console.error(gameResult.error);
-      return null;
-    }
-    return gameResult.data;
-  };
+  }, [roomCode, router, currentUser]);
 
   return (
     <div className='min-h-screen w-full bg-black text-white relative flex flex-col'>
@@ -133,7 +120,9 @@ export default function Lobby() {
               <div className='flex items-center gap-1'>
                 <span className='uppercase'>players</span>
               </div>
-              <span>1/14</span>
+              <span>
+                {players.length}/{maxPlayers}
+              </span>
             </div>
 
             <Select defaultValue={`${maxPlayers}`}>
@@ -141,15 +130,19 @@ export default function Lobby() {
                 <SelectValue placeholder='Select players' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='2'>2 Players</SelectItem>
-                <SelectItem value='3'>3 Players</SelectItem>
-                <SelectItem value='4'>4 Players</SelectItem>
-                <SelectItem value='5'>5 Players</SelectItem>
-                <SelectItem value='6'>6 Players</SelectItem>
-                <SelectItem value='7'>7 Players</SelectItem>
-                <SelectItem value='8'>8 Players</SelectItem>
-                <SelectItem value='9'>9 Players</SelectItem>
-                <SelectItem value='10'>10 Players</SelectItem>
+                {[...Array(9)].map((slot, i) => {
+                  return (
+                    <SelectItem
+                      key={i}
+                      onClick={() => {
+                        setMaxPlayers(i + 2);
+                      }}
+                      value={`${i + 2}`}
+                    >
+                      {i + 2} Players
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
 
@@ -162,7 +155,7 @@ export default function Lobby() {
                     <div key={i} className='flex items-center gap-2 p-2 rounded-lg bg-gray-900/50'>
                       <Avatar className='h-8 w-8'>
                         <AvatarFallback className='bg-primary/20 text-primary'>
-                          {leader.email.charAt(0)}
+                          {leader?.email.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
                       <span>{leader?.userName} </span>
@@ -178,7 +171,7 @@ export default function Lobby() {
                     <div key={i} className='flex items-center gap-2 p-2 rounded-lg bg-gray-900/50'>
                       <Avatar className='h-8 w-8'>
                         <AvatarFallback className='bg-primary/20 text-primary'>
-                          {player.email.charAt(0)}
+                          {player?.email.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
                       <span>{player?.userName}</span>
@@ -252,7 +245,10 @@ export default function Lobby() {
                 <Link className='w-4 h-4 mr-2' />
                 INVITE
               </Button>
-              <Button className='bg-primary text-primary-foreground hover:bg-primary/90 min-w-[120px]'>
+              <Button
+                disabled={!isCreator}
+                className='bg-primary text-primary-foreground hover:bg-primary/90 min-w-[120px]'
+              >
                 START
               </Button>
             </div>
