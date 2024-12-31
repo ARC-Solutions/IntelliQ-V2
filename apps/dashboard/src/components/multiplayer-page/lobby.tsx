@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select';
 import { useAuth } from '@/contexts/user-context';
 import { Player, useMultiplayer } from '@/contexts/multiplayer-context';
-
+import { ScrollArea } from '@/components/ui/scroll-area';
 export default function Lobby() {
   const { currentUser } = useAuth();
   const {
@@ -132,61 +132,74 @@ export default function Lobby() {
               <SelectContent>
                 {[...Array(9)].map((slot, i) => {
                   return (
-                    <SelectItem
-                      key={i}
-                      onClick={() => {
-                        setMaxPlayers(i + 2);
-                      }}
-                      value={`${i + 2}`}
-                    >
+                    <SelectItem key={i} onClick={() => setMaxPlayers(i + 2)} value={`${i + 2}`}>
                       {i + 2} Players
                     </SelectItem>
                   );
                 })}
               </SelectContent>
             </Select>
-
-            <div className='space-y-2'>
-              {[...Array(maxPlayers)].map((_, i) => {
-                if (i === 0 && players.length > 0) {
-                  // Render the leader of the lobby
-                  const leader = players[0];
-                  return (
-                    <div key={i} className='flex items-center gap-2 p-2 rounded-lg bg-gray-900/50'>
-                      <Avatar className='h-8 w-8'>
-                        <AvatarFallback className='bg-primary/20 text-primary'>
-                          {leader?.email.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span>{leader?.userName} </span>
-                      <div className='flex gap-1 ml-auto'>
-                        <Crown className='w-4 h-4 text-primary' />
+            <ScrollArea className='w-full h-[400px]'>
+              <div className='space-y-4'>
+                {[...Array(maxPlayers)].map((_, i) => {
+                  if (i === 0 && players.length > 0) {
+                    // Render the leader of the lobby
+                    const leader = players[0];
+                    return (
+                      <div
+                        key={i}
+                        className='flex items-center gap-2 p-4 rounded-lg bg-gray-900/50'
+                      >
+                        <Avatar className='h-8 w-8'>
+                          <AvatarFallback className='bg-primary/20 text-primary'>
+                            {leader?.email.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span
+                          className={`${
+                            leader?.userName === currentUser?.name && 'font-extrabold'
+                          }`}
+                        >
+                          {leader?.userName}{' '}
+                        </span>
+                        <div className='flex gap-1 ml-auto'>
+                          <Crown className='w-6 h-6 text-primary' />
+                        </div>
                       </div>
-                    </div>
-                  );
-                } else if (i < players.length) {
-                  // Render other players
-                  const player = players[i];
+                    );
+                  } else if (i < players.length) {
+                    // Render other players
+                    const player = players[i];
+                    return (
+                      <div
+                        key={i}
+                        className='flex items-center gap-2 p-4 rounded-lg bg-gray-900/50'
+                      >
+                        <Avatar className='h-8 w-8'>
+                          <AvatarFallback className='bg-primary/20 text-primary'>
+                            {player?.email.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span
+                          className={`${
+                            player?.userName === currentUser?.name && 'font-extrabold'
+                          }`}
+                        >
+                          {player?.userName}
+                        </span>
+                      </div>
+                    );
+                  }
+                  // Render empty slots for remaining slots
                   return (
-                    <div key={i} className='flex items-center gap-2 p-2 rounded-lg bg-gray-900/50'>
-                      <Avatar className='h-8 w-8'>
-                        <AvatarFallback className='bg-primary/20 text-primary'>
-                          {player?.email.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span>{player?.userName}</span>
+                    <div key={i} className='flex items-center gap-2 p-4 rounded-lg bg-gray-900/50'>
+                      <div className='h-8 w-8 rounded-full border border-gray-800' />
+                      <span className='text-gray-400'>Empty</span>
                     </div>
                   );
-                }
-                // Render empty slots for remaining slots
-                return (
-                  <div key={i} className='flex items-center gap-2 p-2 rounded-lg bg-gray-900/50'>
-                    <div className='h-8 w-8 rounded-full border border-gray-800' />
-                    <span className='text-gray-400'>Empty</span>
-                  </div>
-                );
-              })}
-            </div>
+                })}
+              </div>
+            </ScrollArea>
           </div>
 
           <div className='space-y-8'>
@@ -215,7 +228,14 @@ export default function Lobby() {
                   <Label>Question count</Label>
                   <div className='flex items-center gap-4'>
                     <span className='text-sm text-gray-400'>1</span>
-                    <Slider defaultValue={[5]} max={10} min={1} step={1} className='flex-1' />
+                    <Slider
+                      disabled={!isCreator}
+                      defaultValue={[5]}
+                      max={10}
+                      min={1}
+                      step={1}
+                      className='flex-1'
+                    />
                     <span className='text-sm text-gray-400'>10</span>
                   </div>
                 </div>
@@ -224,35 +244,45 @@ export default function Lobby() {
                   <Label>Time Limit per Question</Label>
                   <div className='flex items-center gap-4'>
                     <span className='text-sm text-gray-400'>5s</span>
-                    <Slider defaultValue={[25]} max={60} min={5} step={5} className='flex-1' />
+                    <Slider
+                      disabled={!isCreator}
+                      defaultValue={[25]}
+                      max={60}
+                      min={5}
+                      step={5}
+                      className='flex-1'
+                    />
                     <span className='text-sm text-gray-400'>60s</span>
                   </div>
                 </div>
 
                 <div className='space-y-4'>
                   <Label>Topic</Label>
-                  <Input placeholder='Formula One' className='bg-transparent border-gray-800' />
+                  <Input
+                    disabled={!isCreator}
+                    placeholder='Formula One'
+                    className='bg-transparent border-gray-800'
+                  />
                 </div>
               </div>
             </div>
-
-            {/* Action Buttons */}
-            <div className='flex gap-4 justify-end'>
-              <Button
-                variant='outline'
-                className='bg-primary/10 border-primary/20 text-primary min-w-[120px]'
-              >
-                <Link className='w-4 h-4 mr-2' />
-                INVITE
-              </Button>
-              <Button
-                disabled={!isCreator}
-                className='bg-primary text-primary-foreground hover:bg-primary/90 min-w-[120px]'
-              >
-                START
-              </Button>
-            </div>
           </div>
+        </div>
+        {/* Action Buttons */}
+        <div className='flex gap-4 justify-center'>
+          <Button
+            variant='outline'
+            className='bg-primary/10 border-primary/20 text-primary min-w-[120px]'
+          >
+            <Link className='w-4 h-4 mr-2' />
+            INVITE
+          </Button>
+          <Button
+            disabled={!isCreator}
+            className='bg-primary text-primary-foreground hover:bg-primary/90 min-w-[120px]'
+          >
+            START
+          </Button>
         </div>
       </div>
     </div>
