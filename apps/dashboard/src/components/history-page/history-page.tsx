@@ -15,7 +15,7 @@ import { Progress } from '@/components/ui/progress';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Clock, Calendar, CheckCircle2, XCircle, Trophy } from 'lucide-react';
 import { QuizHistories, useQuiz } from '@/contexts/quiz-context';
-import { ScrollArea } from '../ui/scroll-area';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { redirect } from 'next/navigation';
 
 const tags = ['f1', 'anime', 'school', 'math', 'history'];
