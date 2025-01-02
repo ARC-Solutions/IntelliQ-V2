@@ -8,7 +8,7 @@ import { log } from 'console';
 type Props = {
   children: React.ReactNode;
 };
-interface User {
+export interface User {
   id: string;
   email: string;
   img: string;

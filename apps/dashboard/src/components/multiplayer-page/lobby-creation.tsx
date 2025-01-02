@@ -33,7 +33,7 @@ export default function LobbyScreen() {
       .insert({
         code: roomCode,
         host_id: creator,
-        max_players: 10,
+        max_players: 5,
         num_questions: 5,
       })
       .select()
