@@ -21,6 +21,9 @@ import {
 import { useAuth } from '@/contexts/user-context';
 import { Player, useMultiplayer } from '@/contexts/multiplayer-context';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { User } from '@/contexts/user-context';
+import { RealtimeChannel } from '@supabase/supabase-js';
+
 export default function Lobby() {
   const { currentUser } = useAuth();
   const {
@@ -38,40 +41,102 @@ export default function Lobby() {
   const roomCode = routerParams['roomCode'] as string;
   const supabase = createClient();
 
+  const checkAndJoinRoom = async (channel: RealtimeChannel) => {
+    try {
+      // Get current room data
+      const { data: room } = await supabase
+        .from('rooms')
+        .select('max_players')
+        .eq('code', roomCode)
+        .single();
+
+      if (room) {
+        // Get current player count from presence state
+        const presenceState = channel.presenceState();
+        const currentPlayerCount = Object.values(presenceState).flat().length;
+
+        if (currentPlayerCount >= room.max_players) {
+          alert('This room is full. Please try another room.');
+          router.push('/');
+          return;
+        }
+
+        // If there's space, join the room
+
+        return room.max_players;
+      }
+    } catch (error) {
+      console.error('Error joining room:', error);
+      return false;
+    }
+  };
+
+  const updatePlayers = (roomChannel: RealtimeChannel) => {
+    const newState = roomChannel.presenceState();
+
+    // Convert presence state to players array
+    const playersList = Object.entries(newState).flatMap(([_, players]) =>
+      players.map(
+        (player) =>
+          ({
+            id: player.currentUser.id,
+            email: player.currentUser.email,
+            userName: player.currentUser.name,
+          } as Player),
+      ),
+    );
+
+    // First player in the list is the leader
+    const updatedPlayers = playersList.map((player, index) => ({
+      ...player,
+      isCreator: index === 0,
+    }));
+
+    setPlayers(updatedPlayers);
+
+    // Update isCreator status for current user
+    if (currentUser && updatedPlayers.length > 0) {
+      setIsCreator(updatedPlayers[0].email === currentUser.email);
+    }
+  };
+
+  useEffect(() => {
+    const updateMaxPlayers = async () => {
+      const { data: room, error } = await supabase
+        .from('rooms')
+        .select('max_players')
+        .eq('code', roomCode)
+        .single();
+
+      if (error) {
+        console.error('Error updating max players:', error);
+        return;
+      }
+
+      // Assuming data contains the updated room info
+      setMaxPlayers(room.max_players);
+    };
+
+    updateMaxPlayers();
+  }, []);
+
   useEffect(() => {
     const roomChannel = supabase.channel(roomCode);
     setChannel(roomChannel);
 
     roomChannel
       .on('presence', { event: 'sync' }, () => {
-        const newState = roomChannel.presenceState();
-
-        // Convert presence state to players array
-        const playersList = Object.entries(newState).flatMap(([_, players]) =>
-          players.map(
-            (player) =>
-              ({
-                id: player.currentUser.id,
-                email: player.currentUser.email,
-                userName: player.currentUser.name,
-              } as Player),
-          ),
-        );
-
-        // First player in the list is the leader
-        const updatedPlayers = playersList.map((player, index) => ({
-          ...player,
-          isCreator: index === 0,
-        }));
-
-        setPlayers(updatedPlayers);
-
-        // Update isCreator status for current user
-        if (currentUser && updatedPlayers.length > 0) {
-          setIsCreator(updatedPlayers[0].email === currentUser.email);
-        }
+        updatePlayers(roomChannel);
       })
-      .on('presence', { event: 'join' }, ({ key, newPresences }) => {})
+      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+        // const newState = roomChannel.presenceState();
+        // Object.entries(newState).flatMap(([_, players]) => {
+        //   console.log(players);
+        // });
+        // if (players.length === maxPlayers) {
+        //   alert('Maximum Players reached!');
+        // }
+      })
       .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
         const newState = roomChannel.presenceState();
         if (Object.keys(newState).length === 0) {
@@ -79,15 +144,14 @@ export default function Lobby() {
           setPlayers([]);
         }
       })
-
       .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-          if (currentUser) {
-            await roomChannel.track({
-              currentUser,
-              maxPlayers,
-            });
-          }
+        if (status === 'SUBSCRIBED' && currentUser) {
+          const maxPlayers = await checkAndJoinRoom(roomChannel);
+
+          await roomChannel.track({
+            currentUser,
+            maxPlayers,
+          });
         }
       });
 
@@ -115,12 +179,30 @@ export default function Lobby() {
     if (Number.isNaN(newAmount) || newAmount < 2) {
       return;
     }
-    setMaxPlayers(newAmount);
-    await channel.send({
-      type: 'broadcast',
-      event: 'change-amount-of-players',
-      payload: { newAmount },
-    });
+
+    try {
+      if (isCreator) {
+        console.log('change');
+
+        // Update database
+        const { data, error } = await supabase
+          .from('rooms')
+          .update({ max_players: newAmount })
+          .eq('code', roomCode);
+
+        if (error) throw error;
+
+        // Update local state and broadcast to others
+        setMaxPlayers(newAmount);
+        await channel.send({
+          type: 'broadcast',
+          event: 'change-amount-of-players',
+          payload: { newAmount },
+        });
+      }
+    } catch (error) {
+      console.error('Failed to update max players:', error);
+    }
   };
 
   return (
