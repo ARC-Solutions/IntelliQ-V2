@@ -51,7 +51,7 @@ export default function Lobby() {
           players.map(
             (player) =>
               ({
-                id: player?.presence_ref,
+                id: player.currentUser.id,
                 email: player.currentUser.email,
                 userName: player.currentUser.name,
               } as Player),
@@ -71,9 +71,7 @@ export default function Lobby() {
           setIsCreator(updatedPlayers[0].email === currentUser.email);
         }
       })
-      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-        // Optional: Add any specific join handling if needed
-      })
+      .on('presence', { event: 'join' }, ({ key, newPresences }) => {})
       .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
         const newState = roomChannel.presenceState();
         if (Object.keys(newState).length === 0) {
@@ -81,21 +79,25 @@ export default function Lobby() {
           setPlayers([]);
         }
       })
+
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           if (currentUser) {
             await roomChannel.track({
-              currentUser: {
-                ...currentUser,
-              },
+              currentUser,
+              maxPlayers,
             });
           }
         }
       });
 
-    roomChannel.on('broadcast', { event: 'quiz-started' }, async (payload) => {
-      router.push(`/${roomCode}/play`);
-    });
+    roomChannel
+      .on('broadcast', { event: 'quiz-started' }, async (payload) => {
+        router.push(`/${roomCode}/play`);
+      })
+      .on('broadcast', { event: 'change-amount-of-players' }, async ({ payload }) => {
+        setMaxPlayers(payload.newAmount);
+      });
 
     return () => {
       if (roomChannel) {
@@ -103,6 +105,23 @@ export default function Lobby() {
       }
     };
   }, [roomCode, router, currentUser]);
+
+  const changeAmountOfPlayers = async (newAmount: number) => {
+    if (!channel) {
+      console.error('Channel is not initialized.');
+      return;
+    }
+
+    if (Number.isNaN(newAmount) || newAmount < 2) {
+      return;
+    }
+    setMaxPlayers(newAmount);
+    await channel.send({
+      type: 'broadcast',
+      event: 'change-amount-of-players',
+      payload: { newAmount },
+    });
+  };
 
   return (
     <div className='min-h-screen w-full bg-black text-white relative flex flex-col'>
@@ -118,21 +137,26 @@ export default function Lobby() {
             <div className='flex items-center gap-2 text-primary'>
               <UsersRound />
               <div className='flex items-center gap-1'>
-                <span className='uppercase'>players</span>
+                <h2 className='text-xl font-semibold uppercase'>
+                  players {players.length}/{maxPlayers}
+                </h2>
               </div>
-              <span>
-                {players.length}/{maxPlayers}
-              </span>
             </div>
 
-            <Select defaultValue={`${maxPlayers}`}>
+            <Select
+              disabled={!isCreator}
+              onValueChange={(value) => {
+                changeAmountOfPlayers(Number(value));
+              }}
+              value={`${maxPlayers}`}
+            >
               <SelectTrigger className='w-full bg-black border-gray-800'>
                 <SelectValue placeholder='Select players' />
               </SelectTrigger>
               <SelectContent>
                 {[...Array(9)].map((slot, i) => {
                   return (
-                    <SelectItem key={i} onClick={() => setMaxPlayers(i + 2)} value={`${i + 2}`}>
+                    <SelectItem key={i} value={`${i + 2}`}>
                       {i + 2} Players
                     </SelectItem>
                   );
@@ -277,12 +301,11 @@ export default function Lobby() {
             <Link className='w-4 h-4 mr-2' />
             INVITE
           </Button>
-          <Button
-            disabled={!isCreator}
-            className='bg-primary text-primary-foreground hover:bg-primary/90 min-w-[120px]'
-          >
-            START
-          </Button>
+          {isCreator && (
+            <Button className='bg-primary text-primary-foreground hover:bg-primary/90 min-w-[120px]'>
+              START
+            </Button>
+          )}
         </div>
       </div>
     </div>
