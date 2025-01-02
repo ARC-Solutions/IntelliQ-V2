@@ -35,6 +35,12 @@ export default function Lobby() {
     setChannel,
     maxPlayers,
     setMaxPlayers,
+    questionCount,
+    setQuestionCount,
+    timeLimit,
+    setTimeLimit,
+    topic,
+    setTopic,
   } = useMultiplayer();
   const routerParams = useParams();
   const router = useRouter();
@@ -55,7 +61,7 @@ export default function Lobby() {
         const presenceState = channel.presenceState();
         const currentPlayerCount = Object.values(presenceState).flat().length;
 
-        if (currentPlayerCount >= room.max_players) {
+        if (currentPlayerCount === room.max_players) {
           alert('This room is full. Please try another room.');
           router.push('/');
           return;
@@ -161,6 +167,21 @@ export default function Lobby() {
       })
       .on('broadcast', { event: 'change-amount-of-players' }, async ({ payload }) => {
         setMaxPlayers(payload.newAmount);
+      })
+      .on('broadcast', { event: 'settings-update' }, ({ payload }) => {
+        const { type, value } = payload;
+
+        switch (type) {
+          case 'num_questions':
+            setQuestionCount(value as number);
+            break;
+          case 'time_limit':
+            setTimeLimit(value as number);
+            break;
+          case 'topic':
+            setTopic(value as string);
+            break;
+        }
       });
 
     return () => {
@@ -202,6 +223,32 @@ export default function Lobby() {
       }
     } catch (error) {
       console.error('Failed to update max players:', error);
+    }
+  };
+
+  const updateGameSettings = async (
+    type: 'num_questions' | 'time_limit' | 'topic' | 'showAnswers',
+    value: number | string | boolean,
+  ) => {
+    if (!channel || !isCreator) return;
+
+    try {
+      if (type === 'num_questions') {
+        const { data } = await supabase
+          .from('rooms')
+          .update({ [type]: value })
+          .eq('code', roomCode)
+          .select()
+          .single();
+      }
+
+      await channel.send({
+        type: 'broadcast',
+        event: 'settings-update',
+        payload: { type, value },
+      });
+    } catch (error) {
+      console.error('Failed to update game settings:', error);
     }
   };
 
@@ -336,11 +383,15 @@ export default function Lobby() {
                     <span className='text-sm text-gray-400'>1</span>
                     <Slider
                       disabled={!isCreator}
-                      defaultValue={[5]}
+                      value={[questionCount]}
                       max={10}
                       min={1}
                       step={1}
                       className='flex-1'
+                      onValueChange={(value) => {
+                        updateGameSettings('num_questions', value[0]);
+                        setQuestionCount(value[0]);
+                      }}
                     />
                     <span className='text-sm text-gray-400'>10</span>
                   </div>
@@ -352,11 +403,15 @@ export default function Lobby() {
                     <span className='text-sm text-gray-400'>5s</span>
                     <Slider
                       disabled={!isCreator}
-                      defaultValue={[25]}
+                      value={[timeLimit]}
                       max={60}
                       min={5}
                       step={5}
                       className='flex-1'
+                      onValueChange={(value) => {
+                        updateGameSettings('time_limit', value[0]);
+                        setTimeLimit(value[0]);
+                      }}
                     />
                     <span className='text-sm text-gray-400'>60s</span>
                   </div>
@@ -368,6 +423,11 @@ export default function Lobby() {
                     disabled={!isCreator}
                     placeholder='Formula One'
                     className='bg-transparent border-gray-800'
+                    value={topic}
+                    onChange={(e) => {
+                      updateGameSettings('topic', e.target.value);
+                      setTopic(e.target.value);
+                    }}
                   />
                 </div>
               </div>

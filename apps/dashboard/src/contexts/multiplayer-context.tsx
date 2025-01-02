@@ -17,8 +17,14 @@ type MultiContextType = {
   setIsCreator: (isCreator: boolean) => void;
   channel: RealtimeChannel | null;
   setChannel: (channel: RealtimeChannel) => void;
+  questionCount: number;
+  setQuestionCount: (setQuestion: number) => void;
   maxPlayers: number;
   setMaxPlayers: (maxPlayers: number) => void;
+  timeLimit: number;
+  setTimeLimit: (timeLimit: number) => void;
+  topic: string;
+  setTopic: (topic: string) => void;
 };
 type GameState = {
   status: 'idle' | 'started' | 'finished';
@@ -34,6 +40,9 @@ export const MultiplayerProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [isCreator, setIsCreator] = useState<boolean>(false);
   const [channel, setChannel] = useState<RealtimeChannel | null>(null);
   const [maxPlayers, setMaxPlayers] = useState<number>(5);
+  const [questionCount, setQuestionCount] = useState(5);
+  const [timeLimit, setTimeLimit] = useState(25);
+  const [topic, setTopic] = useState('');
   return (
     <MultiplayerContext.Provider
       value={{
@@ -45,6 +54,12 @@ export const MultiplayerProvider: React.FC<{ children: ReactNode }> = ({ childre
         setChannel,
         maxPlayers,
         setMaxPlayers,
+        questionCount,
+        setQuestionCount,
+        timeLimit,
+        setTimeLimit,
+        topic,
+        setTopic,
       }}
     >
       {children}
