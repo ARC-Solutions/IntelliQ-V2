@@ -57,9 +57,11 @@ export default function Lobby() {
         .single();
 
       if (room) {
+        console.log(room);
         // Get current player count from presence state
         const presenceState = channel.presenceState();
         const currentPlayerCount = Object.values(presenceState).flat().length;
+        console.log(currentPlayerCount, room.max_players);
 
         if (currentPlayerCount === room.max_players) {
           alert('This room is full. Please try another room.');
@@ -67,7 +69,7 @@ export default function Lobby() {
           return;
         }
 
-        // If there's space, join the room
+        // If there's space, join the roodm
 
         return room.max_players;
       }
@@ -102,7 +104,7 @@ export default function Lobby() {
 
     // Update isCreator status for current user
     if (currentUser && updatedPlayers.length > 0) {
-      setIsCreator(updatedPlayers[0].email === currentUser.email);
+      setIsCreator(updatedPlayers[0].id === currentUser.id);
     }
   };
 
@@ -203,23 +205,27 @@ export default function Lobby() {
 
     try {
       if (isCreator) {
-        console.log('change');
-
         // Update database
+
         const { data, error } = await supabase
           .from('rooms')
           .update({ max_players: newAmount })
-          .eq('code', roomCode);
+          .eq('code', roomCode)
+          .select()
+          .single();
 
+        console.log(data);
         if (error) throw error;
 
         // Update local state and broadcast to others
-        setMaxPlayers(newAmount);
-        await channel.send({
-          type: 'broadcast',
-          event: 'change-amount-of-players',
-          payload: { newAmount },
-        });
+        if (data) {
+          setMaxPlayers(newAmount);
+          await channel.send({
+            type: 'broadcast',
+            event: 'change-amount-of-players',
+            payload: { newAmount },
+          });
+        }
       }
     } catch (error) {
       console.error('Failed to update max players:', error);
@@ -285,7 +291,7 @@ export default function Lobby() {
               <SelectContent>
                 {[...Array(9)].map((slot, i) => {
                   return (
-                    <SelectItem key={i} value={`${i + 2}`}>
+                    <SelectItem disabled={i + 2 < players.length} key={i} value={`${i + 2}`}>
                       {i + 2} Players
                     </SelectItem>
                   );
