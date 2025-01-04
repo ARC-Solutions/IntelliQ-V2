@@ -23,7 +23,16 @@ import { Player, useMultiplayer } from '@/contexts/multiplayer-context';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { User } from '@/contexts/user-context';
 import { RealtimeChannel } from '@supabase/supabase-js';
-
+interface PresenceData {
+  currentUser: {
+    id: string;
+    email: string;
+    name: string;
+  };
+  settings?: { timeLimit: number; topic: string };
+  maxPlayers: number;
+  presence_ref: string;
+}
 export default function Lobby() {
   const { currentUser } = useAuth();
   const {
@@ -86,10 +95,13 @@ export default function Lobby() {
     const playersList = Object.entries(newState).flatMap(([_, players]) =>
       players.map((player, i) => {
         return {
-          id: player.currentUser.id,
-          email: player.currentUser.email,
-          userName: player.currentUser.name,
-          settings: { timeLimit: player.settings.timeLimit, topic: player.settings.topic },
+          id: (player as PresenceData).currentUser.id,
+          email: (player as PresenceData).currentUser.email,
+          userName: (player as PresenceData).currentUser.name,
+          settings: {
+            timeLimit: (player as PresenceData).settings?.timeLimit,
+            topic: (player as PresenceData).settings?.topic,
+          },
         } as Player;
       }),
     );
@@ -100,7 +112,7 @@ export default function Lobby() {
       isCreator: index === 0,
     }));
 
-    setPlayers(updatedPlayers);
+    setPlayers(updatedPlayers as Player[]);
 
     // if (updatedPlayers[0].settings) {
     //   await roomChannel.send({
