@@ -79,19 +79,19 @@ export default function Lobby() {
     }
   };
 
-  const updatePlayers = (roomChannel: RealtimeChannel) => {
+  const updatePlayers = async (roomChannel: RealtimeChannel) => {
     const newState = roomChannel.presenceState();
 
     // Convert presence state to players array
     const playersList = Object.entries(newState).flatMap(([_, players]) =>
-      players.map(
-        (player) =>
-          ({
-            id: player.currentUser.id,
-            email: player.currentUser.email,
-            userName: player.currentUser.name,
-          } as Player),
-      ),
+      players.map((player, i) => {
+        return {
+          id: player.currentUser.id,
+          email: player.currentUser.email,
+          userName: player.currentUser.name,
+          settings: { timeLimit: player.settings.timeLimit, topic: player.settings.topic },
+        } as Player;
+      }),
     );
 
     // First player in the list is the leader
@@ -102,6 +102,20 @@ export default function Lobby() {
 
     setPlayers(updatedPlayers);
 
+    // if (updatedPlayers[0].settings) {
+    //   await roomChannel.send({
+    //     type: 'broadcast',
+    //     event: 'settings-update',
+    //     payload: { type: 'time_limit', value: updatedPlayers[0].settings.timeLimit },
+    //   });
+
+    //   await roomChannel.send({
+    //     type: 'broadcast',
+    //     event: 'settings-update',
+    //     payload: { type: 'topic', value: updatedPlayers[0].settings.topic },
+    //   });
+    // }
+
     // Update isCreator status for current user
     if (currentUser && updatedPlayers.length > 0) {
       setIsCreator(updatedPlayers[0].id === currentUser.id);
@@ -109,10 +123,10 @@ export default function Lobby() {
   };
 
   useEffect(() => {
-    const updateMaxPlayers = async () => {
+    const updateSettings = async () => {
       const { data: room, error } = await supabase
         .from('rooms')
-        .select('max_players')
+        .select()
         .eq('code', roomCode)
         .single();
 
@@ -123,9 +137,10 @@ export default function Lobby() {
 
       // Assuming data contains the updated room info
       setMaxPlayers(room.max_players);
+      setQuestionCount(room.num_questions);
     };
 
-    updateMaxPlayers();
+    updateSettings();
   }, []);
 
   useEffect(() => {
@@ -141,9 +156,6 @@ export default function Lobby() {
         // Object.entries(newState).flatMap(([_, players]) => {
         //   console.log(players);
         // });
-        // if (players.length === maxPlayers) {
-        //   alert('Maximum Players reached!');
-        // }
       })
       .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
         const newState = roomChannel.presenceState();
@@ -156,10 +168,17 @@ export default function Lobby() {
         if (status === 'SUBSCRIBED' && currentUser) {
           const maxPlayers = await checkAndJoinRoom(roomChannel);
 
-          await roomChannel.track({
+          const presenceData = {
             currentUser,
             maxPlayers,
-          });
+            settings: {
+              timeLimit,
+              topic,
+            },
+          };
+          console.log(presenceData);
+
+          await roomChannel.track(presenceData);
         }
       });
 
@@ -192,6 +211,13 @@ export default function Lobby() {
       }
     };
   }, [roomCode, router, currentUser]);
+
+  useEffect(() => {
+    if (isCreator) {
+      updateGameSettings('topic', topic);
+      updateGameSettings('time_limit', timeLimit);
+    }
+  }, [players]);
 
   const changeAmountOfPlayers = async (newAmount: number) => {
     if (!channel) {
