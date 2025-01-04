@@ -25,11 +25,7 @@ import { User } from "@/contexts/user-context";
 import { RealtimeChannel } from "@supabase/supabase-js";
 
 interface PresenceData {
-  currentUser: {
-    id: string;
-    email: string;
-    name: string;
-  };
+  currentUser: User;
   maxPlayers: number;
   presence_ref: string;
 }
