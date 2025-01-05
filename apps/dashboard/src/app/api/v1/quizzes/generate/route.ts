@@ -4,7 +4,7 @@ import {
   supportedLanguages,
 } from "@/app/api/v1/schemas";
 import { db } from "@/db";
-import { createClient } from "@/lib/supabase/supabase-server-side";
+import { createClient } from "@/lib/supabase/supabase-client-side";
 import { userUsageData } from "@drizzle/schema";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
