@@ -8,6 +8,10 @@ export type Player = {
   email: string;
   isCreator?: boolean;
   score?: number;
+  settings?: {
+    timeLimit: number;
+    topic: string;
+  };
 } | null;
 
 type MultiContextType = {
