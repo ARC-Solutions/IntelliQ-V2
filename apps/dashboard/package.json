@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "format": "biome format --write .",
-    "db-introspect": "npx drizzle-kit pull"
+    "db:introspect": "npx drizzle-kit pull",
+    "pages:build": "npx @cloudflare/next-on-pages",
+    "preview": "npm run pages:build && wrangler pages dev",
+    "deploy": "npm run pages:build && wrangler pages deploy"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.0.5",
@@ -49,7 +52,6 @@
     "next": "14.2.11",
     "next-safe-action": "^7.9.9",
     "next-themes": "^0.3.0",
-    "postgres": "^3.4.5",
     "react": "^18",
     "react-dom": "^18",
     "react-hook-form": "^7.53.0",
@@ -62,6 +64,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.1",
+    "@cloudflare/next-on-pages": "^1.13.7",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
