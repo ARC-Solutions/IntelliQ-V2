@@ -10,6 +10,8 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 
+export const runtime = "edge";
+
 export default function Page() {
   return (
     <SidebarProvider>
