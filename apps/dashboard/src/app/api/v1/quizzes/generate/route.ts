@@ -11,14 +11,13 @@ import { Redis } from "@upstash/redis";
 import { NextRequest, NextResponse } from "next/server";
 import { generateQuiz } from "./services/quiz-generator.service";
 import { createTranslateClient, translateQuiz } from "./utils/translator";
-import { isDynamicServerError } from "next/dist/client/components/hooks-server-context";
+
+export const dynamic = "force-dynamic";
 
 const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
   limiter: Ratelimit.slidingWindow(2, "30 s"),
 });
-
-export const dynamic = "force-dynamic";
 
 export const GET = async (request: NextRequest) => {
   try {
@@ -107,15 +106,13 @@ export const GET = async (request: NextRequest) => {
       rawQuestions: quiz,
     });
   } catch (error) {
-    if (isDynamicServerError(error)) {
-      console.error("Error generating quiz:", error);
-      return NextResponse.json(
-        {
-          message: "An unexpected error occurred",
-          error: error instanceof Error ? error.message : "Unknown error",
-        },
-        { status: 500 }
-      );
-    }
+    console.error("Error generating quiz:", error);
+    return NextResponse.json(
+      {
+        message: "An unexpected error occurred",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
   }
 };

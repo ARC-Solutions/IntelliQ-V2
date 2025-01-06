@@ -26,7 +26,7 @@ export async function generateQuiz(
   quizTags: string[]
 ): Promise<QuizGenerationResult> {
   const GPT_MODEL = process.env.GPT_MODEL;
-  const startTime = process.hrtime();
+  const startTime = performance.now();
 
   const generatedQuiz = await generateObject({
     model: openai(GPT_MODEL!, {
@@ -44,8 +44,7 @@ export async function generateQuiz(
     maxTokens: 1024,
   });
 
-  const endTime = process.hrtime(startTime);
-  const durationInSeconds = endTime[0] + endTime[1] / 1e9;
+  const durationInSeconds = (performance.now() - startTime) / 1000;
 
   return {
     quiz: generatedQuiz.object,
@@ -54,4 +53,4 @@ export async function generateQuiz(
       usage: generatedQuiz.usage,
     },
   };
-} 
+}
