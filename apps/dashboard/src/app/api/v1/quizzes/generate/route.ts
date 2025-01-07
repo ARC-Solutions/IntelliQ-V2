@@ -4,38 +4,18 @@ import {
   supportedLanguages,
 } from "@/app/api/v1/schemas";
 import { db } from "@/db";
-import { createClient } from "@/lib/supabase/supabase-server-side";
 import { userUsageData } from "@drizzle/schema";
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
 import { NextRequest, NextResponse } from "next/server";
 import { generateQuiz } from "./services/quiz-generator.service";
 import { createTranslateClient, translateQuiz } from "./utils/translator";
+import { withAuth } from "@/lib/api/middleware/with-auth";
+import { User } from '@supabase/supabase-js';
 
 export const dynamic = "force-dynamic";
 export const runtime = "edge";
 
-const ratelimit = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(2, "30 s"),
-});
-
-export const GET = async (request: NextRequest) => {
+export const GET = withAuth(async (request: NextRequest, user: User) => {
   try {
-    // Get user
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    // Rate limiting
-    const { success } = await ratelimit.limit(user?.id!);
-
-    if (!success) {
-      console.log("Unable to process at this time");
-      return NextResponse.json({ error: "Quota exceeded" }, { status: 429 });
-    }
-
     // Validate request
     const { searchParams } = request.nextUrl;
     const result = quizGenerationRequestSchema.safeParse({
@@ -116,4 +96,4 @@ export const GET = async (request: NextRequest) => {
       { status: 500 }
     );
   }
-};
+});

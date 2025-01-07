@@ -30,3 +30,11 @@ export const quizGenerationRequestSchema = z.object({
     ),
   language: supportedLanguages.default(supportedLanguages.Enum.en),
 });
+
+export const roomSchema = z.object({
+  roomCode: z.string().min(4, "Room code is required"),
+});
+
+export const roomResponseSchema = z.object({
+  max_players: z.number(),
+});
