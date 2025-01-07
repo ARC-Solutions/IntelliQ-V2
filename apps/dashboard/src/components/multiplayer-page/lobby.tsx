@@ -59,11 +59,8 @@ export default function Lobby() {
   const checkAndJoinRoom = async (channel: RealtimeChannel) => {
     try {
       // Get current room data
-      const { data: room } = await supabase
-        .from('rooms')
-        .select('max_players')
-        .eq('code', roomCode)
-        .single();
+      const response = await fetch(`/api/v1/rooms/${roomCode}`);
+      const room = await response.json();
 
       if (room) {
         console.log(room);
@@ -77,8 +74,6 @@ export default function Lobby() {
           router.push('/');
           return;
         }
-
-        // If there's space, join the roodm
 
         return room.max_players;
       }
