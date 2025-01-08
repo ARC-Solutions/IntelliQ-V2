@@ -13,7 +13,18 @@ export const quizSchema = z.object({
 });
 
 // EN, DE, FR, ES, IT because most of our users are from these countries
-export const supportedLanguages = z.enum(["en", "de", "fr", "es", "it", "ja", "ro", "sr", "tl", "pl"]);
+export const supportedLanguages = z.enum([
+  "en",
+  "de",
+  "fr",
+  "es",
+  "it",
+  "ja",
+  "ro",
+  "sr",
+  "tl",
+  "pl",
+]);
 export const quizGenerationRequestSchema = z.object({
   quizTopic: z.string().min(1, "Quiz topic is required"),
   quizDescription: z.string().min(1, "Quiz description is required"),
@@ -37,4 +48,15 @@ export const roomSchema = z.object({
 
 export const roomResponseSchema = z.object({
   max_players: z.number(),
+});
+
+export const roomDetailsResponseSchema = z.object({
+    id: z.string(),
+    quiz_id: z.string().nullable(),
+    host_id: z.string(),
+    max_players: z.number(),
+    num_questions: z.number(),
+    code: z.string(),
+    created_at: z.string(),
+    ended_at: z.string().nullable(),
 });
