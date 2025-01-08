@@ -131,20 +131,18 @@ export default function Lobby() {
 
   useEffect(() => {
     const updateSettings = async () => {
-      const { data: room, error } = await supabase
-        .from('rooms')
-        .select()
-        .eq('code', roomCode)
-        .single();
+      const response = await fetch(`/api/v1/rooms/${roomCode}/details`);
+      const data = await response.json();
 
-      if (error) {
-        console.error('Error updating max players:', error);
+
+      if (!response.ok) {
+        console.error('Error updating max players:', data.error);
         return;
       }
 
       // Assuming data contains the updated room info
-      setMaxPlayers(room.max_players);
-      setQuestionCount(room.num_questions);
+      setMaxPlayers(data.max_players);
+      setQuestionCount(data.num_questions);
     };
 
     updateSettings();
