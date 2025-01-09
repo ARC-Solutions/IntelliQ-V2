@@ -23,6 +23,10 @@ import { Player, useMultiplayer } from '@/contexts/multiplayer-context';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { User } from '@/contexts/user-context';
 import { RealtimeChannel } from '@supabase/supabase-js';
+import { useAction } from 'next-safe-action/hooks';
+import { updateRoomMaxPlayers } from '@/app/actions/rooms/update-capacity';
+import { useToast } from '@/components/ui/use-toast';
+
 interface PresenceData {
   currentUser: {
     id: string;
@@ -55,6 +59,7 @@ export default function Lobby() {
   const router = useRouter();
   const roomCode = routerParams['roomCode'] as string;
   const supabase = createClient();
+  const {toast} = useToast();
 
   const checkAndJoinRoom = async (channel: RealtimeChannel) => {
     try {
@@ -224,40 +229,32 @@ export default function Lobby() {
     }
   }, [players]);
 
-  const changeAmountOfPlayers = async (newAmount: number) => {
-    if (!channel) {
-      console.error('Channel is not initialized.');
-      return;
-    }
+const updatePlayersAction = useAction(updateRoomMaxPlayers, {
+  onError: () => {
+    toast({
+      duration: 3500,
+      variant: 'destructive',
+      title: 'Something went wrong.',
+    });
+  },
+});
 
-    if (Number.isNaN(newAmount) || newAmount < 2) {
-      return;
-    }
+  const changeAmountOfPlayers = async (newAmount: number) => {
+    if (!channel || !isCreator) return;
 
     try {
-      if (isCreator) {
-        // Update database
+      const result = await updatePlayersAction.execute({
+        roomCode,
+        maxPlayers: newAmount
+      });
 
-        const { data, error } = await supabase
-          .from('rooms')
-          .update({ max_players: newAmount })
-          .eq('code', roomCode)
-          .select()
-          .single();
-
-        console.log(data);
-        if (error) throw error;
-
-        // Update local state and broadcast to others
-        if (data) {
-          setMaxPlayers(newAmount);
-          await channel.send({
-            type: 'broadcast',
-            event: 'change-amount-of-players',
-            payload: { newAmount },
-          });
-        }
-      }
+      // Update local state and broadcast to others
+      setMaxPlayers(newAmount);
+      await channel.send({
+        type: 'broadcast',
+        event: 'change-amount-of-players',
+        payload: { newAmount },
+      });
     } catch (error) {
       console.error('Failed to update max players:', error);
     }
