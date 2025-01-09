@@ -17,6 +17,7 @@
     "@aws-sdk/client-translate": "^3.699.0",
     "@hookform/resolvers": "^3.9.0",
     "@neondatabase/serverless": "^0.10.4",
+    "@number-flow/react": "^0.5.1",
     "@radix-ui/react-avatar": "^1.1.1",
     "@radix-ui/react-collapsible": "^1.1.1",
     "@radix-ui/react-dialog": "^1.1.2",

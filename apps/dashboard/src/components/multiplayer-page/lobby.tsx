@@ -26,6 +26,7 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { useAction } from 'next-safe-action/hooks';
 import { updateRoomMaxPlayers } from '@/app/actions/rooms/update-capacity';
 import { useToast } from '@/components/ui/use-toast';
+import NumberFlow, { continuous } from '@number-flow/react';
 
 interface PresenceData {
   currentUser: {
@@ -300,8 +301,19 @@ const updatePlayersAction = useAction(updateRoomMaxPlayers, {
             <div className='flex items-center gap-2 text-primary'>
               <UsersRound />
               <div className='flex items-center gap-1'>
-                <h2 className='text-xl font-semibold uppercase'>
-                  players {players.length}/{maxPlayers}
+                <h2 className='text-xl font-semibold uppercase flex items-center'>
+                  <NumberFlow 
+                    willChange 
+                    plugins={[continuous]} 
+                    value={players.length}
+                    prefix='players '
+                  />
+                  /
+                  <NumberFlow 
+                    willChange 
+                    plugins={[continuous]} 
+                    value={maxPlayers} 
+                  />
                 </h2>
               </div>
             </div>
