@@ -27,6 +27,7 @@ import { useAction } from 'next-safe-action/hooks';
 import { updateRoomMaxPlayers } from '@/app/actions/rooms/update-capacity';
 import { useToast } from '@/components/ui/use-toast';
 import NumberFlow, { continuous } from '@number-flow/react';
+import { updateRoomSettings } from '@/app/actions/rooms/update-settings';
 
 interface PresenceData {
   currentUser: {
@@ -119,7 +120,7 @@ export default function Lobby() {
     //   await roomChannel.send({
     //     type: 'broadcast',
     //     event: 'settings-update',
-    //     payload: { type: 'time_limit', value: updatedPlayers[0].settings.timeLimit },
+    //     payload: { type: 'timeLimit', value: updatedPlayers[0].settings.timeLimit },
     //   });
 
     //   await roomChannel.send({
@@ -204,10 +205,10 @@ export default function Lobby() {
         const { type, value } = payload;
 
         switch (type) {
-          case 'num_questions':
+          case 'numQuestions':
             setQuestionCount(value as number);
             break;
-          case 'time_limit':
+          case 'timeLimit':
             setTimeLimit(value as number);
             break;
           case 'topic':
@@ -226,7 +227,7 @@ export default function Lobby() {
   useEffect(() => {
     if (isCreator) {
       updateGameSettings('topic', topic);
-      updateGameSettings('time_limit', timeLimit);
+      updateGameSettings('timeLimit', timeLimit);
     }
   }, [players]);
 
@@ -261,20 +262,29 @@ const updatePlayersAction = useAction(updateRoomMaxPlayers, {
     }
   };
 
+  const updateSettingsAction = useAction(updateRoomSettings, {
+    onError: () => {
+      toast({
+        duration: 3500,
+        variant: 'destructive',
+        title: 'Failed to update room settings.',
+      });
+    },
+  });
+
   const updateGameSettings = async (
-    type: 'num_questions' | 'time_limit' | 'topic' | 'showAnswers',
+    type: 'numQuestions' | 'timeLimit' | 'topic' | 'showAnswers',
     value: number | string | boolean,
   ) => {
     if (!channel || !isCreator) return;
 
     try {
-      if (type === 'num_questions') {
-        const { data } = await supabase
-          .from('rooms')
-          .update({ [type]: value })
-          .eq('code', roomCode)
-          .select()
-          .single();
+      if (type === 'numQuestions') {
+        await updateSettingsAction.execute({
+          roomCode,
+          type,
+          value: value as number,
+        })
       }
 
       await channel.send({
@@ -435,7 +445,7 @@ const updatePlayersAction = useAction(updateRoomMaxPlayers, {
                       step={1}
                       className='flex-1'
                       onValueChange={(value) => {
-                        updateGameSettings('num_questions', value[0]);
+                        updateGameSettings('numQuestions', value[0]);
                         setQuestionCount(value[0]);
                       }}
                     />
@@ -455,7 +465,7 @@ const updatePlayersAction = useAction(updateRoomMaxPlayers, {
                       step={5}
                       className='flex-1'
                       onValueChange={(value) => {
-                        updateGameSettings('time_limit', value[0]);
+                        updateGameSettings('timeLimit', value[0]);
                         setTimeLimit(value[0]);
                       }}
                     />
