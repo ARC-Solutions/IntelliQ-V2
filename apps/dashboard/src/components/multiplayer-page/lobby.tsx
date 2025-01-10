@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/supabase-client-side';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Brain, Crown, Sparkles, Zap, UsersRound } from 'lucide-react';
-import { LinkIcon } from '@/components/ui/link';
+import { InviteButton } from '@/components/invite-button';
 import Image from 'next/image';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -493,13 +493,7 @@ const updatePlayersAction = useAction(updateRoomMaxPlayers, {
         </div>
         {/* Action Buttons */}
         <div className='flex gap-4 justify-center'>
-          <Button
-            variant='outline'
-            className='bg-primary/10 border-primary/20 text-primary min-w-[120px]'
-          >
-            <LinkIcon />
-            INVITE
-          </Button>
+          <InviteButton />
           {isCreator && (
             <Button className='bg-primary text-primary-foreground hover:bg-primary/90 min-w-[120px]'>
               START
