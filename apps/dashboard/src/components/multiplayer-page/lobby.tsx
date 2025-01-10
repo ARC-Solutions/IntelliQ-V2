@@ -3,7 +3,8 @@
 import { createClient } from '@/lib/supabase/supabase-client-side';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Brain, Crown, Link, Sparkles, Zap, UsersRound } from 'lucide-react';
+import { Brain, Crown, Sparkles, Zap, UsersRound } from 'lucide-react';
+import { LinkIcon } from '@/components/ui/link';
 import Image from 'next/image';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -496,7 +497,7 @@ const updatePlayersAction = useAction(updateRoomMaxPlayers, {
             variant='outline'
             className='bg-primary/10 border-primary/20 text-primary min-w-[120px]'
           >
-            <Link className='w-4 h-4 mr-2' />
+            <LinkIcon />
             INVITE
           </Button>
           {isCreator && (
