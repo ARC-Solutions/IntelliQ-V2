@@ -50,6 +50,7 @@
     "input-otp": "^1.2.4",
     "lottie-react": "^2.4.0",
     "lucide-react": "^0.447.0",
+    "motion": "^11.16.4",
     "next": "14.2.11",
     "next-safe-action": "^7.9.9",
     "next-themes": "^0.3.0",
