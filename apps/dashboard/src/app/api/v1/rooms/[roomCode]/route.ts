@@ -1,40 +1,54 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/neon-serverless";
+import { db } from "@/db";
 import { rooms } from "@drizzle/schema";
+import { roomSchema, roomResponseSchema } from "@/app/api/v1/schemas";
+import { z } from "zod";
 
 export const dynamic = "force-dynamic";
-export const runtime = "edge";
-
-export interface Env {
-  HYPERDRIVE: Hyperdrive;
-}
 
 export const GET = async (
   request: NextRequest,
-  context: { params: { roomCode: string }; env: Env }
+  { params }: { params: { roomCode: string } }
 ) => {
+//   const startTime = performance.now();
   try {
-    const db = drizzle(context.env.HYPERDRIVE.connectionString);
+    // console.log("Starting validation...");
+    // const validationStart = performance.now();
+    const validatedParams = roomSchema.parse(params);
+    // console.log(`Validation took: ${performance.now() - validationStart}ms`);
 
+    // console.log("Starting DB query...");
+    // const queryStart = performance.now();
     const room = await db
-      .select({
-        max_players: rooms.maxPlayers,
-      })
+      .select({ max_players: rooms.maxPlayers })
       .from(rooms)
-      .where(eq(rooms.code, context.params.roomCode))
+      .where(eq(rooms.code, validatedParams.roomCode))
       .limit(1);
+    // console.log(`DB query took: ${performance.now() - queryStart}ms`);
 
     if (!room[0]) {
-      return Response.json({ error: "Room not found" }, { status: 404 });
+      return NextResponse.json({ error: "Room not found" }, { status: 404 });
     }
 
-    return Response.json(room[0]);
+    // console.log("Starting response validation...");
+    // const responseValidationStart = performance.now();
+    const validatedResponse = roomResponseSchema.parse(room[0]);
+    // console.log(
+    //   `Response validation took: ${
+    //     performance.now() - responseValidationStart
+    //   }ms`
+    // );
+
+    // console.log(`Total time: ${performance.now() - startTime}ms`);
+    return NextResponse.json(validatedResponse);
   } catch (error) {
-    console.error(error);
-    return Response.json(
-      { error: error instanceof Error ? error.message : error },
-      { status: 500 }
-    );
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Validation error", details: error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
+    throw error;
   }
 };

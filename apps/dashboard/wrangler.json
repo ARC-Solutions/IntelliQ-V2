@@ -1,0 +1,10 @@
+{
+  "main": ".open-next/worker.js",
+  "name": "dashboard",
+  "compatibility_date": "2025-01-09",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  }
+}

@@ -1,20 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getEdgeDb } from "@/db";
+import { db } from "@/db";
 import { rooms } from "@drizzle/schema";
 import { eq } from "drizzle-orm";
 import { roomSchema, roomDetailsResponseSchema } from "@/app/api/v1/schemas";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
-export const runtime = "edge";
 
 export const GET = async (
     request: NextRequest,
-  { params }: { params: { roomCode: string } },
-  { env }: { env: Env }
+  { params }: { params: { roomCode: string } }
 ) => {
   try {
-    const db = getEdgeDb(env);
     // Validate route params
     const validatedParams = roomSchema.parse(params);
 

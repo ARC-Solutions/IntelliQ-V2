@@ -3,18 +3,17 @@ import {
   quizGenerationRequestSchema,
   supportedLanguages,
 } from "@/app/api/v1/schemas";
-import { getEdgeDb } from "@/db";
+import { db } from "@/db";
 import { userUsageData } from "@drizzle/schema";
 import { NextRequest, NextResponse } from "next/server";
 import { generateQuiz } from "./services/quiz-generator.service";
 import { createTranslateClient, translateQuiz } from "./utils/translator";
 import { withAuth } from "@/lib/api/middleware/with-auth";
 import { User } from '@supabase/supabase-js';
-import { Env } from "@/db";
-export const dynamic = "force-dynamic";
-export const runtime = "edge";
 
-export const GET = withAuth(async (request: NextRequest, user: User, { env }: { env: Env }) => {
+export const dynamic = "force-dynamic";
+
+export const GET = withAuth(async (request: NextRequest, user: User) => {
   try {
     // Validate request
     const { searchParams } = request.nextUrl;
@@ -55,7 +54,6 @@ export const GET = withAuth(async (request: NextRequest, user: User, { env }: { 
     );
 
     // Log usage
-    const db = getEdgeDb(env);
     const usage = await db.insert(userUsageData).values({
       userId: user?.id!,
       promptTokens: metrics.usage.promptTokens,
