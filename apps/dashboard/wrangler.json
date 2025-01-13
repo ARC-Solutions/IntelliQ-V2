@@ -1,6 +1,6 @@
 {
   "main": ".open-next/worker.js",
-  "name": "dashboard",
+  "name": "intelliq",
   "compatibility_date": "2025-01-09",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
