@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
-import { db } from "@/db";
+import { db, getEdgeDb } from "@/db";
 import { rooms } from "@drizzle/schema";
 import { roomSchema, roomResponseSchema } from "@/app/api/v1/schemas";
 import { z } from "zod";
@@ -16,13 +16,16 @@ export const GET = async (
   try {
     // console.log("Starting validation...");
     // const validationStart = performance.now();
+    const db = getEdgeDb();
     const validatedParams = roomSchema.parse(params);
     // console.log(`Validation took: ${performance.now() - validationStart}ms`);
 
     // console.log("Starting DB query...");
     // const queryStart = performance.now();
     const room = await db
-      .select({ max_players: rooms.maxPlayers })
+      .select({
+        max_players: rooms.maxPlayers
+      })
       .from(rooms)
       .where(eq(rooms.code, validatedParams.roomCode))
       .limit(1);

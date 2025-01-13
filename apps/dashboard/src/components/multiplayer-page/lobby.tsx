@@ -29,6 +29,7 @@ import { updateRoomMaxPlayers } from '@/app/actions/rooms/update-capacity';
 import { useToast } from '@/components/ui/use-toast';
 import NumberFlow, { continuous } from '@number-flow/react';
 import { updateRoomSettings } from '@/app/actions/rooms/update-settings';
+import { type RoomResponse, type RoomDetailsResponse } from "@/app/api/v1/schemas";
 
 interface PresenceData {
   currentUser: {
@@ -68,14 +69,13 @@ export default function Lobby() {
     try {
       // Get current room data
       const response = await fetch(`/api/v1/rooms/${roomCode}`);
-      const room = await response.json();
+      const room = (await response.json()) as RoomResponse;
 
       if (room) {
         console.log(room);
         // Get current player count from presence state
         const presenceState = channel.presenceState();
         const currentPlayerCount = Object.values(presenceState).flat().length;
-        console.log(currentPlayerCount, room.max_players);
 
         if (currentPlayerCount === room.max_players) {
           alert('This room is full. Please try another room.');
@@ -140,11 +140,11 @@ export default function Lobby() {
   useEffect(() => {
     const updateSettings = async () => {
       const response = await fetch(`/api/v1/rooms/${roomCode}/details`);
-      const data = await response.json();
-
+      const data = (await response.json()) as RoomDetailsResponse;
 
       if (!response.ok) {
-        console.error('Error updating max players:', data.error);
+        const errorData = (await response.json()) as { error: string };
+        console.error('Error updating max players:', errorData.error);
         return;
       }
 

@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.3",
+    "@cloudflare/workers-types": "^4.20250109.0",
     "turbo": "^2.2.3",
     "typescript": "^5.4.5"
   },

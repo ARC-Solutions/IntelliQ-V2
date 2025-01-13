@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db";
+import { getEdgeDb } from "@/db";
 import { rooms } from "@drizzle/schema";
 import { eq } from "drizzle-orm";
 import { roomSchema, roomDetailsResponseSchema } from "@/app/api/v1/schemas";
@@ -13,6 +13,7 @@ export const GET = async (
   { params }: { params: { roomCode: string } }
 ) => {
   try {
+    const db = getEdgeDb();
     // Validate route params
     const validatedParams = roomSchema.parse(params);
 

@@ -13,7 +13,7 @@ export const updateRoomMaxPlayers = actionClient
       .update(rooms)
       .set({ maxPlayers })
       .where(eq(rooms.code, roomCode))
-        .returning({ maxPlayers: rooms.maxPlayers });
+      .returning({ maxPlayers: rooms.maxPlayers });
 
     if (!updated[0]) throw new Error("Failed to update room capacity");
 
