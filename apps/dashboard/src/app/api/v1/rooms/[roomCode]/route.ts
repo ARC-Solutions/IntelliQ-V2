@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
-import { db, getEdgeDb } from "@/db";
+import { getEdgeDb } from "@/db";
 import { rooms } from "@drizzle/schema";
 import { roomSchema, roomResponseSchema } from "@/app/api/v1/schemas";
 import { z } from "zod";
