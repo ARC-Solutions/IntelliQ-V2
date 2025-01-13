@@ -8,9 +8,10 @@
     "start": "next start",
     "format": "biome format --write .",
     "db:introspect": "npx drizzle-kit pull",
-    "pages:build": "npx @cloudflare/next-on-pages",
-    "preview": "npm run pages:build && wrangler pages dev",
-    "deploy": "npm run pages:build && wrangler pages deploy"
+    "build:worker": "opennextjs-cloudflare",
+    "dev:worker": "wrangler dev --port 8771",
+    "preview:worker": "npm run build:worker && npm run dev:worker",
+    "deploy:worker": "npm run build:worker && wrangler deploy"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.0.5",
@@ -66,7 +67,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.1",
-    "@cloudflare/next-on-pages": "^1.13.7",
+    "@opennextjs/aws": "^3.3.1",
+    "@opennextjs/cloudflare": "^0.3.8",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
@@ -76,6 +78,7 @@
     "tailwindcss": "^3.4.1",
     "tailwindcss-debug-screens": "^2.2.1",
     "tsx": "^4.19.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^3.101.0"
   }
 }
