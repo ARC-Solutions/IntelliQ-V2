@@ -4,12 +4,7 @@ export interface Env {
     HYPERDRIVE: Hyperdrive;
 }
 
-// For non-edge routes
-export const db = drizzle(process.env.DATABASE_URL!);
-
-// For edge routes
-export const getEdgeDb = () => {
-    // @ts-expect-error - Runtime binding
-    const env = env.HYPERDRIVE.connectionString;
-    return drizzle(env);
+export const getEdgeDb = (env: Env) => {
+    const db = drizzle(env.HYPERDRIVE.connectionString);
+    return db;
 };

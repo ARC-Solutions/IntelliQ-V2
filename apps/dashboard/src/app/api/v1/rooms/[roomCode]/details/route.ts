@@ -10,10 +10,11 @@ export const runtime = "edge";
 
 export const GET = async (
     request: NextRequest,
-  { params }: { params: { roomCode: string } }
+  { params }: { params: { roomCode: string } },
+  { env }: { env: Env }
 ) => {
   try {
-    const db = getEdgeDb();
+    const db = getEdgeDb(env);
     // Validate route params
     const validatedParams = roomSchema.parse(params);
 

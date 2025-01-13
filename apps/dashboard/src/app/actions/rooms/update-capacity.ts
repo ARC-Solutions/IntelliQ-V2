@@ -1,14 +1,17 @@
 "use server";
 
-import { actionClient } from "../safe-action";
+import { edgeActionClient } from '../safe-action';
 import { updateMaxPlayersSchema } from "../schemas/update-max-players-schema";
-import { db } from "@/db";
+import { getEdgeDb } from "@/db";
 import { rooms } from "@drizzle/schema";
 import { eq } from "drizzle-orm";
+import { Env } from "@/db";
 
-export const updateRoomMaxPlayers = actionClient
+export const updateRoomMaxPlayers = edgeActionClient
   .schema(updateMaxPlayersSchema)
-  .action(async ({ parsedInput: { maxPlayers, roomCode } }) => {
+  .action(async ({ parsedInput, ctx }) => {
+    const { maxPlayers, roomCode } = parsedInput;
+    const db = getEdgeDb(ctx.env! as Env);
     const updated = await db
       .update(rooms)
       .set({ maxPlayers })

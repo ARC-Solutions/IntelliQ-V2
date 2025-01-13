@@ -1,19 +1,20 @@
 "use server";
 
-import { actionClient } from "../safe-action";
+import { edgeActionClient } from "../safe-action";
 import {
   updateRoomSettingsSchema,
 } from "../schemas/update-room-settings-schema";
-import { db } from "@/db";
+import { getEdgeDb } from "@/db";
 import { rooms } from "@drizzle/schema";
 import { eq } from "drizzle-orm";
+import { Env } from "@/db";
 
-export const updateRoomSettings = actionClient
+export const updateRoomSettings = edgeActionClient
   .schema(updateRoomSettingsSchema)
   .action(
-    async ({
-      parsedInput: { roomCode, type, value },
-    }) => {
+    async ({ parsedInput, ctx }) => {
+      const { roomCode, type, value } = parsedInput;
+      const db = getEdgeDb(ctx.env! as Env);
       const updated = await db
         .update(rooms)
         .set({ [type]: value })
