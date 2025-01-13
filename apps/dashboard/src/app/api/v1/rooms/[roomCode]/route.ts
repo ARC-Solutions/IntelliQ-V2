@@ -10,13 +10,14 @@ export const runtime = "edge";
 
 export const GET = async (
   request: NextRequest,
-  { params }: { params: { roomCode: string } }
+  { params }: { params: { roomCode: string } },
+  { env }: { env: Env }
 ) => {
 //   const startTime = performance.now();
   try {
     // console.log("Starting validation...");
     // const validationStart = performance.now();
-    const db = getEdgeDb();
+    const db = getEdgeDb(env);
     const validatedParams = roomSchema.parse(params);
     // console.log(`Validation took: ${performance.now() - validationStart}ms`);
 
