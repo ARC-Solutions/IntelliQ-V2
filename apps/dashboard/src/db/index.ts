@@ -10,6 +10,6 @@ export const db = drizzle(process.env.DATABASE_URL!);
 // For edge routes
 export const getEdgeDb = () => {
     // @ts-expect-error - Runtime binding
-    const env = process.env.HYPERDRIVE?.connectionString;
+    const env = env.HYPERDRIVE.connectionString;
     return drizzle(env);
 };
