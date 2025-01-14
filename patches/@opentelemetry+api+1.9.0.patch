@@ -1,0 +1,12 @@
+diff --git a/node_modules/@opentelemetry/api/build/src/platform/index.js b/node_modules/@opentelemetry/api/build/src/platform/index.js
+index 33b834d..51ecd01 100644
+--- a/node_modules/@opentelemetry/api/build/src/platform/index.js
++++ b/node_modules/@opentelemetry/api/build/src/platform/index.js
+@@ -25,5 +25,5 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
+     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+ };
+ Object.defineProperty(exports, "__esModule", { value: true });
+-__exportStar(require("./node"), exports);
++__exportStar(require("./browser"), exports);
+ //# sourceMappingURL=index.js.map
+\ No newline at end of file
