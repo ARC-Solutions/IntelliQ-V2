@@ -14,7 +14,8 @@
     "deploy:worker": "npm run build:worker && wrangler deploy",
     "preview": "opennextjs-cloudflare && wrangler dev",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv env.d.ts",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "build:cloudflare": "npm install && next build && opennextjs-cloudflare"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.0.5",
