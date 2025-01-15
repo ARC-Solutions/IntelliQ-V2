@@ -1,3 +1,5 @@
 import { drizzle } from "drizzle-orm/neon-serverless";
+import { getRequestContext } from "@cloudflare/next-on-pages";
 
-export const db = drizzle(process.env.DATABASE_URL!);
+const { env, cf, ctx } = getRequestContext();
+export const db = drizzle(env.HYPERDRIVE.connectionString);
