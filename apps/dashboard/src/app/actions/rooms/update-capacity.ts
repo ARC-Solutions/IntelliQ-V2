@@ -2,13 +2,14 @@
 
 import { actionClient } from "../safe-action";
 import { updateMaxPlayersSchema } from "../schemas/update-max-players-schema";
-import { db } from "@/db";
+import { getDb } from "@/db";
 import { rooms } from "@drizzle/schema";
 import { eq } from "drizzle-orm";
 
 export const updateRoomMaxPlayers = actionClient
   .schema(updateMaxPlayersSchema)
   .action(async ({ parsedInput: { maxPlayers, roomCode } }) => {
+    const db = getDb(); // init db with CF-Hyperdrive binding
     const updated = await db
       .update(rooms)
       .set({ maxPlayers })
