@@ -45,7 +45,13 @@ export const GET = async (
 
     console.log(`Total time: ${performance.now() - startTime}ms`);
     return NextResponse.json(validatedResponse);
-  } catch (error) {
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error("Error name:", err.name);
+    console.error("Error message:", err.message);
+    console.error("Error stack:", err.stack);
+    console.error("Full error object:", JSON.stringify(error, null, 2));
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Validation error", details: error.flatten().fieldErrors },
