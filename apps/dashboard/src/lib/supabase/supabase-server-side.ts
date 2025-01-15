@@ -2,27 +2,19 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-export interface Env {
-  // If you set another name in wrangler.toml as the value for 'binding',
-  // replace "HYPERDRIVE" with the variable name you defined.
-  HYPERDRIVE: Hyperdrive;
-}
-
-export async function createClient() {
+export function createClient() {
   const cookieStore = cookies();
-  const supabase_anon = (await getCloudflareContext()).env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const supabase_url = (await getCloudflareContext()).env.NEXT_PUBLIC_SUPABASE_URL;
   
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !supabase_url) {
+  if (!process.env.SUPABASE_URL) {
     throw new Error("NEXT_PUBLIC_SUPABASE_URL or ENV is not defined");
   }
-  if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || !supabase_anon) {
+  if (!process.env.SUPABASE_KEY) {
     throw new Error("NEXT_PUBLIC_SUPABASE_ANON_KEY or ENV is not defined");
   }
   
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL! || supabase_url,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY! || supabase_anon,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
