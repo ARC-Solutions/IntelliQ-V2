@@ -5,6 +5,3 @@ pages_build_output_dir = ".vercel/output/static"
 
 [vars]
 
-[[hyperdrive]]
-binding = "HYPERDRIVE"
-id = "bfe875e803b644188379520d336da4d6"
