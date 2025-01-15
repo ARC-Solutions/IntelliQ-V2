@@ -11,6 +11,7 @@ import { createTranslateClient, translateQuiz } from "./utils/translator";
 import { withAuth } from "@/lib/api/middleware/with-auth";
 import { User } from '@supabase/supabase-js';
 
+export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
 export const GET = withAuth(async (request: NextRequest, user: User) => {
