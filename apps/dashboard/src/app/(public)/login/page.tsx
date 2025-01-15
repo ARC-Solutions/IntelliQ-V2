@@ -3,6 +3,8 @@ import { UserAuthForm } from '@/components/login-page/user-auth-form';
 import { Metadata } from 'next';
 import Image from 'next/image';
 
+export const runtime = "edge";
+
 export const metadata: Metadata = {
   title: 'Authentication',
   description: 'Authentication forms built using the components.',
