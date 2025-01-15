@@ -4,6 +4,7 @@ import { getRequestContext } from "@cloudflare/next-on-pages";
 
 export const getDb = () => {
   const { env } = getRequestContext();
-  const client = postgres(env.HYPERDRIVE.connectionString);
-  return drizzle(client);
+  const queryClient = postgres(env.HYPERDRIVE.connectionString);
+  const db = drizzle({ client: queryClient });
+  return db;
 };
