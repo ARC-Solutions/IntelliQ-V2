@@ -4,6 +4,8 @@ import { fetchAllQuizzes } from '@/lib/fetch-all-quizzes';
 import HistoryPage from '@/components/history-page/history-page';
 import { QuizHistoryResponse } from '@/lib/fetch-all-quizzes';
 
+export const runtime = "edge";
+
 const History = async () => {
   const supabase = createClient();
   const { session } = (await supabase.auth.getSession()).data;
