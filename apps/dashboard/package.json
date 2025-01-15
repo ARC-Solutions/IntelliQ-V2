@@ -10,12 +10,9 @@
     "db:introspect": "npx drizzle-kit pull",
     "build:worker": "opennextjs-cloudflare",
     "dev:worker": "wrangler dev --port 8771",
-    "preview:worker": "npm run build:worker && npm run dev:worker",
-    "deploy:worker": "npm run build:worker && wrangler deploy",
-    "preview": "opennextjs-cloudflare && wrangler dev",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv env.d.ts",
-    "postinstall": "patch-package",
-    "build:cloudflare": "npm install && next build && opennextjs-cloudflare"
+    "preview": "npm run build:worker && npm run dev:worker",
+    "deploy": "npm run build:worker && wrangler deploy",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.0.5",
@@ -60,7 +57,6 @@
     "next": "14.2.5",
     "next-safe-action": "^7.9.9",
     "next-themes": "^0.3.0",
-    "patch-package": "^8.0.0",
     "react": "^18",
     "react-dom": "^18",
     "react-hook-form": "^7.53.0",
@@ -73,8 +69,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.1",
-    "@cloudflare/workers-types": "^4.20250109.0",
-    "@opennextjs/cloudflare": "^0.3.8",
+    "@cloudflare/next-on-pages": "^1.13.7",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
