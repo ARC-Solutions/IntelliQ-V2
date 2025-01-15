@@ -12,5 +12,8 @@ interface Env {
 	AMAZON_SECRET_ACCESS_KEY: string;
 	UPSTASH_REDIS_REST_URL: string;
 	UPSTASH_REDIS_REST_TOKEN: string;
+	BINDING: string;
+	ID: string;
+	HYPERDRIVE: Hyperdrive;
 	ASSETS: Fetcher;
 }
