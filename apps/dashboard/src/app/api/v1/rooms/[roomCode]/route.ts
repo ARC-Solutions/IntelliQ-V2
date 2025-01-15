@@ -5,6 +5,7 @@ import { rooms } from "@drizzle/schema";
 import { roomSchema, roomResponseSchema } from "@/app/api/v1/schemas";
 import { z } from "zod";
 
+export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
 export const GET = async (

@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { loginSchema } from "@/lib/validations/auth";
 
+export const runtime = "edge";
+export const dynamic = "force-dynamic";
+
 export const POST = async (request: NextRequest) => {
   try {
     const { email, password } = loginSchema.parse(await request.json());
