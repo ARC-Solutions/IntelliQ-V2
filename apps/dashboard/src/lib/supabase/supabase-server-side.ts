@@ -1,4 +1,3 @@
-import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
