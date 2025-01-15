@@ -21,7 +21,7 @@
       "@/*": ["./src/*"],
       "@drizzle/*": ["./drizzle/*"]
     },
-    "types": ["./.wrangler/types/runtime.d.ts"]
+    "types": ["./.wrangler/types/runtime"]
   },
   "include": [
     "next-env.d.ts",
