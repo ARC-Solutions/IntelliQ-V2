@@ -1,4 +1,4 @@
-import { drizzle } from "drizzle-orm/postgres-js";
+import { drizzle } from "drizzle-orm/node-postgres";
 import { getRequestContext } from "@cloudflare/next-on-pages";
 
 export const getDb = () => {
