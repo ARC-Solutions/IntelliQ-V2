@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db";
+import { getDb } from "@/db";
 import { rooms } from "@drizzle/schema";
 import { eq } from "drizzle-orm";
 import { roomSchema, roomDetailsResponseSchema } from "@/app/api/v1/schemas";
@@ -16,16 +16,17 @@ export const GET = async (
     // Validate route params
     const validatedParams = roomSchema.parse(params);
 
+    const db = getDb(); // init db with CF-Hyperdrive binding
     const room = await db
-        .select({
-            id: rooms.id,
-            quiz_id: rooms.quizId,
-            host_id: rooms.hostId,
-            max_players: rooms.maxPlayers,
-            num_questions: rooms.numQuestions,
-            code: rooms.code,
-            created_at: rooms.createdAt,
-            ended_at: rooms.endedAt,
+      .select({
+        id: rooms.id,
+        quiz_id: rooms.quizId,
+        host_id: rooms.hostId,
+        max_players: rooms.maxPlayers,
+        num_questions: rooms.numQuestions,
+        code: rooms.code,
+        created_at: rooms.createdAt,
+        ended_at: rooms.endedAt,
       })
       .from(rooms)
       .where(eq(rooms.code, validatedParams.roomCode))

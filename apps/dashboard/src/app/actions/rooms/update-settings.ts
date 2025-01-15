@@ -2,13 +2,14 @@
 
 import { actionClient } from "../safe-action";
 import { updateRoomSettingsSchema } from "../schemas/update-room-settings-schema";
-import { db } from "@/db";
+import { getDb } from "@/db";
 import { rooms } from "@drizzle/schema";
 import { eq } from "drizzle-orm";
 
 export const updateRoomSettings = actionClient
   .schema(updateRoomSettingsSchema)
   .action(async ({ parsedInput: { roomCode, type, value } }) => {
+    const db = getDb(); // init db with CF-Hyperdrive binding
     const updated = await db
       .update(rooms)
       .set({ [type]: value })
