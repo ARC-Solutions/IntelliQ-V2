@@ -11,5 +11,11 @@
     "logs": {
       "enabled": true
     }
-  }
+  },
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "b919671da5eb43cdbd24f75557b382c7"
+    }
+  ]
 }
