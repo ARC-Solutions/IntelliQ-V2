@@ -12,7 +12,9 @@ const nextConfig = {
       tls: false,
       crypto: false,
       perf_hooks: false,
-      os: false
+      os: false,
+      string_decoder: false,
+      dns: false
     };
     return config;
   },
