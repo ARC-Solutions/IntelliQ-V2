@@ -1,0 +1,12 @@
+name = "api"
+main = "src/index.ts"
+compatibility_date = "2025-01-16"
+
+compatibility_flags = [ "nodejs_compat" ]
+
+# [vars]
+# MY_VAR = "my-variable"
+
+# [[hyperdrive]]
+# binding = "HYPERDRIVE"
+# id = "1a00ffa260364d50a7764783b03cde87"

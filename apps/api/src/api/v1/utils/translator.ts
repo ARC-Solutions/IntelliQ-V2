@@ -1,12 +1,21 @@
-import { TranslateClient, TranslateTextCommand } from "@aws-sdk/client-translate";
-import { supportedLanguages } from "@/app/api/v1/schemas";
+import {
+  TranslateClient,
+  TranslateTextCommand,
+} from "@aws-sdk/client-translate";
+import { supportedLanguages } from "../schemas";
 
-export const createTranslateClient = () => {
+export const createTranslateClient = (c: {
+  env: {
+    AMAZON_REGION: string;
+    AMAZON_ACCESS_KEY_ID: string;
+    AMAZON_SECRET_ACCESS_KEY: string;
+  };
+}) => {
   return new TranslateClient({
-    region: process.env.AMAZON_REGION,
+    region: c.env.AMAZON_REGION,
     credentials: {
-      accessKeyId: process.env.AMAZON_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.AMAZON_SECRET_ACCESS_KEY!,
+      accessKeyId: c.env.AMAZON_ACCESS_KEY_ID,
+      secretAccessKey: c.env.AMAZON_SECRET_ACCESS_KEY,
     },
   });
 };
@@ -39,15 +48,14 @@ export async function translateQuiz(
 
     for (const [key, value] of Object.entries(obj)) {
       if (!keysToTranslate.includes(key)) {
-        translatedObj[key] = typeof value === 'object' 
-          ? await translateFields(value)
-          : value;
+        translatedObj[key] =
+          typeof value === "object" ? await translateFields(value) : value;
         continue;
       }
 
-      if (key === 'options' && Array.isArray(value)) {
+      if (key === "options" && Array.isArray(value)) {
         translatedObj[key] = await Promise.all(
-          value.map(option => translateText(option))
+          value.map((option) => translateText(option))
         );
       } else {
         translatedObj[key] = await translateText(String(value));

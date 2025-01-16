@@ -1,7 +1,7 @@
-import { openai } from "@ai-sdk/openai";
+import { createOpenAI, openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
-import { quizSchema } from "@/app/api/v1/schemas";
-import { generateQuizPrompt } from "@/app/api/v1/prompts";
+import { quizSchema } from "../schemas";
+import { generateQuizPrompt } from "../prompts";
 import { z } from "zod";
 
 // Use the quiz schema to infer the type
@@ -20,16 +20,20 @@ export interface QuizGenerationResult {
 }
 
 export async function generateQuiz(
+  c: { env: { GPT_MODEL: string, OPENAI_API_KEY: string } },
   quizTopic: string,
   quizDescription: string,
   numberOfQuestions: number,
   quizTags: string[]
 ): Promise<QuizGenerationResult> {
-  const GPT_MODEL = process.env.GPT_MODEL;
+  const GPT_MODEL = c.env.GPT_MODEL;
   const startTime = performance.now();
+  const openai = createOpenAI({
+    apiKey: c.env.OPENAI_API_KEY,
+  });
 
   const generatedQuiz = await generateObject({
-    model: openai(GPT_MODEL!, {
+    model: openai(GPT_MODEL, {
       structuredOutputs: true,
     }),
     schemaName: "quizzes",
