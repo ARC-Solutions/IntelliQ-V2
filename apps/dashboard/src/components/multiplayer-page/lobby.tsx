@@ -29,7 +29,7 @@ import { updateRoomMaxPlayers } from '@/app/actions/rooms/update-capacity';
 import { useToast } from '@/components/ui/use-toast';
 import NumberFlow, { continuous } from '@number-flow/react';
 import { updateRoomSettings } from '@/app/actions/rooms/update-settings';
-import { type RoomResponse, type RoomDetailsResponse } from "@/app/api/v1/schemas";
+import { type RoomResponse, type RoomDetailsResponse } from "@/app/actions/schemas/old-v1-api-schema";
 
 interface PresenceData {
   currentUser: {
