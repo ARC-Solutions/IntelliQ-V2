@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
-import { getDb } from "@/db";
+import { db } from "@/db";
 import { rooms } from "@drizzle/schema";
 import { roomSchema, roomResponseSchema } from "@/app/api/v1/schemas";
 import { z } from "zod";
@@ -18,8 +18,6 @@ export const GET = async (
     const validationStart = performance.now();
     const validatedParams = roomSchema.parse(params);
     console.log(`Validation took: ${performance.now() - validationStart}ms`);
-
-    const db = getDb(); // init db with CF-Hyperdrive binding
 
     console.log("Starting DB query...");
     const queryStart = performance.now();
