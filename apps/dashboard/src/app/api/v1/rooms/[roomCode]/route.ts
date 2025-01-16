@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
-import { db } from "@/db";
+import { getDb } from "@/db";
 import { rooms } from "@drizzle/schema";
 import { roomSchema, roomResponseSchema } from "@/app/api/v1/schemas";
 import { z } from "zod";
@@ -21,6 +21,7 @@ export const GET = async (
 
     console.log("Starting DB query...");
     const queryStart = performance.now();
+    const db = getDb();
     const room = await db
       .select({ max_players: rooms.maxPlayers })
       .from(rooms)
