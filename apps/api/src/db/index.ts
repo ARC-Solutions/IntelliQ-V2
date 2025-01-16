@@ -1,6 +1,8 @@
-import { drizzle } from 'drizzle-orm/postgres-js'
-import postgres from 'postgres'
+import { drizzle } from "drizzle-orm/postgres-js";
+import { Context } from "hono";
+import postgres from "postgres";
 
-const db = drizzle(postgres(process.env.DATABASE_URL!))
-
-export default db;
+export const createDb = async (c: Context) => {
+  const db = drizzle(postgres(c.env.HYPERDRIVE.connectionString));
+  return db;
+};

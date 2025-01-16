@@ -4,9 +4,13 @@ compatibility_date = "2025-01-16"
 
 compatibility_flags = [ "nodejs_compat" ]
 
-# [vars]
-# MY_VAR = "my-variable"
+[vars]
+GPT_MODEL="gpt-4o-mini"
+AMAZON_REGION="eu-north-1"
 
-# [[hyperdrive]]
-# binding = "HYPERDRIVE"
-# id = "1a00ffa260364d50a7764783b03cde87"
+[[hyperdrive]]
+binding = "HYPERDRIVE"
+id = "1ead348e22444a0f98164d2421b7b058"
+
+[observability.logs]
+enabled = true

@@ -1,45 +1,53 @@
-import { Hono } from 'hono'
-import { rooms as roomsTable } from '@drizzle/schema'
-import { eq } from 'drizzle-orm'
-import { roomSchema, roomResponseSchema, roomDetailsResponseSchema } from '../schemas'
-import { z } from 'zod'
-import db from '../../../db'
+import { Hono } from "hono";
+import { rooms as roomsTable } from "@drizzle/schema";
+import { eq } from "drizzle-orm";
+import {
+  roomSchema,
+  roomResponseSchema,
+  roomDetailsResponseSchema,
+} from "../schemas";
+import { z } from "zod";
+import { createDb } from "../../../db";
 
-const rooms = new Hono()
-  .get('/:roomCode', async (c) => {
+const rooms = new Hono<{ Bindings: CloudflareEnv }>();
+
+rooms
+  .get("/:roomCode", async (c) => {
     try {
-      const validatedParams = roomSchema.parse({ 
-        roomCode: c.req.param('roomCode') 
-      })
+      const validatedParams = roomSchema.parse({
+        roomCode: c.req.param("roomCode"),
+      });
+
+      const db = await createDb(c);
 
       const room = await db
         .select({ max_players: roomsTable.maxPlayers })
         .from(roomsTable)
         .where(eq(roomsTable.code, validatedParams.roomCode))
-        .limit(1)
+        .limit(1);
 
       if (!room[0]) {
-        return c.json({ error: 'Room not found' }, 404)
+        return c.json({ error: "Room not found" }, 404);
       }
 
-      const validatedResponse = roomResponseSchema.parse(room[0])
-      return c.json(validatedResponse)
+      const validatedResponse = roomResponseSchema.parse(room[0]);
+      return c.json(validatedResponse);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return c.json(
-          { error: 'Validation error', details: error.flatten().fieldErrors },
+          { error: "Validation error", details: error.flatten().fieldErrors },
           400
-        )
+        );
       }
-      throw error
+      throw error;
     }
   })
-  .get('/:roomCode/details', async (c) => {
+  .get("/:roomCode/details", async (c) => {
     try {
-      const validatedParams = roomSchema.parse({ 
-        roomCode: c.req.param('roomCode') 
-      })
-
+      const validatedParams = roomSchema.parse({
+        roomCode: c.req.param("roomCode"),
+      });
+      const db = await createDb(c);
       const room = await db
         .select({
           id: roomsTable.id,
@@ -53,23 +61,23 @@ const rooms = new Hono()
         })
         .from(roomsTable)
         .where(eq(roomsTable.code, validatedParams.roomCode))
-        .limit(1)
+        .limit(1);
 
       if (!room[0]) {
-        return c.json({ error: 'Room not found' }, 404)
+        return c.json({ error: "Room not found" }, 404);
       }
 
-      const validatedResponse = roomDetailsResponseSchema.parse(room[0])
-      return c.json(validatedResponse)
+      const validatedResponse = roomDetailsResponseSchema.parse(room[0]);
+      return c.json(validatedResponse);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return c.json(
-          { error: 'Validation error', details: error.flatten().fieldErrors },
+          { error: "Validation error", details: error.flatten().fieldErrors },
           400
-        )
+        );
       }
-      throw error
+      throw error;
     }
-  })
+  });
 
-export { rooms }
+export { rooms };

@@ -3,14 +3,22 @@ import {
   TranslateTextCommand,
 } from "@aws-sdk/client-translate";
 import { supportedLanguages } from "../schemas";
+import { Context } from "hono";
 
-export const createTranslateClient = (c: {
-  env: {
-    AMAZON_REGION: string;
-    AMAZON_ACCESS_KEY_ID: string;
-    AMAZON_SECRET_ACCESS_KEY: string;
-  };
-}) => {
+export const createTranslateClient = (c: Context) => {
+  if (
+    !c.env.AMAZON_ACCESS_KEY_ID ||
+    !c.env.AMAZON_SECRET_ACCESS_KEY ||
+    !c.env.AMAZON_REGION
+  ) {
+    throw new Error(
+      JSON.stringify({
+        message: "AWS Translate configuration missing",
+        details: "Required AWS credentials are not configured",
+      })
+    );
+  }
+
   return new TranslateClient({
     region: c.env.AMAZON_REGION,
     credentials: {
