@@ -1,12 +1,8 @@
-import { drizzle } from "drizzle-orm/neon-http";
-import { neon, neonConfig } from "@neondatabase/serverless";
-import { getRequestContext } from "@cloudflare/next-on-pages";
-
-neonConfig.fetchConnectionCache = true;
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 
 export const getDb = () => {
-  const { env } = getRequestContext();
-  const sql = neon(env.HYPERDRIVE.connectionString);
-  const db = drizzle(sql);
+  const client = postgres(process.env.DATABASE_URL!, { prepare: false });
+  const db = drizzle(client);
   return db;
 };
