@@ -17,7 +17,7 @@ app.route("/api/v1", api);
 app.get("/", (c) => c.json({ status: "ok" }));
 app.post("/api/signin", async (c) => {
   const supabase = getSupabase(c);
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signUp({
     email: c.req.param("email")!,
     password: c.req.param("password")!,
   });
