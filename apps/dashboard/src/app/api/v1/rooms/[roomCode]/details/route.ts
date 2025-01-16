@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/db";
+import { db } from "@/db";
 import { rooms } from "@drizzle/schema";
 import { eq } from "drizzle-orm";
 import { roomSchema, roomDetailsResponseSchema } from "@/app/api/v1/schemas";
@@ -16,7 +16,6 @@ export const GET = async (
     // Validate route params
     const validatedParams = roomSchema.parse(params);
 
-    const db = getDb(); // init db with CF-Hyperdrive binding
     const room = await db
       .select({
         id: rooms.id,

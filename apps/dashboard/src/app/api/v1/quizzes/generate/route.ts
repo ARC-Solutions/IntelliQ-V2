@@ -3,7 +3,7 @@ import {
   quizGenerationRequestSchema,
   supportedLanguages,
 } from "@/app/api/v1/schemas";
-import { getDb } from "@/db";
+import { db } from "@/db";
 import { userUsageData } from "@drizzle/schema";
 import { NextRequest, NextResponse } from "next/server";
 import { generateQuiz } from "./services/quiz-generator.service";
@@ -55,7 +55,6 @@ export const GET = withAuth(async (request: NextRequest, user: User) => {
     );
 
     // Log usage
-    const db = getDb(); // init db with CF-Hyperdrive binding
     const usage = await db.insert(userUsageData).values({
       userId: user?.id!,
       promptTokens: metrics.usage.promptTokens,
