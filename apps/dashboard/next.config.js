@@ -10,7 +10,9 @@ const nextConfig = {
       constants: false,
       net: false,
       tls: false,
-      crypto: false
+      crypto: false,
+      perf_hooks: false,
+      os: false
     };
     return config;
   },
