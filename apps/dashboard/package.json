@@ -64,6 +64,7 @@
     "tailwind-merge": "^2.5.3",
     "tailwindcss-animate": "^1.0.7",
     "usehooks-ts": "^3.1.0",
+    "ws": "^8.18.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -80,5 +81,8 @@
     "tailwindcss-debug-screens": "^2.2.1",
     "tsx": "^4.19.2",
     "typescript": "^5"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.9"
   }
 }
