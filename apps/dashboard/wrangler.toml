@@ -1,6 +1,6 @@
 name = "intelliq-dashboard"
 compatibility_date = "2025-01-15"
-compatibility_flags = ["nodejs_compat"]
+compatibility_flags = ["nodejs_compat_v2"]
 pages_build_output_dir = ".vercel/output/static"
 
 [vars]
