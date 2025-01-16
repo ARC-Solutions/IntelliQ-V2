@@ -1,9 +1,11 @@
 import { getRequestContext } from "@cloudflare/next-on-pages";
-import postgres from "postgres";
-import { drizzle } from "drizzle-orm/postgres-js";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Client } from "pg";
 
 export const getDb = () => {
   const { env } = getRequestContext();
-  const db = drizzle(postgres(env.HYPERDRIVE.connectionString));
-  return db;
+  const client = new Client({
+    connectionString: env.HYPERDRIVE.connectionString,
+  });
+  return drizzle(client);
 };
