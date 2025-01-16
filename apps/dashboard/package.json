@@ -46,7 +46,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "dotenv": "^16.4.5",
-    "drizzle-orm": "^0.38.3",
+    "drizzle-orm": "^0.38.4",
     "framer-motion": "^11.11.1",
     "input-otp": "^1.2.4",
     "lottie-react": "^2.4.0",
@@ -64,7 +64,6 @@
     "tailwind-merge": "^2.5.3",
     "tailwindcss-animate": "^1.0.7",
     "usehooks-ts": "^3.1.0",
-    "ws": "^8.18.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -75,14 +74,11 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "dotenv-cli": "^7.3.0",
-    "drizzle-kit": "^0.27.2",
+    "drizzle-kit": "^0.30.2",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "tailwindcss-debug-screens": "^2.2.1",
     "tsx": "^4.19.2",
     "typescript": "^5"
-  },
-  "optionalDependencies": {
-    "bufferutil": "^4.0.9"
   }
 }

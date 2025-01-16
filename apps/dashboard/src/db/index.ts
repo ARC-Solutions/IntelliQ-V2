@@ -1,9 +1,9 @@
-import { drizzle } from "drizzle-orm/neon-serverless";
 import { getRequestContext } from "@cloudflare/next-on-pages";
-import ws from "ws";
+import postgres from "postgres";
+import { drizzle } from "drizzle-orm/postgres-js";
 
 export const getDb = () => {
   const { env } = getRequestContext();
-  const db = drizzle({ connection: env.HYPERDRIVE.connectionString, ws: ws });
+  const db = drizzle(postgres(process.env.DATABASE_URL!));
   return db;
 };
