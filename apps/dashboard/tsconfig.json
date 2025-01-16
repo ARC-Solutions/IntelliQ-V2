@@ -29,7 +29,11 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/lib/fetch-all-quizzes",
-    "src/types/cloudflare.d.ts"
+    "src/types/cloudflare.d.ts",
+    "../api/src/api/v1/schemas.ts",
+    "../api/src/api/v1/services/quiz-generator.service.ts",
+    "../api/src/api/v1/prompts.ts",
+    "../api/src/api/v1/utils/translator.ts"
   ],
   "exclude": ["node_modules"]
 }

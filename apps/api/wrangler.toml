@@ -1,0 +1,16 @@
+name = "api"
+main = "src/index.ts"
+compatibility_date = "2025-01-16"
+
+compatibility_flags = [ "nodejs_compat" ]
+
+[vars]
+GPT_MODEL="gpt-4o-mini"
+AMAZON_REGION="eu-north-1"
+
+[[hyperdrive]]
+binding = "HYPERDRIVE"
+id = "1ead348e22444a0f98164d2421b7b058"
+
+[observability.logs]
+enabled = true

@@ -1,0 +1,27 @@
+{
+  "name": "api",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy --minify",
+    "db:introspect": "npx drizzle-kit pull",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^1.0.20",
+    "@aws-sdk/client-translate": "^3.730.0",
+    "@hono/zod-validator": "^0.1.11",
+    "@neondatabase/serverless": "^0.10.4",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.47.15",
+    "drizzle-orm": "^0.38.4",
+    "hono": "^4.6.16",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250109.0",
+    "cookie": "^1.0.2",
+    "drizzle-kit": "^0.30.2",
+    "typescript": "^5.4.2",
+    "wrangler": "^3.101.0"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "lib": ["ESNext"],
+    "paths": {
+      "@drizzle/*": ["./drizzle/*"]
+    },
+    "types": ["@cloudflare/workers-types/2023-07-01", "node", "./cloudflare-env.d.ts"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx"
+  },
+  "exclude": ["node_modules"]
+}
