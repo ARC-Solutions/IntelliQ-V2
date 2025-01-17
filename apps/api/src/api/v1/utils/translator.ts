@@ -3,7 +3,7 @@ import { AwsClient } from "aws4fetch";
 import { supportedLanguages } from "../schemas";
 import { Context } from "hono";
 
-const AWS_TRANSLATE_API = "https://translate.eu-north-1.amazonaws.com";
+const AWS_TRANSLATE_API = "https://translate.eu-north-1.api.aws";
 
 export const createTranslateClient = (c: Context) => {
   if (
