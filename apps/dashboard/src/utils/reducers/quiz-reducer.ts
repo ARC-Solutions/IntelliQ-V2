@@ -26,6 +26,7 @@ export const quizReducer = (state: QuizContextValue, action: QuizAction): QuizCo
       currentQuiz: null,
       summaryQuiz: null,
       quizzes: null,
+      language: "en"
     };
   } else if (action.type === 'SUBMIT_QUIZ_SUCESS') {
     return {
