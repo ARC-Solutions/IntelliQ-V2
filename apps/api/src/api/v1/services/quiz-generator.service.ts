@@ -1,4 +1,4 @@
-import { createOpenAI, openai } from "@ai-sdk/openai";
+import { createOpenAI } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { quizSchema } from "../schemas";
 import { generateQuizPrompt } from "../prompts";
