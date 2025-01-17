@@ -3,8 +3,6 @@ import { AwsClient } from "aws4fetch";
 import { supportedLanguages } from "../schemas";
 import { Context } from "hono";
 
-const AWS_TRANSLATE_API = "https://translate.eu-north-1.amazonaws.com";
-
 export const createTranslateClient = (c: Context) => {
   if (
     !c.env.AMAZON_ACCESS_KEY_ID ||
@@ -32,8 +30,10 @@ export async function translateText(
   targetLanguage: string,
   client: AwsClient
 ): Promise<string> {
+  const endpoint = `https://translate.${client.region}.amazonaws.com`;
+
   try {
-    const response = await client.fetch(AWS_TRANSLATE_API, {
+    const response = await client.fetch(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-amz-json-1.1",
