@@ -13,4 +13,4 @@ binding = "HYPERDRIVE"
 id = "1ead348e22444a0f98164d2421b7b058"
 
 [observability.logs]
-enabled = false
+enabled = true

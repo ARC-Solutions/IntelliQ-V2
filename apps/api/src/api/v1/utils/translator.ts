@@ -3,7 +3,7 @@ import { AwsClient } from "aws4fetch";
 import { supportedLanguages } from "../schemas";
 import { Context } from "hono";
 
-const AWS_TRANSLATE_API = "https://translate.eu-north-1.api.aws";
+const AWS_TRANSLATE_API = "https://translate.eu-north-1.amazonaws.com";
 
 export const createTranslateClient = (c: Context) => {
   if (
@@ -32,25 +32,45 @@ export async function translateText(
   targetLanguage: string,
   client: AwsClient
 ): Promise<string> {
-  const response = await client.fetch(AWS_TRANSLATE_API, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-amz-json-1.1",
-      "X-Amz-Target": "AWSShineFrontendService_20170701.TranslateText",
-    },
-    body: JSON.stringify({
-      Text: text,
-      SourceLanguageCode: supportedLanguages.Enum.en,
-      TargetLanguageCode: targetLanguage.toLowerCase(),
-    }),
-  });
+  try {
+    const response = await client.fetch(AWS_TRANSLATE_API, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-amz-json-1.1",
+        "X-Amz-Target": "AWSShineFrontendService_20170701.TranslateText",
+      },
+      body: JSON.stringify({
+        Text: text,
+        SourceLanguageCode: supportedLanguages.Enum.en,
+        TargetLanguageCode: targetLanguage.toLowerCase(),
+      }),
+    });
 
-  if (!response.ok) {
-    throw new Error(`Translation failed: ${response.statusText}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("AWS Translate Error:", {
+        status: response.status,
+        statusText: response.statusText,
+        errorText,
+        region: client.region, // Log the region being used
+        headers: Object.fromEntries(response.headers.entries()), // Log response headers
+      });
+      throw new Error(
+        `Translation failed: ${response.statusText} - ${errorText}`
+      );
+    }
+
+    const result = (await response.json()) as { TranslatedText: string };
+    return result.TranslatedText ?? text;
+  } catch (error) {
+    console.error("Translation error:", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      text,
+      targetLanguage,
+      region: client.region,
+    });
+    throw error;
   }
-
-  const result = (await response.json()) as { TranslatedText: string };
-  return result.TranslatedText ?? text;
 }
 
 export async function translateQuiz(
