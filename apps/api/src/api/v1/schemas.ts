@@ -33,12 +33,8 @@ export const quizGenerationRequestSchema = z.object({
     .int()
     .min(1, "Must generate at least 1 question")
     .max(10, "Cannot generate more than 10 questions"),
-  quizTags: z
-    .string()
-    .optional()
-    .transform((tags) =>
-      tags ? tags.split(",").map((tag) => tag.trim()) : undefined
-    ),
+  quizTags: z.array(z.string()).default([]),
+
   language: supportedLanguages.default(supportedLanguages.Enum.en),
 });
 

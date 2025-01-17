@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { generateQuiz } from "../services/quiz-generator.service";
-import { createTranslateClient, translateQuiz } from "../utils/translator";
 import { quizGenerationRequestSchema, supportedLanguages } from "../schemas";
 import { createDb } from "../../../db";
 import { userUsageData } from "../../../../drizzle/schema";
@@ -16,10 +15,8 @@ quizzes.get("/generate", async (c) => {
       quizTopic: searchParams.get("quizTopic") || "",
       quizDescription: searchParams.get("quizDescription") || "",
       numberOfQuestions: Number(searchParams.get("numberOfQuestions")) || 4,
-      quizTags: searchParams.get("quizTags") || "",
-      language:
-        searchParams.get("language")?.toLowerCase() ||
-        supportedLanguages.Enum.en,
+      quizTags: searchParams.get("quizTags")?.split(",") || [],
+      language: searchParams.get("language")?.toLowerCase() || "en",
     });
 
     if (!result.success) {
@@ -37,7 +34,8 @@ quizzes.get("/generate", async (c) => {
       result.data.quizTopic,
       result.data.quizDescription,
       result.data.numberOfQuestions,
-      result.data.quizTags!
+      result.data.quizTags!,
+      result.data.language
     );
 
     const supabase = getSupabase(c);
@@ -65,17 +63,6 @@ quizzes.get("/generate", async (c) => {
       prompt: result.data.quizTopic,
       language: result.data.language,
     });
-
-    // Translation handling
-    if (result.data.language !== supportedLanguages.Enum.en) {
-      const translateClient = createTranslateClient(c);
-      const translatedQuiz = await translateQuiz(
-        quiz,
-        result.data.language,
-        translateClient
-      );
-      return c.json({ rawQuestions: translatedQuiz });
-    }
 
     return c.json({ rawQuestions: quiz });
   } catch (error) {
