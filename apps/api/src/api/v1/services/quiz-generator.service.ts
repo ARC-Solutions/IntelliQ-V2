@@ -32,9 +32,6 @@ export async function generateQuiz(
     const openai = createOpenAI({
       apiKey: c.env.OPENAI_API_KEY,
     });
-    
-    console.log(GPT_MODEL);
-    console.log(c.env.OPENAI_API_KEY);
 
     const generatedQuiz = await generateObject({
       model: openai(GPT_MODEL, {
