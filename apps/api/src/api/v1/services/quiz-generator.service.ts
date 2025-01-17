@@ -24,7 +24,8 @@ export async function generateQuiz(
   quizTopic: string,
   quizDescription: string,
   numberOfQuestions: number,
-  quizTags: string[]
+  quizTags: string[],
+  language: string
 ): Promise<QuizGenerationResult> {
   try {
     const GPT_MODEL = c.env.GPT_MODEL;
@@ -38,13 +39,14 @@ export async function generateQuiz(
         structuredOutputs: true,
       }),
       schemaName: "quizzes",
-      schemaDescription: "A quiz.",
+      schemaDescription: `A quiz in ${language} language.`,
       schema: quizSchema,
       prompt: generateQuizPrompt(
         quizTopic,
         quizDescription,
         numberOfQuestions,
-        quizTags
+        quizTags,
+        language
       ),
       maxTokens: 1024,
     });

@@ -1,19 +1,18 @@
+import ISO6391 from 'iso-639-1';
+
 export const generateQuizPrompt = (
   quizTopic: string,
   quizDescription: string,
   numberOfQuestions: number,
-  quizTags?: string[]
+  quizTags?: string[],
+  language: string = 'en'
 ) => `
-Generate a quiz JSON object based on the topic: ${quizTopic}
+Generate a quiz JSON object in ${language} language based on the topic: ${quizTopic}
 Quiz Overview: ${quizDescription}
 Create ${numberOfQuestions} questions that align with this description.
-${
-  quizTags
-    ? `Include aspects related to the following tags: ${quizTags.join(", ")}.`
-    : ""
-}
+${quizTags ? `Include aspects related to the following tags: ${quizTags.join(", ")}.` : ""}
 
-Once the quizTitle is set, it should not change. Each question should have a unique questionTitle. 
-The questions should have exactly four options labeled a), b), c), and d). 
-The Contextual questionTitle is not allowed to contain 'Question Number' or 'Interest Question Number', 
-think of something very special for each individual question.`;
+Important: Generate ALL text content (quizTitle, questionTitle, text, and options) in ${ISO6391.getName(language)} language.
+Only keep proper names (like "Max Verstappen") and measurements (like "4.381 km") unchanged.
+The questions should have exactly four options labeled a), b), c), and d).
+Each question should have a unique questionTitle that is contextual and creative.`;
