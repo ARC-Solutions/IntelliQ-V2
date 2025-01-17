@@ -8,15 +8,15 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.0.20",
-    "@aws-sdk/client-translate": "^3.730.0",
     "@hono/zod-validator": "^0.1.11",
     "@neondatabase/serverless": "^0.10.4",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.15",
+    "ai": "^4.0.7",
+    "aws4fetch": "^1.0.20",
     "drizzle-orm": "^0.38.4",
     "hono": "^4.6.16",
-    "zod": "^3.24.1",
-    "ai": "^4.0.7"
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250109.0",
