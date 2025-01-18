@@ -6,10 +6,11 @@ compatibility_flags = [ "nodejs_compat" ]
 
 [vars]
 GPT_MODEL="gpt-4o-mini"
+# ENVIRONMENT="development"
 
 [[hyperdrive]]
 binding = "HYPERDRIVE"
 id = "1ead348e22444a0f98164d2421b7b058"
 
 [observability.logs]
-enabled = true
+enabled = false

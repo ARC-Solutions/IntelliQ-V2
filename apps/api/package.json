@@ -1,7 +1,10 @@
 {
   "name": "api",
   "scripts": {
-    "dev": "wrangler dev",
+    "predev": "node toggle-config.js dev",
+    "dev": "predev && wrangler dev",
+    "postdev": "node toggle-config.js prod",
+    "predeploy": "node toggle-config.js prod",
     "deploy": "wrangler deploy --minify",
     "db:introspect": "npx drizzle-kit pull",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
