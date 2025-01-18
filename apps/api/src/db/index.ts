@@ -7,7 +7,6 @@ export const createDb = async (c: Context) => {
     c.env.ENVIRONMENT === "development"
       ? c.env.DATABASE_URL
       : c.env.HYPERDRIVE.connectionString;
-  console.log("connectionString", connectionString);
   const db = drizzle(postgres(connectionString));
   return db;
 };

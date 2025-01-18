@@ -6,10 +6,21 @@
     "strict": true,
     "skipLibCheck": true,
     "lib": ["ESNext"],
+    "baseUrl": ".",
     "paths": {
-      "@drizzle/*": ["./drizzle/*"]
+      "@/*": ["src/*"],
+      "@services/*": ["src/api/v1/services/*"],
+      "@schemas/*": ["src/api/v1/schemas/*"],
+      "@middleware/*": ["src/api/v1/middleware/*"],
+      "@routes/*": ["src/api/v1/routes/*"],
+      "@drizzle/*": ["./drizzle/*"],
+      "@api/*": ["src/api/*"]
     },
-    "types": ["@cloudflare/workers-types/2023-07-01", "node", "./cloudflare-env.d.ts"],
+    "types": [
+      "@cloudflare/workers-types/2023-07-01",
+      "node",
+      "./cloudflare-env.d.ts"
+    ],
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx"
   },
