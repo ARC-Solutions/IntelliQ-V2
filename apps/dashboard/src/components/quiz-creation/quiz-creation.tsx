@@ -44,8 +44,7 @@ export default function QuizCreator() {
     control,
     resetValues,
   } = useQuizCreation();
-  const { isLoading, fetchingFinished, currentQuiz, language, setLanguage } =
-    useQuiz();
+  const { isLoading, fetchingFinished, currentQuiz } = useQuiz();
 
   const [newTag, setNewTag] = useState("");
   const [activeTab, setActiveTab] = useState("general");
@@ -184,30 +183,6 @@ export default function QuizCreator() {
                   )}
                 />
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="language">Quiz Language</Label>
-              <Select
-                value={language}
-                onValueChange={(value) => setLanguage(value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Language" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="de">German</SelectItem>
-                  <SelectItem value="fr">French</SelectItem>
-                  <SelectItem value="es">Spanish</SelectItem>
-                  <SelectItem value="it">Italian</SelectItem>
-                  <SelectItem value="ja">Japanese</SelectItem>
-                  <SelectItem value="ro">Romanian</SelectItem>
-                  <SelectItem value="sr">Serbian</SelectItem>
-                  <SelectItem value="tl">Tagalog</SelectItem>
-                  <SelectItem value="pl">Polish</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
 
             <div className="space-y-2">
