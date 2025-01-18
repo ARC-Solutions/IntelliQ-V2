@@ -5,9 +5,9 @@ import {
   roomSchema,
   roomResponseSchema,
   roomDetailsResponseSchema,
-} from "../schemas";
+} from "@schemas/room.schemas";
 import { z } from "zod";
-import { createDb } from "../../../db";
+import { createDb } from "@/db";
 
 const rooms = new Hono<{ Bindings: CloudflareEnv }>();
 

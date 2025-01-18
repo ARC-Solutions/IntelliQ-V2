@@ -3,7 +3,7 @@ import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
 import { cors } from "hono/cors";
 import { supabaseMiddleware, getSupabase } from "./api/v1/middleware/auth.middleware";
-import { api } from "./api/v1";
+import { api } from "@api/v1";
 
 const app = new Hono();
 // Middleware
