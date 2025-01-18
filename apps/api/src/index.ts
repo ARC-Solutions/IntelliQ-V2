@@ -4,6 +4,7 @@ import { prettyJSON } from "hono/pretty-json";
 import { cors } from "hono/cors";
 import { supabaseMiddleware, getSupabase } from "./api/v1/middleware/auth.middleware";
 import { api } from "@api/v1";
+import { openAPISpecs } from "hono-openapi";
 
 const app = new Hono();
 // Middleware
@@ -13,8 +14,25 @@ app.use("*", prettyJSON());
 app.use("*", cors());
 
 // Routes
-app.route("/api/v1", api);
 app.get("/", (c) => c.json({ status: "ok" }));
+app.route("/api/v1", api);
+app.get("/openapi", openAPISpecs(app, {
+  documentation: {
+    info: {
+      title: "IntelliQ API",
+      description: "API for IntelliQ",
+      version: "1.0.0",
+      },
+      servers: [
+        {
+          url: "http://localhost:8787", description: "Local server"
+        },
+        {
+          url: "https://app.intelliq.dev", description: "Production server"
+        }
+      ],
+  },
+}));
 app.post("/api/signin", async (c) => {
   const { email, password } = await c.req.json();
   

@@ -1,15 +1,42 @@
 import { Hono } from "hono";
 import { generateQuiz } from "@services/quiz-generator.service";
-import { quizGenerationRequestSchema } from "@schemas/quiz.schemas";
+import { quizGenerationRequestSchema, quizSchema } from "@schemas/quiz.schemas";
 import { createDb } from "@/db";
 import { userUsageData } from "@drizzle/schema";
 import { getSupabase } from "@middleware/auth.middleware";
-import { zValidator } from "@hono/zod-validator";
+import { resolver, validator as zValidator } from "hono-openapi/zod";
+import { describeRoute } from "hono-openapi";
+import { z } from "zod";
 
 const quizzes = new Hono<{ Bindings: CloudflareEnv }>();
 
 quizzes.get(
   "/generate",
+  describeRoute({
+    tags: ["Quizzes"],
+    summary: "Generate a quiz",
+    description: "Generate a quiz based on the given topic and description",
+    responses: {
+      200: {
+        description: "Quiz generated successfully",
+        content: {
+          "application/json": {
+            schema: quizSchema,
+          },
+        },
+      },
+      400: {
+        description: "Bad Request",
+        content: {
+          "application/json": {
+            schema: z.object({
+              error: z.string(),
+            }),
+          },
+        },
+      },
+    },
+  }),
   zValidator("query", quizGenerationRequestSchema),
   async (c) => {
     const validatedData = c.req.valid("query");
