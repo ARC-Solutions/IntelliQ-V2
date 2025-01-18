@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useReducer, useState } from "react";
+import React, { createContext, useContext, useReducer } from "react";
 import { toast } from "react-toastify";
 import { useSupabase } from "./supabase-context";
 import { quizReducer } from "@/utils/reducers/quiz-reducer";
@@ -39,7 +39,6 @@ export interface QuizContextValue {
   isLoading: boolean;
   fetchingFinished: boolean;
   currentQuiz: CurrentQuiz | null;
-  language: string;
   summaryQuiz: QuizHistory | null;
   quizzes: QuizHistories[] | null;
 }
@@ -64,14 +63,11 @@ export interface QuizContextValues extends QuizContextValue {
   fetchQuestions: (userQuizData: QuizData) => void;
   submitQuiz: (userAnswer: UserAnswer[], timeTaken: number) => void;
   fetchSingleQuiz: (quizID: string) => void;
-  language: string;
-  setLanguage: (language: string) => void;
 }
 const initialState: QuizContextValue = {
   isLoading: false,
   fetchingFinished: false,
   currentQuiz: null,
-  language: "en",
   // currentQuiz: {
   //   topic: 'C#',
   //   showCorrectAnswers: true,
@@ -168,38 +164,23 @@ const QuizContext = createContext<QuizContextValues | null>(null);
 export const QuizProvider = ({ children }: Props) => {
   const [state, dispatch] = useReducer(quizReducer, initialState);
   const { supabase } = useSupabase();
-  const [language, setLanguage] = useState("en");
   const fetchQuestions = async (userQuizData: QuizData) => {
     try {
+      console.log("generating...");
+
       const {
-        topic: quizTopic,
-        description: quizDescription,
+        topic: interests,
         number: numberOfQuestions,
         questions: userQuestions,
         showCorrectAnswers,
-        tags,
       } = userQuizData;
-
       const {
         data: { session },
       } = await supabase.auth.getSession();
       const accessToken = session?.access_token;
-
+      const URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/quiz`;
       dispatch({ type: "FETCH_QUIZ_REQUEST" });
-
-      const url =
-        `/api/v1/quizzes/generate?` +
-        new URLSearchParams({
-          quizTopic: quizTopic,
-          quizDescription: quizDescription || "No description provided",
-          numberOfQuestions: Math.max(
-            1,
-            Math.min(10, Number(numberOfQuestions))
-          ).toString(),
-          quizTags: tags?.join(",") || "",
-          language: language.toLowerCase(),
-        }).toString();
-
+      const url = `${URL}?numberOfQuestions=${numberOfQuestions}&interests=${interests}`;
       const response = await fetch(url, {
         method: "GET",
         headers: {
@@ -313,8 +294,6 @@ export const QuizProvider = ({ children }: Props) => {
         fetchQuestions,
         submitQuiz,
         fetchSingleQuiz,
-        language,
-        setLanguage,
       }}
     >
       {children}
