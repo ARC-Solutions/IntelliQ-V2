@@ -1,9 +1,9 @@
-import fs from "fs";
+const fs = require("fs");
 
 const configFile = fs.readFileSync("wrangler.toml", "utf-8");
 const lines = configFile.split("\n");
 
-const toggleDevMode = () => {
+const toggleDevMode = (isDevMode) => {
   const updatedLines = lines.map((line, index) => {
     // Uncomment ENVIRONMENT line in dev mode
     if (line.includes('ENVIRONMENT="development"')) {
