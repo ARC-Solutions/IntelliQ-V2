@@ -16,13 +16,35 @@ app.use("*", cors());
 app.route("/api/v1", api);
 app.get("/", (c) => c.json({ status: "ok" }));
 app.post("/api/signin", async (c) => {
+  const { email, password } = await c.req.json();
+  
   const supabase = getSupabase(c);
-  const { data, error } = await supabase.auth.signUp({
-    email: c.req.param("email")!,
-    password: c.req.param("password")!,
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
   });
   return c.json({
     message: "User logged in!",
+    email,
+    password,
+    data,
+  });
+});
+app.get("/api/user", async (c) => {
+  const supabase = getSupabase(c);
+  const { data, error } = await supabase.auth.getUser();
+
+  if (error) console.log("error", error);
+
+  if (!data?.user) {
+    return c.json({
+      message: "You are not logged in.",
+    });
+  }
+
+  return c.json({
+    message: "You are logged in!",
+    userId: data.user,
   });
 });
 
