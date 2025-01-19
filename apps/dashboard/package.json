@@ -1,5 +1,5 @@
 {
-  "name": "dashboard",
+  "name": "@intelliq/dashboard",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
+    "@intelliq/api": "*",
     "@neondatabase/serverless": "^0.10.4",
     "@number-flow/react": "^0.5.1",
     "@radix-ui/react-avatar": "^1.1.1",
@@ -44,6 +45,7 @@
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.38.4",
     "framer-motion": "^11.11.1",
+    "hono": "^4.6.17",
     "input-otp": "^1.2.4",
     "lottie-react": "^2.4.0",
     "lucide-react": "^0.447.0",

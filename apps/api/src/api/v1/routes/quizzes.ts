@@ -8,9 +8,9 @@ import { validator as zValidator } from "hono-openapi/zod";
 import { describeRoute } from "hono-openapi";
 import { z } from "zod";
 
-const app = new Hono<{ Bindings: CloudflareEnv }>();
+const generate = new Hono<{ Bindings: CloudflareEnv }>();
 
-app.get(
+generate.get(
   "/generate",
   describeRoute({
     tags: ["Quizzes"],
@@ -72,4 +72,4 @@ app.get(
   }
 );
 
-export default app;
+export default generate;
