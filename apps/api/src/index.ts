@@ -21,7 +21,7 @@ app.get("/openapi", openAPISpecs(app, {
     info: {
       title: "IntelliQ API",
       description: "API for IntelliQ",
-      version: "1.0.0",
+      version: "2.0.0",
       },
       servers: [
         {
