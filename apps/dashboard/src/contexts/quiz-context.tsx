@@ -6,8 +6,7 @@ import { useSupabase } from "./supabase-context";
 import { quizReducer } from "@/utils/reducers/quiz-reducer";
 import { UserAnswer } from "@/contexts/quiz-logic-context";
 import { QuizData } from "./quiz-creation-context";
-import { AppType } from "@intelliq/api";
-import { hc } from "hono/client";
+import { createApiClient } from '@/utils/api-client';
 
 type Props = {
   children: React.ReactNode;
@@ -178,7 +177,7 @@ export const QuizProvider = ({ children }: Props) => {
         tags: quizTags,
         showCorrectAnswers,
       } = userQuizData;
-      const client = hc<AppType>("/");
+      const client = createApiClient();
       dispatch({ type: "FETCH_QUIZ_REQUEST" });
       const response = await client.api.v1.quizzes.generate.$get({
         query: {

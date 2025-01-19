@@ -30,6 +30,7 @@ import { useToast } from '@/components/ui/use-toast';
 import NumberFlow, { continuous } from '@number-flow/react';
 import { updateRoomSettings } from '@/app/actions/rooms/update-settings';
 import { type RoomResponse, type RoomDetailsResponse } from "@/app/actions/schemas/old-v1-api-schema";
+import { createApiClient } from '@/utils/api-client';
 
 interface PresenceData {
   currentUser: {
@@ -68,7 +69,12 @@ export default function Lobby() {
   const checkAndJoinRoom = async (channel: RealtimeChannel) => {
     try {
       // Get current room data
-      const response = await fetch(`/api/v1/rooms/${roomCode}`);
+      const client = createApiClient();
+      const response = await client.api.v1.rooms[':roomCode'].$get({
+        param: {
+          roomCode: roomCode
+        }
+      })
       const room = (await response.json()) as RoomResponse;
 
       if (room) {
@@ -139,7 +145,12 @@ export default function Lobby() {
 
   useEffect(() => {
     const updateSettings = async () => {
-      const response = await fetch(`/api/v1/rooms/${roomCode}/details`);
+      const client = createApiClient();
+      const response = await client.api.v1.rooms[':roomCode'].details.$get({
+        param: {
+          roomCode: roomCode
+        }
+      })
       const data = (await response.json()) as RoomDetailsResponse;
 
       if (!response.ok) {
@@ -149,8 +160,8 @@ export default function Lobby() {
       }
 
       // Assuming data contains the updated room info
-      setMaxPlayers(data.max_players);
-      setQuestionCount(data.num_questions);
+      setMaxPlayers(data.maxPlayers);
+      setQuestionCount(data.numQuestions);
     };
 
     updateSettings();
