@@ -8,7 +8,6 @@ import { UserAnswer } from "@/contexts/quiz-logic-context";
 import { QuizData } from "./quiz-creation-context";
 import { AppType } from "@intelliq/api";
 import { hc } from "hono/client";
-import { z } from "zod";
 
 type Props = {
   children: React.ReactNode;
