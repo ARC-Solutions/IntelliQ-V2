@@ -1,83 +1,51 @@
 import { Hono } from "hono";
-import { rooms as roomsTable } from "@drizzle/schema";
-import { eq } from "drizzle-orm";
-import {
-  roomSchema,
-  roomResponseSchema,
-  roomDetailsResponseSchema,
-} from "@schemas/room.schemas";
+import { roomSchema } from "@schemas/room.schemas";
 import { z } from "zod";
 import { createDb } from "@/db";
+import { describeRoute } from "hono-openapi";
+import { validator as zValidator } from "hono-openapi/zod";
+import { eq } from "drizzle-orm";
+import { rooms } from "@drizzle/schema";
 
-const rooms = new Hono<{ Bindings: CloudflareEnv }>();
+const app = new Hono<{ Bindings: CloudflareEnv }>();
 
-rooms
-  .get("/:roomCode", async (c) => {
-    try {
-      const validatedParams = roomSchema.parse({
-        roomCode: c.req.param("roomCode"),
-      });
+app
+  .get(
+    "/:roomCode",
+    describeRoute({
+      tags: ["Rooms"],
+      summary: "Get room details",
+      description: "Get room details by room code",
+    }),
+    zValidator("param", roomSchema),
+    async (c) => {
+      const {roomCode} = c.req.valid("param");
 
       const db = await createDb(c);
+      const { maxPlayers } = (await db.query.rooms.findFirst({
+        where: (rooms) => eq(rooms.code, roomCode),
+      }))!;
 
-      const room = await db
-        .select({ max_players: roomsTable.maxPlayers })
-        .from(roomsTable)
-        .where(eq(roomsTable.code, validatedParams.roomCode))
-        .limit(1);
-
-      if (!room[0]) {
-        return c.json({ error: "Room not found" }, 404);
-      }
-
-      const validatedResponse = roomResponseSchema.parse(room[0]);
-      return c.json(validatedResponse);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return c.json(
-          { error: "Validation error", details: error.flatten().fieldErrors },
-          400
-        );
-      }
-      throw error;
+      return c.json({maxPlayers: maxPlayers});
     }
-  })
-  .get("/:roomCode/details", async (c) => {
-    try {
-      const validatedParams = roomSchema.parse({
-        roomCode: c.req.param("roomCode"),
-      });
+  )
+  .get("/:roomCode/details",
+    describeRoute({
+      tags: ["Rooms"],
+      summary: "Get room details",
+      description: "Get room details by room code",
+    }),
+    zValidator("param", roomSchema),
+    async (c) => {
+      const {roomCode} = c.req.valid("param");
+
       const db = await createDb(c);
-      const room = await db
-        .select({
-          id: roomsTable.id,
-          quiz_id: roomsTable.quizId,
-          host_id: roomsTable.hostId,
-          max_players: roomsTable.maxPlayers,
-          num_questions: roomsTable.numQuestions,
-          code: roomsTable.code,
-          created_at: roomsTable.createdAt,
-          ended_at: roomsTable.endedAt,
-        })
-        .from(roomsTable)
-        .where(eq(roomsTable.code, validatedParams.roomCode))
-        .limit(1);
+      const room = await db.query.rooms.findFirst({
+        where: eq(rooms.code, roomCode),
+      });
 
-      if (!room[0]) {
-        return c.json({ error: "Room not found" }, 404);
-      }
-
-      const validatedResponse = roomDetailsResponseSchema.parse(room[0]);
-      return c.json(validatedResponse);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return c.json(
-          { error: "Validation error", details: error.flatten().fieldErrors },
-          400
-        );
-      }
-      throw error;
+      return c.json(room);
     }
-  });
+);
 
-export { rooms };
+export default app;

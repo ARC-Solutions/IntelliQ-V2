@@ -4,13 +4,13 @@ import { quizGenerationRequestSchema, quizSchema } from "@schemas/quiz.schemas";
 import { createDb } from "@/db";
 import { userUsageData } from "@drizzle/schema";
 import { getSupabase } from "@middleware/auth.middleware";
-import { resolver, validator as zValidator } from "hono-openapi/zod";
+import { validator as zValidator } from "hono-openapi/zod";
 import { describeRoute } from "hono-openapi";
 import { z } from "zod";
 
-const quizzes = new Hono<{ Bindings: CloudflareEnv }>();
+const app = new Hono<{ Bindings: CloudflareEnv }>();
 
-quizzes.get(
+app.get(
   "/generate",
   describeRoute({
     tags: ["Quizzes"],
@@ -72,4 +72,4 @@ quizzes.get(
   }
 );
 
-export { quizzes };
+export default app;
