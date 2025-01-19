@@ -22,9 +22,9 @@ export const quizGenerationRequestSchema = z.object({
     .min(1, "Must generate at least 1 question")
     .max(10, "Cannot generate more than 10 questions"),
   quizTags: z.preprocess(
-    (val) => typeof val === 'string' ? val.split(',').map(tag => tag.trim()) : val,
+    (val) =>
+      typeof val === "string" ? val.split(",").map((tag) => tag.trim()) : val,
     z.array(z.string())
   ),
   language: supportedLanguages.default(supportedLanguages.Enum.en),
 });
-

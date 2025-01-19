@@ -15,4 +15,5 @@ ${quizTags ? `Include aspects related to the following tags: ${quizTags.join(", 
 Important: Generate ALL text content (quizTitle, questionTitle, text, and options) in ${ISO6391.getName(language)} language.
 Only keep proper names (like "Max Verstappen") and measurements (like "4.381 km") unchanged.
 The questions should have exactly four options labeled a), b), c), and d).
+The options must always begin with a), b), c), or d).
 Each question should have a unique questionTitle that is contextual and creative.`;

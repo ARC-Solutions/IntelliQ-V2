@@ -6,6 +6,8 @@ import { useSupabase } from "./supabase-context";
 import { quizReducer } from "@/utils/reducers/quiz-reducer";
 import { UserAnswer } from "@/contexts/quiz-logic-context";
 import { QuizData } from "./quiz-creation-context";
+import { AppType } from "@intelliq/api";
+import { hc } from "hono/client";
 
 type Props = {
   children: React.ReactNode;
@@ -172,34 +174,30 @@ export const QuizProvider = ({ children }: Props) => {
         topic: interests,
         number: numberOfQuestions,
         questions: userQuestions,
+        description: quizDescription,
+        tags: quizTags,
         showCorrectAnswers,
       } = userQuizData;
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const accessToken = session?.access_token;
-      const URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/quiz`;
+      const client = hc<AppType>("/api/v1");
       dispatch({ type: "FETCH_QUIZ_REQUEST" });
-      const url = `${URL}?numberOfQuestions=${numberOfQuestions}&interests=${interests}`;
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
+      const response = await client.api.v1.quizzes.generate.$get({
+        query: {
+          quizTopic: interests,
+          quizDescription: quizDescription,
+          numberOfQuestions: numberOfQuestions,
+          quizTags: quizTags,
         },
       });
 
       interface QuizApiResponse {
-        rawQuestions: [
-          {
-            quizTitle: string;
-            questions: any[]; // Replace 'any' with your actual question type
-          }
-        ];
+        quiz: {
+          quizTitle: string;
+          questions: Quiz[];
+        };
       }
 
       const data = (await response.json()) as QuizApiResponse;
-      const { quizTitle: topic, questions } = data.rawQuestions[0];
+      const { quizTitle: topic, questions } = data.quiz;
 
       const userQuizQuestions = userQuestions.map((question) => {
         return {
