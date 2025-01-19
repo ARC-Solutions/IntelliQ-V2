@@ -178,7 +178,7 @@ export const QuizProvider = ({ children }: Props) => {
         tags: quizTags,
         showCorrectAnswers,
       } = userQuizData;
-      const client = hc<AppType>("/api/v1");
+      const client = hc<AppType>("/");
       dispatch({ type: "FETCH_QUIZ_REQUEST" });
       const response = await client.api.v1.quizzes.generate.$get({
         query: {
