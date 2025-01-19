@@ -6,9 +6,7 @@ import { validator as zValidator } from "hono-openapi/zod";
 import { eq } from "drizzle-orm";
 import { rooms } from "../../../drizzle/schema";
 
-const app = new Hono<{ Bindings: CloudflareEnv }>();
-
-app
+const app = new Hono<{ Bindings: CloudflareEnv }>()
   .get(
     "/:roomCode",
     describeRoute({
@@ -25,7 +23,7 @@ app
         where: (rooms) => eq(rooms.code, roomCode),
       }))!;
 
-      return c.json({maxPlayers: maxPlayers});
+      return c.json({max_players: maxPlayers});
     }
   )
   .get("/:roomCode/details",
