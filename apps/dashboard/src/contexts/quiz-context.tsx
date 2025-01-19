@@ -181,7 +181,6 @@ export const QuizProvider = ({ children }: Props) => {
       } = userQuizData;
       const client = hc<AppType>("/api/v1");
       dispatch({ type: "FETCH_QUIZ_REQUEST" });
-      // kind of funny to me that you have to convert it to a string but it works, so
       const response = await client.api.v1.quizzes.generate.$get({
         query: {
           quizTopic: interests,
