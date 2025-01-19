@@ -8,6 +8,7 @@ import { UserAnswer } from "@/contexts/quiz-logic-context";
 import { QuizData } from "./quiz-creation-context";
 import { AppType } from "@intelliq/api";
 import { hc } from "hono/client";
+import { z } from "zod";
 
 type Props = {
   children: React.ReactNode;
@@ -178,13 +179,13 @@ export const QuizProvider = ({ children }: Props) => {
         tags: quizTags,
         showCorrectAnswers,
       } = userQuizData;
-      const client = hc<AppType>('/api/v1');
+      const client = hc<AppType>("/api/v1");
       dispatch({ type: "FETCH_QUIZ_REQUEST" });
       const response = await client.api.v1.quizzes.generate.$get({
         query: {
           quizTopic: interests,
-          quizDescription: quizDescription,
-          numberOfQuestions: numberOfQuestions,
+          quizDescription: quizDescription!,
+          numberOfQuestions: numberOfQuestions.toString(),
           quizTags: quizTags,
         },
       });

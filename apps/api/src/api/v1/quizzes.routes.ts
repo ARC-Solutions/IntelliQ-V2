@@ -1,16 +1,14 @@
 import { Hono } from "hono";
-import { generateQuiz } from "@services/quiz-generator.service";
-import { quizGenerationRequestSchema, quizSchema } from "@schemas/quiz.schemas";
-import { createDb } from "@/db";
-import { userUsageData } from "@drizzle/schema";
-import { getSupabase } from "@middleware/auth.middleware";
+import { generateQuiz } from "./services/quiz-generator.service";
+import { quizGenerationRequestSchema, quizSchema } from "./schemas/quiz.schemas";
+import { createDb } from "../../db/index";
+import { userUsageData } from "../../../drizzle/schema";
+import { getSupabase } from "./middleware/auth.middleware";
 import { validator as zValidator } from "hono-openapi/zod";
 import { describeRoute } from "hono-openapi";
 import { z } from "zod";
 
-const generate = new Hono<{ Bindings: CloudflareEnv }>();
-
-generate.get(
+const generate = new Hono<{ Bindings: CloudflareEnv }>().get(
   "/generate",
   describeRoute({
     tags: ["Quizzes"],

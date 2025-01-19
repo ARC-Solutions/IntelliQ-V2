@@ -1,11 +1,10 @@
 import { Hono } from "hono";
-import { roomSchema } from "@schemas/room.schemas";
-import { z } from "zod";
-import { createDb } from "@/db";
+import { roomSchema } from "./schemas/room.schemas";
+import { createDb } from "../../db/index";
 import { describeRoute } from "hono-openapi";
 import { validator as zValidator } from "hono-openapi/zod";
 import { eq } from "drizzle-orm";
-import { rooms } from "@drizzle/schema";
+import { rooms } from "../../../drizzle/schema";
 
 const app = new Hono<{ Bindings: CloudflareEnv }>();
 
