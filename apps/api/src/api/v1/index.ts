@@ -1,10 +1,9 @@
-import { Hono } from "hono";
-import quizzes  from "@routes/quizzes";
-import rooms  from "@routes/rooms";
+import { Hono } from 'hono';
+import quizzes from './quizzes.routes';
+import rooms from './rooms.routes';
 
-const routes = new Hono<{ Bindings: CloudflareEnv }>()
-  .get("/", (c) => c.json({ message: "Hello, world!" }))
-  .route("/quizzes", quizzes)
-  .route("/rooms", rooms);
+const v1 = new Hono<{ Bindings: CloudflareEnv }>()
+  .route('/quizzes', quizzes)
+  .route('/rooms', rooms)
 
-export default routes;
+export default v1;

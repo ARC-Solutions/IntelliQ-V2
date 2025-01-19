@@ -6,7 +6,7 @@ import {
   supabaseMiddleware,
   getSupabase,
 } from "./api/v1/middleware/auth.middleware";
-import api from "@api/v1";
+import api from './api/index'
 import { openAPISpecs } from "hono-openapi";
 
 const app = new Hono();
@@ -18,7 +18,7 @@ app.use("*", cors());
 
 // Define routes variable by chaining all routes
 const routes = app
-  .get("/", (c) => c.json({ status: "ok" }))
+  .route("/api", api)
   .get(
     "/openapi",
     openAPISpecs(app, {
@@ -41,22 +41,6 @@ const routes = app
       },
     })
   )
-  .route("/api/v1", api)
-  .post("/api/signin", async (c) => {
-    const { email, password } = await c.req.json();
-
-    const supabase = getSupabase(c);
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return c.json({
-      message: "User logged in!",
-      email,
-      password,
-      data,
-    });
-  })
   .get("/api/user", async (c) => {
     const supabase = getSupabase(c);
     const { data, error } = await supabase.auth.getUser();
@@ -72,6 +56,21 @@ const routes = app
     return c.json({
       message: "You are logged in!",
       userId: data.user,
+    });
+  })
+  .post("/api/signin", async (c) => {
+    const { email, password } = await c.req.json();
+
+    const supabase = getSupabase(c);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    return c.json({
+      message: "User logged in!",
+      email,
+      password,
+      data,
     });
   });
 
