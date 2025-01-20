@@ -15,6 +15,7 @@ import QuizLogicContextProvider from '@/contexts/quiz-logic-context';
 import { Toaster } from '@/components/ui/toaster';
 import { QuizCreationProvider } from '@/contexts/quiz-creation-context';
 import { MultiplayerProvider } from '@/contexts/multiplayer-context';
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -78,34 +79,36 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang='en' suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${
-          process.env.NODE_ENV === 'development' ? 'debug-screens' : ''
+          process.env.NODE_ENV === "development" ? "debug-screens" : ""
         } overflow-x-hidden`}
       >
         <ThemeProvider
-          attribute='class'
-          defaultTheme='system'
+          attribute="class"
+          defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <SupabaseProvider>
-            <AuthProvider>
-              <QuizProvider>
-                <MultiplayerProvider>
-                  <QuizCreationProvider>
-                    <QuizLogicContextProvider>
-                      {/*className="container mx-auto overflow-visible"*/}
+          <NuqsAdapter>
+            <SupabaseProvider>
+              <AuthProvider>
+                <QuizProvider>
+                  <MultiplayerProvider>
+                    <QuizCreationProvider>
+                      <QuizLogicContextProvider>
+                        {/*className="container mx-auto overflow-visible"*/}
 
-                      <main>{children}</main>
-                      <Toaster />
-                    </QuizLogicContextProvider>
-                  </QuizCreationProvider>
-                </MultiplayerProvider>
-              </QuizProvider>
-            </AuthProvider>
-          </SupabaseProvider>
+                        <main>{children}</main>
+                        <Toaster />
+                      </QuizLogicContextProvider>
+                    </QuizCreationProvider>
+                  </MultiplayerProvider>
+                </QuizProvider>
+              </AuthProvider>
+            </SupabaseProvider>
+          </NuqsAdapter>
         </ThemeProvider>
       </body>
     </html>

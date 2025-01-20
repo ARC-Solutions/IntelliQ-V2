@@ -29,6 +29,13 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuizCreation, Question } from "@/contexts/quiz-creation-context";
 import { useQuiz } from "@/contexts/quiz-context";
 import { redirect } from "next/navigation";
+import {
+  useQueryState,
+  parseAsInteger,
+  parseAsBoolean,
+  parseAsArrayOf,
+  parseAsString,
+} from "nuqs";
 
 export default function QuizCreator() {
   const {
@@ -46,8 +53,29 @@ export default function QuizCreator() {
   } = useQuizCreation();
   const { isLoading, fetchingFinished, currentQuiz } = useQuiz();
 
+  // replace useState with useQueryState for persistent UI state
+  const [activeTab, setActiveTab] = useQueryState("tab", {
+    defaultValue: "general",
+  });
+
+  // URL state for quiz configuration
+  const [topic, setTopic] = useQueryState("topic");
+  const [description, setDescription] = useQueryState("description");
+  const [questionCount, setQuestionCount] = useQueryState(
+    "count",
+    parseAsInteger
+  );
+  const [passingScore, setPassingScore] = useQueryState(
+    "passing",
+    parseAsInteger.withDefault(70)
+  );
+  const [showAnswers, setShowAnswers] = useQueryState(
+    "showAnswers",
+    parseAsBoolean.withDefault(true)
+  );
   const [newTag, setNewTag] = useState("");
-  const [activeTab, setActiveTab] = useState("general");
+  const [tags, setTags] = useQueryState("tags", parseAsArrayOf(parseAsString));
+
   if (fetchingFinished && currentQuiz) {
     redirect("/single-player/quiz/play");
   }
@@ -84,7 +112,11 @@ export default function QuizCreator() {
                 />
                 <Input
                   id="topic"
-                  {...register("topic")}
+                  value={topic || ""}
+                  onChange={(e) => {
+                    setTopic(e.target.value);
+                    register("topic").onChange(e);
+                  }}
                   placeholder="Enter the main subject or theme of your quiz"
                   className="pl-10"
                 />
@@ -98,13 +130,14 @@ export default function QuizCreator() {
               <Label htmlFor="description">Quiz Description</Label>
               <Textarea
                 id="description"
-                {...register("description")}
-                placeholder="Provide a brief overview of what the quiz covers"
+                value={description || ""}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  register("description").onChange(e);
+                }}
+                placeholder="Provide a brief overview"
                 rows={4}
               />
-              {errors.description && (
-                <p className="text-red-500">{errors.description.message}</p>
-              )}
             </div>
 
             <div className="space-y-2">
@@ -117,10 +150,13 @@ export default function QuizCreator() {
                 <Input
                   type="number"
                   id="number"
-                  {...register("number")}
-                  placeholder="How many AI-generated questions?"
+                  value={questionCount || ""}
+                  onChange={(e) => {
+                    setQuestionCount(parseInt(e.target.value));
+                    register("number").onChange(e);
+                  }}
+                  placeholder="How many questions?"
                   className="pl-10"
-                  required
                 />
                 {errors.number && (
                   <p className="text-red-500">{errors.number.message}</p>
@@ -139,15 +175,16 @@ export default function QuizCreator() {
                     min={0}
                     max={100}
                     step={5}
-                    value={[field.value]}
-                    onValueChange={(value) => field.onChange(value[0])}
+                    value={[passingScore || 70]}
+                    onValueChange={(value) => {
+                      setPassingScore(value[0]);
+                      field.onChange(value[0]);
+                    }}
                     className="flex-grow"
                   />
                 )}
               />
-              <p className="font-medium w-16 text-right">
-                {formValues.passingScore}%
-              </p>
+              <p className="font-medium w-16 text-right">{passingScore}%</p>
               {errors.passingScore && (
                 <p className="text-red-500">{errors.passingScore.message}</p>
               )}
@@ -171,16 +208,19 @@ export default function QuizCreator() {
                     </Tooltip>
                   </TooltipProvider>
                 </Label>
-                <Controller
-                  name="showCorrectAnswers"
-                  control={control}
-                  render={({ field }) => (
-                    <Switch
-                      id="showCorrectAnswers"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  )}
+                <Switch
+                  id="showCorrectAnswers"
+                  checked={showAnswers || false}
+                  onCheckedChange={(checked) => {
+                    setShowAnswers(checked);
+                    const event = {
+                      target: {
+                        name: "showCorrectAnswers",
+                        value: checked,
+                      },
+                    };
+                    register("showCorrectAnswers").onChange(event);
+                  }}
                 />
               </div>
             </div>
@@ -188,7 +228,7 @@ export default function QuizCreator() {
             <div className="space-y-2">
               <Label htmlFor="tags">Quiz Tags</Label>
               <div className="flex flex-wrap gap-2 mb-2">
-                {formValues.tags?.map((tag: string) => (
+                {tags?.map((tag: string) => (
                   <span
                     key={tag}
                     className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center"
@@ -196,7 +236,11 @@ export default function QuizCreator() {
                     {tag}
                     <button
                       type="button"
-                      onClick={() => removeTag(tag)}
+                      onClick={() => {
+                        removeTag(tag);
+                        const updatedTags = tags.filter((t) => t !== tag);
+                        setTags(updatedTags.length > 0 ? updatedTags : null);
+                      }}
                       className="ml-1 text-blue-600 hover:text-blue-800"
                     >
                       &times;
@@ -214,9 +258,13 @@ export default function QuizCreator() {
                 />
                 <Button
                   type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    addTag(newTag);
+                  onClick={() => {
+                    if (newTag.trim()) {
+                      addTag(newTag.trim());
+                      setNewTag("");
+                      const updatedTags = [...(tags || []), newTag.trim()];
+                      setTags(updatedTags);
+                    }
                   }}
                   size="sm"
                 >
@@ -352,7 +400,7 @@ export default function QuizCreator() {
               <div>
                 <h3 className="font-semibold">Tags:</h3>
                 <div className="flex flex-wrap gap-2">
-                  {formValues.tags?.map((tag) => (
+                  {tags?.map((tag) => (
                     <span
                       key={tag}
                       className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm"
