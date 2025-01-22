@@ -1,33 +1,44 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: "Introduction"
+description: "API Reference for IntelliQ"
 ---
-
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
-
-## Welcome
-
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
-
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+This API uses Supabase authentication with server-side rendering (SSR) middleware. Authentication is handled through cookies and the Supabase client.
 
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+### How it works
+
+1. The API uses Supabase's `createServerClient` for authentication
+2. Authentication state is maintained through cookies
+3. The middleware automatically handles:
+   - Cookie parsing from requests
+   - Cookie setting in responses
+   - Supabase client initialization
+
+```typescript
+// Example of how authentication is processed
+const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+  cookies: {
+    getAll() {
+      return parseCookieHeader(request.headers.cookie ?? "");
+    },
+    setAll(cookiesToSet) {
+      // Cookies are automatically set in the response
+    },
+  },
+});
+```
+
+<Note>
+  You don't need to manually handle authentication tokens. The Supabase SSR
+  middleware automatically manages the session through cookies.
+</Note>
+
+### Required Headers
+
+When making requests, ensure your cookies are properly sent with the request. The middleware will handle the rest of the authentication process.
+
+```bash
+Cookie: sb-access-token=your-token; sb-refresh-token=your-refresh-token
 ```

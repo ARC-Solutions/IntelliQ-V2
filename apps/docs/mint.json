@@ -29,7 +29,7 @@
     {
       "name": "API Reference",
       "url": "api-reference",
-      "openapi": "/api-reference/openapi.json"
+      "openapi": "https://api.arcsolutionsteam.workers.dev/openapi"
     }
   ],
   "anchors": [
