@@ -3,12 +3,9 @@
 interface CloudflareEnv {
 	SUPABASE_URL: string;
 	SUPABASE_ANON_KEY: string;
-	localConnectionString: string;
+	DATABASE_URL: string;
 	OPENAI_API_KEY: string;
 	GPT_MODEL: string;
-	AMAZON_REGION: string;
-	AMAZON_ACCESS_KEY_ID: string;
-	AMAZON_SECRET_ACCESS_KEY: string;
 	UPSTASH_REDIS_REST_URL: string;
 	UPSTASH_REDIS_REST_TOKEN: string;
 	HYPERDRIVE: Hyperdrive;

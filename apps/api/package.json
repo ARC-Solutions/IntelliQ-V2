@@ -11,9 +11,11 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.0.20",
+    "@hono-rate-limiter/redis": "^0.1.4",
     "@hono/zod-validator": "^0.4.2",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.15",
+    "@upstash/redis": "^1.34.3",
     "ai": "^4.0.7",
     "drizzle-orm": "^0.38.4",
     "hono": "^4.6.16",
