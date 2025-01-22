@@ -1,0 +1,132 @@
+---
+title: "Local Development"
+"og:title": "How to setup IntelliQ for Local Development"
+description: "A guide on how to run IntelliQ's codebase locally."
+icon: code
+---
+
+###
+
+## Introduction
+
+IntelliQ's codebase is set up in a monorepo via [Turborepo](https://turbo.build/repo) and is fully [open-source on GitHub](https://github.com/ARC-Solutions/IntelliQ-V2).
+
+Here's the monorepo structure:
+
+```
+IntelliQ-V2
+|-- apps
+|   |-- api
+|   |-- dashboard
+|   |-- docs
+|   |-- presentation
+|   `-- web
+`-- packages
+    |-- api-types
+    |-- typescript-config
+    `-- ui
+```
+
+## Initial Setup
+
+1. Clone the repository:
+```bash
+git clone https://github.com/ARC-Solutions/IntelliQ-V2.git
+cd IntelliQ-V2
+```
+
+2. Install dependencies:
+```bash
+npm i
+```
+
+3. Set up environment variables for the API:
+```bash
+cd apps/api
+cp .dev.vars.example .dev.vars
+```
+
+4. Configure Git to ignore local changes to wrangler.toml:
+```bash
+git update-index --skip-worktree apps/api/wrangler.toml
+```
+This step is important to prevent accidentally committing your local development configuration changes to the production wrangler.toml file.
+
+5. Configure your `.dev.vars` with your credentials:
+```bash
+SUPABASE_URL=your_supabase_url
+SUPABASE_ANON_KEY=your_supabase_key
+DATABASE_URL=your_database_url
+OPENAI_API_KEY=your_openai_key
+GPT_MODEL=gpt-4o-mini
+UPSTASH_REDIS_REST_URL=your_upstash_url
+UPSTASH_REDIS_REST_TOKEN=your_upstash_token
+```
+
+## Running the Development Environment
+
+1. Start the API server:
+```bash
+cd apps/api
+npm run dev
+```
+This will start the API server on `http://localhost:8787`
+
+2. In a new terminal, start the dashboard:
+```bash
+cd apps/dashboard
+npm run dev
+```
+This will start the dashboard on `http://localhost:3000`
+
+## Development Notes
+
+### API Development
+
+The API is built with Hono.js and runs on Cloudflare Workers. When running locally:
+
+- API endpoints are available at `http://localhost:8787`
+- Documentation is available at `https://docs.intelliq.dev/api-reference/introduction`
+- The dashboard is configured to proxy API requests through Next.js
+
+### Dashboard Development
+
+The dashboard is a Next.js application that:
+
+- Uses Cloudflare Pages for deployment
+- Integrates with Supabase for authentication
+- Connects to the API server through a proxy configuration
+
+### Useful Commands
+
+```bash
+# Start all services in development mode
+npm run dev
+
+# Format code
+npm run format
+
+# Build all applications
+npm run build
+
+# Lint code
+npm run lint
+
+# Update database schema
+cd apps/dashboard
+npm run db:introspect
+```
+
+## Troubleshooting
+
+If you encounter issues:
+
+1. Ensure all environment variables are set correctly in `.dev.vars`
+2. Check that the API server is running on port 8787
+3. Verify that your Supabase and Upstash credentials are correct
+4. For API issues, check the Wrangler logs in the terminal
+5. For dashboard issues, check the Next.js development logs
+
+<Note>
+The API uses Cloudflare Workers, so make sure you have Wrangler CLI working correctly. The dashboard will automatically proxy API requests to the local API server in development.
+</Note>
