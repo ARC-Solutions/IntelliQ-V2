@@ -40,19 +40,19 @@ cd IntelliQ-V2
 npm i
 ```
 
-3. Set up environment variables for the API:
-```bash
-cd apps/api
-cp .dev.vars.example .dev.vars
-```
-
-4. Configure Git to ignore local changes to wrangler.toml:
+3. Configure Git to ignore local changes to wrangler.toml:
 <Warning>
 ```bash
 git update-index --skip-worktree apps/api/wrangler.toml
 ```
 </Warning>
 This step is important to prevent accidentally committing your local development configuration changes to the production wrangler.toml file.
+
+4. Set up environment variables for the API:
+```bash
+cd apps/api
+cp .dev.vars.example .dev.vars
+```
 
 5. Configure your `.dev.vars` with your credentials:
 ```bash
