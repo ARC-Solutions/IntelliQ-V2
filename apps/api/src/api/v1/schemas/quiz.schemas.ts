@@ -28,3 +28,7 @@ export const quizGenerationRequestSchema = z.object({
   ),
   language: supportedLanguages.default(supportedLanguages.Enum.en),
 });
+
+export const quizResponseSchema = z.object({
+  quiz: quizSchema,
+});

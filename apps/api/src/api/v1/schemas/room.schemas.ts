@@ -10,13 +10,13 @@ export const roomResponseSchema = z.object({
 
 export const roomDetailsResponseSchema = z.object({
   id: z.string(),
-  quiz_id: z.string().nullable(),
-  host_id: z.string(),
-  max_players: z.number(),
-  num_questions: z.number(),
+  quizId: z.string().nullable(),
+  hostId: z.string(),
+  maxPlayers: z.number(),
+  numQuestions: z.number(),
   code: z.string(),
-  created_at: z.string(),
-  ended_at: z.string().nullable(),
+  createdAt: z.string(),
+  endedAt: z.string().nullable(),
 });
 
 export type RoomResponse = z.infer<typeof roomResponseSchema>;
