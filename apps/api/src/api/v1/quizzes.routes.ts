@@ -1,6 +1,9 @@
 import { Hono } from "hono";
 import { generateQuiz } from "./services/quiz-generator.service";
-import { quizGenerationRequestSchema, quizResponseSchema } from "./schemas/quiz.schemas";
+import {
+  quizGenerationRequestSchema,
+  quizResponseSchema,
+} from "./schemas/quiz.schemas";
 import { createDb } from "../../db/index";
 import { userUsageData } from "../../../drizzle/schema";
 import { getSupabase } from "./middleware/auth.middleware";
@@ -14,7 +17,6 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>().get(
     tags: ["Quizzes"],
     summary: "Generate a quiz",
     description: "Generate a quiz based on the given topic and description",
-    validateResponse: true,
     responses: {
       200: {
         description: "Quiz generated successfully",
