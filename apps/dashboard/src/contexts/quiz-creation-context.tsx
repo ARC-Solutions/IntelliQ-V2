@@ -74,8 +74,8 @@ const initialState = {
 
 const QuizCreationContext = createContext<QuizContextValues | null>(null);
 
-export const QuizCreationProvider = ({ children }: Props) => {
-  // nuqs handling
+// 1. Create a custom hook for all nuqs state management
+const useQuizQueryState = () => {
   const [topic, setTopic] = useQueryState("topic");
   const [description, setDescription] = useQueryState("description");
   const [number, setNumber] = useQueryState(
@@ -91,30 +91,44 @@ export const QuizCreationProvider = ({ children }: Props) => {
     parseAsBoolean.withDefault(true)
   );
   const [tags, setTags] = useQueryState("tags", parseAsArrayOf(parseAsString));
-  const setTopicValue = (value: string) => {
-    setTopic(value);
-    setValue("topic", value);
+
+  return {
+    queryState: {
+      topic,
+      description,
+      number,
+      passingScore,
+      showCorrectAnswers,
+      tags,
+    },
+    setters: {
+      setTopic,
+      setDescription,
+      setNumber,
+      setPassingScore,
+      setShowCorrectAnswers,
+      setTags,
+    },
   };
-  const setDescriptionValue = (value: string) => {
-    setDescription(value);
-    setValue("description", value);
+};
+
+// 2. Create a type for the form setters
+type FormSetterFunction<T = any> = (field: keyof QuizData, value: T) => void;
+
+// 3. Create a utility function for creating synchronized setters
+const createSynchronizedSetter =
+  (
+    querySetter: (value: any) => void,
+    formSetter: FormSetterFunction,
+    field: keyof QuizData
+  ) =>
+  (value: any) => {
+    querySetter(value);
+    formSetter(field, value);
   };
-  const setNumberValue = (value: number) => {
-    setNumber(value);
-    setValue("number", value);
-  };
-  const setPassingScoreValue = (value: number) => {
-    setPassingScore(value);
-    setValue("passingScore", value);
-  };
-  const setShowCorrectAnswersValue = (value: boolean) => {
-    setShowCorrectAnswers(value);
-    setValue("showCorrectAnswers", value);
-  };
-  const setTagsValue = (value: string[]) => {
-    setTags(value);
-    setValue("tags", value);
-  };
+
+export const QuizCreationProvider = ({ children }: Props) => {
+  const { queryState, setters } = useQuizQueryState();
 
   const {
     register,
@@ -128,12 +142,12 @@ export const QuizCreationProvider = ({ children }: Props) => {
     resolver: zodResolver(QuizDataSchema),
     defaultValues: {
       ...initialState,
-      topic: topic!,
-      description: description!,
-      number: number!,
-      passingScore: passingScore!,
-      showCorrectAnswers: showCorrectAnswers!,
-      tags: tags!,
+      topic: queryState.topic!,
+      description: queryState.description!,
+      number: queryState.number!,
+      passingScore: queryState.passingScore!,
+      showCorrectAnswers: queryState.showCorrectAnswers!,
+      tags: queryState.tags!,
     },
   });
 
@@ -165,13 +179,17 @@ export const QuizCreationProvider = ({ children }: Props) => {
   const addTag = (tag: string) => {
     const currentTags = formValues.tags || [];
     if (tag && !currentTags.includes(tag)) {
-      setTagsValue([...currentTags, tag]);
+      const newTags = [...currentTags, tag];
+      setters.setTags(newTags);
+      setValue("tags", newTags);
     }
   };
 
   const removeTag = (tag: string) => {
     const currentTags = formValues.tags || [];
-    setTagsValue(currentTags.filter((t) => t !== tag));
+    const newTags = currentTags.filter((t) => t !== tag);
+    setters.setTags(newTags);
+    setValue("tags", newTags);
   };
 
   const onSubmit = handleSubmit((data: QuizData) => {
@@ -196,6 +214,38 @@ export const QuizCreationProvider = ({ children }: Props) => {
   const resetValues = () => {
     reset(initialState);
   };
+
+  // 4. Create synchronized setters
+  const setTopicValue = createSynchronizedSetter(
+    setters.setTopic,
+    setValue,
+    "topic"
+  );
+  const setDescriptionValue = createSynchronizedSetter(
+    setters.setDescription,
+    setValue,
+    "description"
+  );
+  const setNumberValue = createSynchronizedSetter(
+    setters.setNumber,
+    setValue,
+    "number"
+  );
+  const setPassingScoreValue = createSynchronizedSetter(
+    setters.setPassingScore,
+    setValue,
+    "passingScore"
+  );
+  const setShowCorrectAnswersValue = createSynchronizedSetter(
+    setters.setShowCorrectAnswers,
+    setValue,
+    "showCorrectAnswers"
+  );
+  const setTagsValue = createSynchronizedSetter(
+    setters.setTags,
+    setValue,
+    "tags"
+  );
 
   return (
     <QuizCreationContext.Provider
