@@ -29,6 +29,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuizCreation, Question } from "@/contexts/quiz-creation-context";
 import { useQuiz } from "@/contexts/quiz-context";
 import { redirect } from "next/navigation";
+import { useQueryState } from "nuqs";
 
 export default function QuizCreator() {
   const {
@@ -43,11 +44,23 @@ export default function QuizCreator() {
     errors,
     control,
     resetValues,
+    setTopicValue,
+    setDescriptionValue,
+    setNumberValue,
+    setPassingScoreValue,
+    setShowCorrectAnswersValue,
+    setTagsValue,
   } = useQuizCreation();
   const { isLoading, fetchingFinished, currentQuiz } = useQuiz();
 
+  // UI nuqs
+  const [activeTab, setActiveTab] = useQueryState("activeTab", {
+    defaultValue: "general",
+  });
+
+  // all other nuqs related logic happens in src/contexts/quiz-creation-context.tsx
   const [newTag, setNewTag] = useState("");
-  const [activeTab, setActiveTab] = useState("general");
+
   if (fetchingFinished && currentQuiz) {
     redirect("/single-player/quiz/play");
   }
@@ -85,6 +98,8 @@ export default function QuizCreator() {
                 <Input
                   id="topic"
                   {...register("topic")}
+                  onChange={(e) => setTopicValue(e.target.value)}
+                  value={formValues.topic || ""}
                   placeholder="Enter the main subject or theme of your quiz"
                   className="pl-10"
                 />
@@ -100,6 +115,8 @@ export default function QuizCreator() {
                 id="description"
                 {...register("description")}
                 placeholder="Provide a brief overview of what the quiz covers"
+                onChange={(e) => setDescriptionValue(e.target.value)}
+                value={formValues.description || ""}
                 rows={4}
               />
               {errors.description && (
@@ -118,6 +135,8 @@ export default function QuizCreator() {
                   type="number"
                   id="number"
                   {...register("number")}
+                  onChange={(e) => setNumberValue(parseInt(e.target.value))}
+                  value={formValues.number || ""}
                   placeholder="How many AI-generated questions?"
                   className="pl-10"
                   required
@@ -139,8 +158,8 @@ export default function QuizCreator() {
                     min={0}
                     max={100}
                     step={5}
-                    value={[field.value]}
-                    onValueChange={(value) => field.onChange(value[0])}
+                    onValueChange={(value) => setPassingScoreValue(value[0])}
+                    value={[formValues.passingScore || 0]}
                     className="flex-grow"
                   />
                 )}
@@ -177,8 +196,8 @@ export default function QuizCreator() {
                   render={({ field }) => (
                     <Switch
                       id="showCorrectAnswers"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
+                      checked={formValues.showCorrectAnswers}
+                      onCheckedChange={(e) => setShowCorrectAnswersValue(e)}
                     />
                   )}
                 />
@@ -214,9 +233,11 @@ export default function QuizCreator() {
                 />
                 <Button
                   type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    addTag(newTag);
+                  onClick={() => {
+                    if (newTag.trim()) {
+                      addTag(newTag.trim());
+                      setNewTag("");
+                    }
                   }}
                   size="sm"
                 >
