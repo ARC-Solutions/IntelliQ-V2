@@ -29,7 +29,10 @@ import { updateRoomMaxPlayers } from '@/app/actions/rooms/update-capacity';
 import { useToast } from '@/components/ui/use-toast';
 import NumberFlow, { continuous } from '@number-flow/react';
 import { updateRoomSettings } from '@/app/actions/rooms/update-settings';
-import { type RoomResponse, type RoomDetailsResponse } from "@/app/actions/schemas/old-v1-api-schema";
+import {
+  type RoomResponse,
+  type RoomDetailsResponse,
+} from '@/app/actions/schemas/old-v1-api-schema';
 import { createApiClient } from '@/utils/api-client';
 
 interface PresenceData {
@@ -64,7 +67,7 @@ export default function Lobby() {
   const router = useRouter();
   const roomCode = routerParams['roomCode'] as string;
   const supabase = createClient();
-  const {toast} = useToast();
+  const { toast } = useToast();
 
   const checkAndJoinRoom = async (channel: RealtimeChannel) => {
     try {
@@ -72,9 +75,9 @@ export default function Lobby() {
       const client = createApiClient();
       const response = await client.api.v1.rooms[':roomCode'].$get({
         param: {
-          roomCode: roomCode
-        }
-      })
+          roomCode: roomCode,
+        },
+      });
       const room = (await response.json()) as RoomResponse;
 
       if (room) {
@@ -148,9 +151,9 @@ export default function Lobby() {
       const client = createApiClient();
       const response = await client.api.v1.rooms[':roomCode'].details.$get({
         param: {
-          roomCode: roomCode
-        }
-      })
+          roomCode: roomCode,
+        },
+      });
       const data = (await response.json()) as RoomDetailsResponse;
 
       if (!response.ok) {
@@ -227,6 +230,9 @@ export default function Lobby() {
             setTopic(value as string);
             break;
         }
+      })
+      .on('broadcast', { event: 'quiz-start' }, ({ payload }) => {
+        router.push(`/multiplayer/${roomCode}/play`);
       });
 
     return () => {
@@ -243,15 +249,15 @@ export default function Lobby() {
     }
   }, [players]);
 
-const updatePlayersAction = useAction(updateRoomMaxPlayers, {
-  onError: () => {
-    toast({
-      duration: 3500,
-      variant: 'destructive',
-      title: 'Something went wrong.',
-    });
-  },
-});
+  const updatePlayersAction = useAction(updateRoomMaxPlayers, {
+    onError: () => {
+      toast({
+        duration: 3500,
+        variant: 'destructive',
+        title: 'Something went wrong.',
+      });
+    },
+  });
 
   const changeAmountOfPlayers = async (newAmount: number) => {
     if (!channel || !isCreator) return;
@@ -259,7 +265,7 @@ const updatePlayersAction = useAction(updateRoomMaxPlayers, {
     try {
       const result = await updatePlayersAction.execute({
         roomCode,
-        maxPlayers: newAmount
+        maxPlayers: newAmount,
       });
 
       // Update local state and broadcast to others
@@ -296,7 +302,7 @@ const updatePlayersAction = useAction(updateRoomMaxPlayers, {
           roomCode,
           type,
           value: value as number,
-        })
+        });
       }
 
       await channel.send({
@@ -307,6 +313,12 @@ const updatePlayersAction = useAction(updateRoomMaxPlayers, {
     } catch (error) {
       console.error('Failed to update game settings:', error);
     }
+  };
+
+  const startQuiz = async () => {
+    if (!channel || !isCreator) return;
+    router.push(`/multiplayer/${roomCode}/play`);
+    await channel.send({ type: 'broadcast', event: 'quiz-start', payload: {} });
   };
 
   return (
@@ -324,18 +336,14 @@ const updatePlayersAction = useAction(updateRoomMaxPlayers, {
               <UsersRound />
               <div className='flex items-center gap-1'>
                 <h2 className='text-xl font-semibold uppercase flex items-center'>
-                  <NumberFlow 
-                    willChange 
-                    plugins={[continuous]} 
+                  <NumberFlow
+                    willChange
+                    plugins={[continuous]}
                     value={players.length}
                     prefix='players '
                   />
                   /
-                  <NumberFlow 
-                    willChange 
-                    plugins={[continuous]} 
-                    value={maxPlayers} 
-                  />
+                  <NumberFlow willChange plugins={[continuous]} value={maxPlayers} />
                 </h2>
               </div>
             </div>
@@ -506,7 +514,10 @@ const updatePlayersAction = useAction(updateRoomMaxPlayers, {
         <div className='flex gap-4 justify-center'>
           <InviteButton />
           {isCreator && (
-            <Button className='bg-primary text-primary-foreground hover:bg-primary/90 min-w-[120px]'>
+            <Button
+              onClick={startQuiz}
+              className='bg-primary text-primary-foreground hover:bg-primary/90 min-w-[120px]'
+            >
               START
             </Button>
           )}
