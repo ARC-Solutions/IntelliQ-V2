@@ -21,7 +21,7 @@ const QuestionSchema = z.object({
 const QuizDataSchema = z.object({
   topic: z.string().min(1, { message: "Topic is required" }),
   description: z.string().optional(),
-  passingScore: z.number().min(0).max(100),
+  passingScore: z.number().min(5).max(100),
   showCorrectAnswers: z.boolean(),
   tags: z.array(z.string()).optional(),
   questions: z.array(QuestionSchema),

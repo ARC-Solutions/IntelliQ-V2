@@ -30,6 +30,7 @@ import { useQuizCreation, Question } from "@/contexts/quiz-creation-context";
 import { useQuiz } from "@/contexts/quiz-context";
 import { redirect } from "next/navigation";
 import { useQueryState } from "nuqs";
+import NumberFlow from "@number-flow/react";
 
 export default function QuizCreator() {
   const {
@@ -155,18 +156,24 @@ export default function QuizCreator() {
                 render={({ field }) => (
                   <Slider
                     id="passingScore"
-                    min={0}
+                    min={0} // Keep visual minimum at 0
                     max={100}
                     step={5}
-                    onValueChange={(value) => setPassingScoreValue(value[0])}
-                    value={[formValues.passingScore || 0]}
+                    onValueChange={(value) =>
+                      setPassingScoreValue(Math.max(5, value[0]))
+                    } // Enforce minimum of 5
+                    value={[
+                      formValues.passingScore < 5 ? 0 : formValues.passingScore,
+                    ]} // Show 0 if below 5
                     className="flex-grow"
                   />
                 )}
               />
-              <p className="font-medium w-16 text-right">
-                {formValues.passingScore}%
-              </p>
+              <NumberFlow
+                value={Math.max(5, formValues.passingScore || 5)}
+                suffix="%"
+                className="font-medium text-right"
+              />
               {errors.passingScore && (
                 <p className="text-red-500">{errors.passingScore.message}</p>
               )}
