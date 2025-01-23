@@ -112,10 +112,15 @@ export default function QuizCreator() {
                 />
                 <Input
                   id="topic"
+                  // Spread all of the register props (name, ref, onBlur, etc.)
+                  {...register("topic")}
                   value={topic || ""}
                   onChange={(e) => {
-                    setTopic(e.target.value);
+                    // Let RHF do its thing
                     register("topic").onChange(e);
+
+                    // Then update your URL param state
+                    setTopic(e.target.value);
                   }}
                   placeholder="Enter the main subject or theme of your quiz"
                   className="pl-10"
@@ -130,10 +135,11 @@ export default function QuizCreator() {
               <Label htmlFor="description">Quiz Description</Label>
               <Textarea
                 id="description"
+                {...register("description")}
                 value={description || ""}
                 onChange={(e) => {
-                  setDescription(e.target.value);
                   register("description").onChange(e);
+                  setDescription(e.target.value);
                 }}
                 placeholder="Provide a brief overview"
                 rows={4}
@@ -150,10 +156,13 @@ export default function QuizCreator() {
                 <Input
                   type="number"
                   id="number"
+                  {...register("number")} // <-- This ensures RHF sees the field
                   value={questionCount || ""}
                   onChange={(e) => {
-                    setQuestionCount(parseInt(e.target.value));
                     register("number").onChange(e);
+                    setQuestionCount(
+                      e.target.value ? parseInt(e.target.value) : 0
+                    );
                   }}
                   placeholder="How many questions?"
                   className="pl-10"
@@ -210,16 +219,13 @@ export default function QuizCreator() {
                 </Label>
                 <Switch
                   id="showCorrectAnswers"
+                  {...register("showCorrectAnswers")}
                   checked={showAnswers || false}
                   onCheckedChange={(checked) => {
+                    register("showCorrectAnswers").onChange({
+                      target: { name: "showCorrectAnswers", value: checked },
+                    });
                     setShowAnswers(checked);
-                    const event = {
-                      target: {
-                        name: "showCorrectAnswers",
-                        value: checked,
-                      },
-                    };
-                    register("showCorrectAnswers").onChange(event);
                   }}
                 />
               </div>
@@ -251,8 +257,12 @@ export default function QuizCreator() {
               <div className="flex items-center space-x-2">
                 <Input
                   id="newTag"
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
+                  {...register("newTag")}
+                  value={newTag || ""}
+                  onChange={(e) => {
+                    register("newTag").onChange(e);
+                    setNewTag(e.target.value);
+                  }}
                   placeholder="Enter a tag"
                   className="flex-grow"
                 />
