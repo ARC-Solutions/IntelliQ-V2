@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import React, { createContext, useContext, useReducer } from "react";
-import { toast } from "react-toastify";
-import { useSupabase } from "./supabase-context";
-import { quizReducer } from "@/utils/reducers/quiz-reducer";
-import { UserAnswer } from "@/contexts/quiz-logic-context";
-import { QuizData } from "./quiz-creation-context";
+import React, { createContext, useContext, useReducer } from 'react';
+import { toast } from 'react-toastify';
+import { useSupabase } from './supabase-context';
+import { quizReducer } from '@/utils/reducers/quiz-reducer';
+import { UserAnswer } from '@/contexts/quiz-logic-context';
+import { QuizData } from './quiz-creation-context';
 import { createApiClient } from '@/utils/api-client';
 
 type Props = {
@@ -49,15 +49,15 @@ export interface QuizHistories {
   created_at: string;
 }
 export type QuizAction =
-  | { type: "FETCH_QUIZ_REQUEST" }
-  | { type: "FETCH_QUIZ_ERROR" }
-  | { type: "RESET_QUIZ" }
-  | { type: "RESET_ALL" }
-  | { type: "RESET_SUMMARY_QUIZ" }
-  | { type: "FETCH_QUIZ_SUCCESS"; payload: CurrentQuiz }
-  | { type: "SUBMIT_QUIZ_SUCESS"; payload: QuizHistory }
-  | { type: "STORE_QUIZZES"; payload: QuizHistories[] }
-  | { type: "FETCH_MORE_QUIZZES"; payload: QuizHistories[] };
+  | { type: 'FETCH_QUIZ_REQUEST' }
+  | { type: 'FETCH_QUIZ_ERROR' }
+  | { type: 'RESET_QUIZ' }
+  | { type: 'RESET_ALL' }
+  | { type: 'RESET_SUMMARY_QUIZ' }
+  | { type: 'FETCH_QUIZ_SUCCESS'; payload: CurrentQuiz }
+  | { type: 'SUBMIT_QUIZ_SUCESS'; payload: QuizHistory }
+  | { type: 'STORE_QUIZZES'; payload: QuizHistories[] }
+  | { type: 'FETCH_MORE_QUIZZES'; payload: QuizHistories[] };
 
 export interface QuizContextValues extends QuizContextValue {
   dispatch: React.Dispatch<QuizAction>;
@@ -167,7 +167,7 @@ export const QuizProvider = ({ children }: Props) => {
   const { supabase } = useSupabase();
   const fetchQuestions = async (userQuizData: QuizData) => {
     try {
-      console.log("generating...");
+      console.log('generating...');
 
       const {
         topic: interests,
@@ -178,7 +178,7 @@ export const QuizProvider = ({ children }: Props) => {
         showCorrectAnswers,
       } = userQuizData;
       const client = createApiClient();
-      dispatch({ type: "FETCH_QUIZ_REQUEST" });
+      dispatch({ type: 'FETCH_QUIZ_REQUEST' });
       const response = await client.api.v1.quizzes.generate.$get({
         query: {
           quizTopic: interests,
@@ -213,9 +213,9 @@ export const QuizProvider = ({ children }: Props) => {
         showCorrectAnswers,
       };
 
-      dispatch({ type: "FETCH_QUIZ_SUCCESS", payload: quiz });
+      dispatch({ type: 'FETCH_QUIZ_SUCCESS', payload: quiz });
     } catch (error: any) {
-      dispatch({ type: "FETCH_QUIZ_ERROR" });
+      dispatch({ type: 'FETCH_QUIZ_ERROR' });
       toast.error(error);
     }
   };
@@ -230,9 +230,7 @@ export const QuizProvider = ({ children }: Props) => {
       const quizTitle = state.currentQuiz?.topic;
       const questions = userAnswer.map((ans, i) => {
         const { correctAnswer, question, userAnswer } = ans;
-        const options = state.currentQuiz?.quiz[i].options.map((opt) =>
-          opt.slice(3)
-        );
+        const options = state.currentQuiz?.quiz[i].options.map((opt) => opt.slice(3));
         return { text: question, correctAnswer, userAnswer, options };
       });
 
@@ -243,16 +241,16 @@ export const QuizProvider = ({ children }: Props) => {
       };
       const URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/submit-quiz`;
       const response = await fetch(URL, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({ rawQuestions }),
       });
       const data = (await response.json()) as QuizHistory;
 
-      dispatch({ type: "SUBMIT_QUIZ_SUCESS", payload: data });
+      dispatch({ type: 'SUBMIT_QUIZ_SUCESS', payload: data });
     } catch (error: any) {
       toast(error.message);
       console.log(error);
@@ -268,16 +266,16 @@ export const QuizProvider = ({ children }: Props) => {
       const accessToken = session?.access_token;
       const URL = `${process.env.NEXT_PUBLIC_BASE_URL}/quizzes/${quizID}`;
       const response = await fetch(URL, {
-        method: "GET",
+        method: 'GET',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
       });
 
       const data = (await response.json()) as QuizHistory;
 
-      dispatch({ type: "SUBMIT_QUIZ_SUCESS", payload: data });
+      dispatch({ type: 'SUBMIT_QUIZ_SUCESS', payload: data });
     } catch (error: any) {
       toast(error.message);
       console.log(error);
@@ -301,7 +299,7 @@ export const QuizProvider = ({ children }: Props) => {
 export const useQuiz = (): QuizContextValues => {
   const quizContext = useContext(QuizContext);
   if (quizContext === undefined) {
-    throw new Error("useQuiz must be used within an QuizProvider");
+    throw new Error('useQuiz must be used within an QuizProvider');
   }
   return quizContext as QuizContextValues;
 };
