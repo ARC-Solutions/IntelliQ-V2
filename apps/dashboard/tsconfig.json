@@ -19,9 +19,7 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@drizzle/*": ["./drizzle/*"],
-      "@api/*": ["../api/src/*"],
-      "hono-openapi/*": ["../api/node_modules/hono-openapi/*"]
+      "@drizzle/*": ["./drizzle/*"]
     },
     "types": ["./cloudflare-env.d.ts", "@cloudflare/workers-types"]
   },
@@ -33,5 +31,5 @@
     "src/lib/fetch-all-quizzes",
     "src/types/cloudflare.d.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "../api/**/*"]
 }
