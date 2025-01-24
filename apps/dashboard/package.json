@@ -63,7 +63,8 @@
     "tailwind-merge": "^2.5.3",
     "tailwindcss-animate": "^1.0.7",
     "usehooks-ts": "^3.1.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "hono-openapi": "^0.4.3"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.1",
