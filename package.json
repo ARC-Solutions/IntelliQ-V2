@@ -5,8 +5,7 @@
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
-    "format": "biome format --write .",
-    "well": "npm install && cd apps/dashboard && npx @cloudflare/next-on-pages@1"
+    "format": "biome format --write ."
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.3",
