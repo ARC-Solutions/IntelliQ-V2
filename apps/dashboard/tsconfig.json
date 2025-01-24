@@ -31,8 +31,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/lib/fetch-all-quizzes",
-    "src/types/cloudflare.d.ts",
-    "../api/src/**/*.ts"
+    "src/types/cloudflare.d.ts"
   ],
   "exclude": ["node_modules"]
 }
