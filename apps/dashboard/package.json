@@ -8,7 +8,7 @@
     "start": "next start",
     "format": "biome format --write .",
     "db:introspect": "npx drizzle-kit pull",
-    "pages:build": "npx @cloudflare/next-on-pages",
+    "pages:build": "cd ../.. && npm i && cd apps/dashboard && npx @cloudflare/next-on-pages",
     "preview": "npm run pages:build && wrangler pages dev",
     "deploy": "npm run pages:build && wrangler pages deploy"
   },
