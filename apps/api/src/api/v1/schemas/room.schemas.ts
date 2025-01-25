@@ -17,6 +17,32 @@ export const roomDetailsResponseSchema = z.object({
   code: z.string(),
   createdAt: z.string(),
   endedAt: z.string().nullable(),
+  timeLimit: z.number(),
+});
+
+export const roomSettingsResponseSchema = z.object({
+  code: roomSchema.shape.roomCode,
+  id: roomDetailsResponseSchema.shape.id,
+  quizId: roomDetailsResponseSchema.shape.quizId,
+  hostId: roomDetailsResponseSchema.shape.hostId,
+  maxPlayers: roomDetailsResponseSchema.shape.maxPlayers,
+  numQuestions: roomDetailsResponseSchema.shape.numQuestions,
+  createdAt: roomDetailsResponseSchema.shape.createdAt,
+  endedAt: roomDetailsResponseSchema.shape.endedAt,
+  timeLimit: roomDetailsResponseSchema.shape.timeLimit,
+});
+
+export const updateRoomSettingsSchema = z.object({
+  type: z.enum(["numQuestions", "timeLimit", "topic", "showAnswers", "maxPlayers"]),
+  value: z.union([z.number(), z.string(), z.boolean()]),
+});
+
+export const createRoomSchema = z.object({
+  code: roomSchema.shape.roomCode,
+  hostId: roomDetailsResponseSchema.shape.hostId,
+  maxPlayers: roomDetailsResponseSchema.shape.maxPlayers,
+  numQuestions: roomDetailsResponseSchema.shape.numQuestions,
+  timeLimit: roomDetailsResponseSchema.shape.timeLimit,
 });
 
 export type RoomResponse = z.infer<typeof roomResponseSchema>;

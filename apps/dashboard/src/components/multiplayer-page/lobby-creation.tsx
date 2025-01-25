@@ -7,6 +7,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/supabase-client-side';
 import { useRouter } from 'next/navigation';
+import { createApiClient } from '@/utils/api-client';
 export default function LobbyScreen() {
   const router = useRouter();
   const supabase = createClient();
@@ -28,21 +29,33 @@ export default function LobbyScreen() {
     const creator = (await supabase.auth.getUser()).data.user?.id;
     console.log(creator);
 
-    const newGame = await supabase
-      .from('rooms')
-      .insert({
+    const client = createApiClient();
+    const newGame = await client.api.v1.rooms.$post({
+      json: {
         code: roomCode,
-        host_id: creator,
-        max_players: 5,
-        num_questions: 5,
-      })
-      .select()
-      .single();
+        hostId: creator!,
+        maxPlayers: 5,
+        numQuestions: 5,
+        timeLimit: 30,
+      },
+    });
 
-    if (newGame.error) {
-      console.error(newGame.error);
-      return;
-    }
+    // const newGame = await supabase
+    //   .from('rooms')
+    //   .insert({
+    //     code: roomCode,
+    //     host_id: creator,
+    //     max_players: 5,
+    //     num_questions: 5,
+    //     time_limit: 30,
+    //   })
+    //   .select()
+    //   .single();
+
+    // if (newGame.error) {
+    //   console.error(newGame.error);
+    //   return;
+    // }
 
     router.push(`/multiplayer/${roomCode}`);
   };
