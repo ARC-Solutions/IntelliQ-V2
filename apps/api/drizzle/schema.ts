@@ -159,6 +159,8 @@ export const rooms = pgTable("rooms", {
 	code: text().notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	endedAt: timestamp("ended_at", { withTimezone: true, mode: 'string' }),
+	timeLimit: smallint("time_limit").notNull(),
+	topic: text(),
 }, (table) => [
 	foreignKey({
 			columns: [table.hostId],
