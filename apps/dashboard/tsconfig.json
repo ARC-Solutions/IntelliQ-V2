@@ -21,7 +21,7 @@
       "@/*": ["./src/*"],
       "@drizzle/*": ["./drizzle/*"]
     },
-    "types": ["./cloudflare-env.d.ts"]
+    "types": ["./cloudflare-env.d.ts", "@cloudflare/workers-types"]
   },
   "include": [
     "next-env.d.ts",
@@ -29,7 +29,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/lib/fetch-all-quizzes",
-    "src/types/cloudflare.d.ts",
+    "src/types/cloudflare.d.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "../api/**/*"]
 }
