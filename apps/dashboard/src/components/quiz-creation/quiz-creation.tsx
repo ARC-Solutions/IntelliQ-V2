@@ -29,13 +29,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuizCreation, Question } from "@/contexts/quiz-creation-context";
 import { useQuiz } from "@/contexts/quiz-context";
 import { redirect } from "next/navigation";
-import {
-  useQueryState,
-  parseAsInteger,
-  parseAsBoolean,
-  parseAsArrayOf,
-  parseAsString,
-} from "nuqs";
+import { useQueryState } from "nuqs";
+import NumberFlow from "@number-flow/react";
 
 export default function QuizCreator() {
   const {
@@ -50,31 +45,22 @@ export default function QuizCreator() {
     errors,
     control,
     resetValues,
+    setTopicValue,
+    setDescriptionValue,
+    setNumberValue,
+    setPassingScoreValue,
+    setShowCorrectAnswersValue,
+    setTagsValue,
   } = useQuizCreation();
   const { isLoading, fetchingFinished, currentQuiz } = useQuiz();
 
-  // replace useState with useQueryState for persistent UI state
-  const [activeTab, setActiveTab] = useQueryState("tab", {
+  // UI nuqs
+  const [activeTab, setActiveTab] = useQueryState("activeTab", {
     defaultValue: "general",
   });
 
-  // URL state for quiz configuration
-  const [topic, setTopic] = useQueryState("topic");
-  const [description, setDescription] = useQueryState("description");
-  const [questionCount, setQuestionCount] = useQueryState(
-    "count",
-    parseAsInteger
-  );
-  const [passingScore, setPassingScore] = useQueryState(
-    "passing",
-    parseAsInteger.withDefault(70)
-  );
-  const [showAnswers, setShowAnswers] = useQueryState(
-    "showAnswers",
-    parseAsBoolean.withDefault(true)
-  );
+  // all other nuqs related logic happens in src/contexts/quiz-creation-context.tsx
   const [newTag, setNewTag] = useState("");
-  const [tags, setTags] = useQueryState("tags", parseAsArrayOf(parseAsString));
 
   if (fetchingFinished && currentQuiz) {
     redirect("/single-player/quiz/play");
@@ -112,16 +98,9 @@ export default function QuizCreator() {
                 />
                 <Input
                   id="topic"
-                  // Spread all of the register props (name, ref, onBlur, etc.)
                   {...register("topic")}
-                  value={topic || ""}
-                  onChange={(e) => {
-                    // Let RHF do its thing
-                    register("topic").onChange(e);
-
-                    // Then update your URL param state
-                    setTopic(e.target.value);
-                  }}
+                  onChange={(e) => setTopicValue(e.target.value)}
+                  value={formValues.topic || ""}
                   placeholder="Enter the main subject or theme of your quiz"
                   className="pl-10"
                 />
@@ -136,14 +115,14 @@ export default function QuizCreator() {
               <Textarea
                 id="description"
                 {...register("description")}
-                value={description || ""}
-                onChange={(e) => {
-                  register("description").onChange(e);
-                  setDescription(e.target.value);
-                }}
-                placeholder="Provide a brief overview"
+                placeholder="Provide a brief overview of what the quiz covers"
+                onChange={(e) => setDescriptionValue(e.target.value)}
+                value={formValues.description || ""}
                 rows={4}
               />
+              {errors.description && (
+                <p className="text-red-500">{errors.description.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -156,16 +135,12 @@ export default function QuizCreator() {
                 <Input
                   type="number"
                   id="number"
-                  {...register("number")} // <-- This ensures RHF sees the field
-                  value={questionCount || ""}
-                  onChange={(e) => {
-                    register("number").onChange(e);
-                    setQuestionCount(
-                      e.target.value ? parseInt(e.target.value) : 0
-                    );
-                  }}
-                  placeholder="How many questions?"
+                  {...register("number")}
+                  onChange={(e) => setNumberValue(parseInt(e.target.value))}
+                  value={formValues.number || ""}
+                  placeholder="How many AI-generated questions?"
                   className="pl-10"
+                  required
                 />
                 {errors.number && (
                   <p className="text-red-500">{errors.number.message}</p>
@@ -181,19 +156,24 @@ export default function QuizCreator() {
                 render={({ field }) => (
                   <Slider
                     id="passingScore"
-                    min={0}
+                    min={0} // Keep visual minimum at 0
                     max={100}
                     step={5}
-                    value={[passingScore || 70]}
-                    onValueChange={(value) => {
-                      setPassingScore(value[0]);
-                      field.onChange(value[0]);
-                    }}
+                    onValueChange={(value) =>
+                      setPassingScoreValue(Math.max(5, value[0]))
+                    } // Enforce minimum of 5
+                    value={[
+                      formValues.passingScore < 5 ? 0 : formValues.passingScore,
+                    ]} // Show 0 if below 5
                     className="flex-grow"
                   />
                 )}
               />
-              <p className="font-medium w-16 text-right">{passingScore}%</p>
+              <NumberFlow
+                value={Math.max(5, formValues.passingScore || 5)}
+                suffix="%"
+                className="font-medium text-right"
+              />
               {errors.passingScore && (
                 <p className="text-red-500">{errors.passingScore.message}</p>
               )}
@@ -217,16 +197,16 @@ export default function QuizCreator() {
                     </Tooltip>
                   </TooltipProvider>
                 </Label>
-                <Switch
-                  id="showCorrectAnswers"
-                  {...register("showCorrectAnswers")}
-                  checked={showAnswers || false}
-                  onCheckedChange={(checked) => {
-                    register("showCorrectAnswers").onChange({
-                      target: { name: "showCorrectAnswers", value: checked },
-                    });
-                    setShowAnswers(checked);
-                  }}
+                <Controller
+                  name="showCorrectAnswers"
+                  control={control}
+                  render={({ field }) => (
+                    <Switch
+                      id="showCorrectAnswers"
+                      checked={formValues.showCorrectAnswers}
+                      onCheckedChange={(e) => setShowCorrectAnswersValue(e)}
+                    />
+                  )}
                 />
               </div>
             </div>
@@ -234,7 +214,7 @@ export default function QuizCreator() {
             <div className="space-y-2">
               <Label htmlFor="tags">Quiz Tags</Label>
               <div className="flex flex-wrap gap-2 mb-2">
-                {tags?.map((tag: string) => (
+                {formValues.tags?.map((tag: string) => (
                   <span
                     key={tag}
                     className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center"
@@ -242,11 +222,7 @@ export default function QuizCreator() {
                     {tag}
                     <button
                       type="button"
-                      onClick={() => {
-                        removeTag(tag);
-                        const updatedTags = tags.filter((t) => t !== tag);
-                        setTags(updatedTags.length > 0 ? updatedTags : null);
-                      }}
+                      onClick={() => removeTag(tag)}
                       className="ml-1 text-blue-600 hover:text-blue-800"
                     >
                       &times;
@@ -257,12 +233,8 @@ export default function QuizCreator() {
               <div className="flex items-center space-x-2">
                 <Input
                   id="newTag"
-                  {...register("newTag")}
-                  value={newTag || ""}
-                  onChange={(e) => {
-                    register("newTag").onChange(e);
-                    setNewTag(e.target.value);
-                  }}
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
                   placeholder="Enter a tag"
                   className="flex-grow"
                 />
@@ -272,8 +244,6 @@ export default function QuizCreator() {
                     if (newTag.trim()) {
                       addTag(newTag.trim());
                       setNewTag("");
-                      const updatedTags = [...(tags || []), newTag.trim()];
-                      setTags(updatedTags);
                     }
                   }}
                   size="sm"
@@ -410,7 +380,7 @@ export default function QuizCreator() {
               <div>
                 <h3 className="font-semibold">Tags:</h3>
                 <div className="flex flex-wrap gap-2">
-                  {tags?.map((tag) => (
+                  {formValues.tags?.map((tag) => (
                     <span
                       key={tag}
                       className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm"

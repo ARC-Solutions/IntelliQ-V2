@@ -1,25 +1,34 @@
-'use client';
-import React, { createContext, useContext, useReducer, useState } from 'react';
-import { toast } from 'react-toastify';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { useQuiz } from './quiz-context';
+"use client";
+import { zodResolver } from "@hookform/resolvers/zod";
+import React, { createContext, useContext } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { useQuiz } from "./quiz-context";
+import {
+  useQueryState,
+  parseAsInteger,
+  parseAsBoolean,
+  parseAsArrayOf,
+  parseAsString,
+} from "nuqs";
 
 const QuestionSchema = z.object({
-  text: z.string().min(1, { message: 'Question text is required' }),
+  text: z.string().min(1, { message: "Question text is required" }),
   options: z.array(z.string()).optional(),
   answer: z.string().optional(),
 });
 
 const QuizDataSchema = z.object({
-  topic: z.string().min(1, { message: 'Topic is required' }),
+  topic: z.string().min(1, { message: "Topic is required" }),
   description: z.string().optional(),
-  passingScore: z.number().min(0).max(100),
+  passingScore: z.number().min(5).max(100),
   showCorrectAnswers: z.boolean(),
   tags: z.array(z.string()).optional(),
   questions: z.array(QuestionSchema),
-  number: z.union([z.number(), z.string().min(1, { message: 'Number is required' })]),
+  number: z.union([
+    z.number(),
+    z.string().min(1, { message: "Number is required" }),
+  ]),
 });
 
 export type QuizData = z.infer<typeof QuizDataSchema>;
@@ -33,7 +42,11 @@ interface QuizContextValues {
   formValues: QuizData;
   errors: Record<string, any>;
   addQuestion: () => void;
-  updateQuestion: (index: number, field: string, value: string | string[]) => void;
+  updateQuestion: (
+    index: number,
+    field: string,
+    value: string | string[]
+  ) => void;
   removeQuestion: (index: number) => void;
   addTag: (tag: string) => void;
   removeTag: (tag: string) => void;
@@ -41,21 +54,82 @@ interface QuizContextValues {
   register: any;
   control: any;
   resetValues: () => void;
+  setTopicValue: (value: string) => void;
+  setDescriptionValue: (value: string) => void;
+  setNumberValue: (value: number) => void;
+  setPassingScoreValue: (value: number) => void;
+  setShowCorrectAnswersValue: (value: boolean) => void;
+  setTagsValue: (value: string[]) => void;
 }
 
 const initialState = {
-  topic: '',
-  description: '',
+  topic: "",
+  description: "",
   passingScore: 70,
   showCorrectAnswers: true,
   tags: [],
   questions: [],
-  number: '',
+  number: "",
 };
 
 const QuizCreationContext = createContext<QuizContextValues | null>(null);
 
+// 1. Create a custom hook for all nuqs state management
+const useQuizQueryState = () => {
+  const [topic, setTopic] = useQueryState("topic");
+  const [description, setDescription] = useQueryState("description");
+  const [number, setNumber] = useQueryState(
+    "number",
+    parseAsInteger.withDefault(0)
+  );
+  const [passingScore, setPassingScore] = useQueryState(
+    "passingScore",
+    parseAsInteger.withDefault(70)
+  );
+  const [showCorrectAnswers, setShowCorrectAnswers] = useQueryState(
+    "showCorrectAnswers",
+    parseAsBoolean.withDefault(true)
+  );
+  const [tags, setTags] = useQueryState("tags", parseAsArrayOf(parseAsString));
+
+  return {
+    queryState: {
+      topic,
+      description,
+      number,
+      passingScore,
+      showCorrectAnswers,
+      tags,
+    },
+    setters: {
+      setTopic,
+      setDescription,
+      setNumber,
+      setPassingScore,
+      setShowCorrectAnswers,
+      setTags,
+    },
+  };
+};
+
+// 2. Create a type for the form setters
+type FormSetterFunction<T = any> = (field: keyof QuizData, value: T) => void;
+
+// 3. Create a utility function for creating synchronized setters
+const createSynchronizedSetter =
+  (
+    querySetter: (value: any) => void,
+    formSetter: FormSetterFunction,
+    field: keyof QuizData
+  ) =>
+  (value: any) => {
+    querySetter(value);
+    formSetter(field, value);
+  };
+
 export const QuizCreationProvider = ({ children }: Props) => {
+  const { queryState, setters } = useQuizQueryState();
+
   const {
     register,
     handleSubmit,
@@ -66,7 +140,15 @@ export const QuizCreationProvider = ({ children }: Props) => {
     formState: { errors },
   } = useForm<QuizData>({
     resolver: zodResolver(QuizDataSchema),
-    defaultValues: initialState,
+    defaultValues: {
+      ...initialState,
+      topic: queryState.topic!,
+      description: queryState.description!,
+      number: queryState.number!,
+      passingScore: queryState.passingScore!,
+      showCorrectAnswers: queryState.showCorrectAnswers!,
+      tags: queryState.tags!,
+    },
   });
 
   const { fetchQuestions } = useQuiz();
@@ -75,38 +157,43 @@ export const QuizCreationProvider = ({ children }: Props) => {
 
   const addQuestion = () => {
     const questions = formValues.questions || [];
-    const newQuestion: Question = { text: '', options: ['', '', '', ''] };
-    setValue('questions', [...questions, newQuestion]);
+    const newQuestion: Question = { text: "", options: ["", "", "", ""] };
+    setValue("questions", [...questions, newQuestion]);
   };
 
-  const updateQuestion = (index: number, field: string, value: string | string[]) => {
+  const updateQuestion = (
+    index: number,
+    field: string,
+    value: string | string[]
+  ) => {
     const questions = [...formValues.questions];
     questions[index] = { ...questions[index], [field]: value };
-    setValue('questions', questions);
+    setValue("questions", questions);
   };
 
   const removeQuestion = (index: number) => {
     const questions = formValues.questions.filter((_, i) => i !== index);
-    setValue('questions', questions);
+    setValue("questions", questions);
   };
 
   const addTag = (tag: string) => {
-    const tags = formValues.tags || [];
-    if (tag && !tags.includes(tag)) {
-      setValue('tags', [...tags, tag]);
+    const currentTags = formValues.tags || [];
+    if (tag && !currentTags.includes(tag)) {
+      const newTags = [...currentTags, tag];
+      setters.setTags(newTags);
+      setValue("tags", newTags);
     }
   };
 
   const removeTag = (tag: string) => {
-    const tags = formValues.tags ?? [];
-    setValue(
-      'tags',
-      tags.filter((t) => t !== tag),
-    );
+    const currentTags = formValues.tags || [];
+    const newTags = currentTags.filter((t) => t !== tag);
+    setters.setTags(newTags);
+    setValue("tags", newTags);
   };
 
   const onSubmit = handleSubmit((data: QuizData) => {
-    console.log('Quiz Data:', data);
+    console.log("Quiz Data:", data);
     const questions = data.questions.map((question, index) => {
       let answerLabel;
       const options = question.options?.map((option, optionIndex) => {
@@ -119,7 +206,7 @@ export const QuizCreationProvider = ({ children }: Props) => {
       });
       return { ...question, options, answer: answerLabel };
     });
-    setValue('questions', questions);
+    setValue("questions", questions);
 
     fetchQuestions({ ...data, questions });
   });
@@ -127,6 +214,38 @@ export const QuizCreationProvider = ({ children }: Props) => {
   const resetValues = () => {
     reset(initialState);
   };
+
+  // 4. Create synchronized setters
+  const setTopicValue = createSynchronizedSetter(
+    setters.setTopic,
+    setValue,
+    "topic"
+  );
+  const setDescriptionValue = createSynchronizedSetter(
+    setters.setDescription,
+    setValue,
+    "description"
+  );
+  const setNumberValue = createSynchronizedSetter(
+    setters.setNumber,
+    setValue,
+    "number"
+  );
+  const setPassingScoreValue = createSynchronizedSetter(
+    setters.setPassingScore,
+    setValue,
+    "passingScore"
+  );
+  const setShowCorrectAnswersValue = createSynchronizedSetter(
+    setters.setShowCorrectAnswers,
+    setValue,
+    "showCorrectAnswers"
+  );
+  const setTagsValue = createSynchronizedSetter(
+    setters.setTags,
+    setValue,
+    "tags"
+  );
 
   return (
     <QuizCreationContext.Provider
@@ -142,6 +261,13 @@ export const QuizCreationProvider = ({ children }: Props) => {
         register,
         control,
         resetValues,
+        // nuqs
+        setTopicValue,
+        setDescriptionValue,
+        setNumberValue,
+        setPassingScoreValue,
+        setShowCorrectAnswersValue,
+        setTagsValue,
       }}
     >
       {children}
@@ -152,7 +278,7 @@ export const QuizCreationProvider = ({ children }: Props) => {
 export const useQuizCreation = (): QuizContextValues => {
   const context = useContext(QuizCreationContext);
   if (context === null) {
-    throw new Error('useQuiz must be used within a QuizProvider');
+    throw new Error("useQuiz must be used within a QuizProvider");
   }
   return context;
 };
