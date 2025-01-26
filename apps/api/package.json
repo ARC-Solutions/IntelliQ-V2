@@ -2,7 +2,7 @@
   "name": "api",
   "scripts": {
     "predev": "node toggle-config.js dev",
-    "dev": "wrangler dev",
+    "dev": "infisical export --path=/apps/api > .dev.vars && wrangler dev",
     "postdev": "node toggle-config.js prod",
     "predeploy": "node toggle-config.js prod",
     "deploy": "wrangler deploy --minify",
