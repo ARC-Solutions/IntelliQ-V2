@@ -41,7 +41,7 @@ export default function LobbyScreen() {
         hostId: creator!,
         maxPlayers: 5,
         numQuestions: 5,
-        timeLimit: 30,
+        timeLimit: 25,
       },
     });
 
