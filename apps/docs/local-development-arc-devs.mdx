@@ -1,0 +1,81 @@
+---
+title: "Local Development (ARC Devs)"
+og:title: "How to Setup IntelliQ for Local Development"
+description: "A guide on how to run IntelliQ's codebase locally as an ARC-Solutions developer."
+icon: building
+---
+
+###
+
+## Introduction
+
+This guide is for **ARC-Solutions developers** who need to set up their local development environment with **Infisical** for secrets management. If you're not part of ARC-Solutions, refer to the [standard local development guide](/local-development).
+
+Here's the monorepo structure:
+```
+IntelliQ-V2
+|-- apps
+|   |-- api
+|   |-- dashboard
+|   |-- docs
+|   |-- presentation
+|   `-- web
+|-- packages
+|   |-- api-types
+|   |-- typescript-config
+|   `-- ui
+```
+
+---
+
+## Initial Setup
+
+1. **Clone the repository**:
+```bash
+git clone https://github.com/ARC-Solutions/IntelliQ-V2.git
+cd IntelliQ-V2
+```
+
+2. **Install dependencies**:
+```bash
+npm i
+```
+
+3. **Set up Infisical for secrets management**:
+
+   a. Install the Infisical CLI globally **(if not already installed)**:
+   ```bash
+   npm install -g infisical
+   ```
+
+   b. Log in to Infisical:
+   ```bash
+   infisical login
+   ```
+   You will be prompted to complete the login process in your browser. Open the provided link:
+   ```
+   https://app.infisical.com/login?callback_port=55279
+   ```
+   Choose **GitHub** as the login method (you should already have been invited to the Infisical workspace).
+
+4. **Export environment variables**:
+
+   For the API:
+   ```bash
+   cd apps/api
+   npm run dev
+   ```
+
+   For the Dashboard:
+   ```bash
+   cd apps/dashboard
+   npm run dev
+   ```
+
+5. **Configure Git to ignore local changes to sensitive files**:
+   <Warning>
+   ```bash
+   git update-index --skip-worktree apps/api/wrangler.toml
+   ```
+   </Warning>
+   This step is important to prevent accidentally committing your local development configuration changes to the repository.
