@@ -56,7 +56,11 @@
     },
     {
       "group": "Open source",
-      "pages": ["local-development", "local-development-arc-devs"]
+      "pages": ["local-development"]
+    },
+    {
+      "group": "ARC Developers",
+      "pages": ["local-development-arc-devs"]
     },
     {
       "group": "Essentials",
