@@ -10,7 +10,7 @@ GPT_MODEL="gpt-4o-mini"
 
 [[hyperdrive]]
 binding = "HYPERDRIVE"
-id = "1ead348e22444a0f98164d2421b7b058"
+id = "e4ba004cd93a4e25853e135da77c9509"
 
 [observability.logs]
 enabled = false
