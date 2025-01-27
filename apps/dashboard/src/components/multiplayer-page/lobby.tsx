@@ -27,6 +27,7 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { RoomResponse, RoomDetailsResponse } from "@intelliq/api";
+import { useDebouncedCallback } from "use-debounce";
 
 interface PresenceData {
   currentUser: {
@@ -340,6 +341,14 @@ export default function Lobby() {
     }
   };
 
+  // debounce the updateGameSettings function to prevent multiple API requests
+  const debouncedUpdateSettings = useDebouncedCallback(
+    (type: "numQuestions" | "timeLimit" | "topic", value: number | string) => {
+      updateGameSettings(type, value);
+    },
+    555
+  );
+
   const startQuiz = async () => {
     if (!channel || !isCreator) return;
     router.push(`/multiplayer/${roomCode}/play`);
@@ -503,8 +512,8 @@ export default function Lobby() {
                       step={1}
                       className="flex-1"
                       onValueChange={(value) => {
-                        updateGameSettings("numQuestions", value[0]);
                         setQuestionCount(value[0]);
+                        debouncedUpdateSettings("numQuestions", value[0]);
                       }}
                     />
                     <span className="text-sm text-gray-400">10</span>
@@ -523,8 +532,8 @@ export default function Lobby() {
                       step={5}
                       className="flex-1"
                       onValueChange={(value) => {
-                        updateGameSettings("timeLimit", value[0]);
                         setTimeLimit(value[0]);
+                        debouncedUpdateSettings("timeLimit", value[0]);
                       }}
                     />
                     <span className="text-sm text-gray-400">60s</span>
