@@ -1,4 +1,5 @@
 "use client";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { createContext, useContext } from "react";
 import { useForm } from "react-hook-form";
@@ -11,6 +12,7 @@ import {
   parseAsArrayOf,
   parseAsString,
 } from "nuqs";
+import * as LZString from "lz-string";
 
 const QuestionSchema = z.object({
   text: z.string().min(1, { message: "Question text is required" }),
@@ -20,7 +22,7 @@ const QuestionSchema = z.object({
 
 const QuizDataSchema = z.object({
   topic: z.string().min(1, { message: "Topic is required" }),
-  description: z.string().optional(),
+  description: z.string().max(1000).optional(),
   passingScore: z.number().min(5).max(100),
   showCorrectAnswers: z.boolean(),
   tags: z.array(z.string()).optional(),
@@ -77,7 +79,16 @@ const QuizCreationContext = createContext<QuizContextValues | null>(null);
 // 1. Create a custom hook for all nuqs state management
 const useQuizQueryState = () => {
   const [topic, setTopic] = useQueryState("topic");
-  const [description, setDescription] = useQueryState("description");
+  const [description, setDescription] = useQueryState("description", {
+    parse: (value) => {
+      try {
+        return LZString.decompressFromEncodedURIComponent(value) || "";
+      } catch {
+        return "";
+      }
+    },
+    serialize: (value) => LZString.compressToEncodedURIComponent(value || ""),
+  });
   const [number, setNumber] = useQueryState(
     "number",
     parseAsInteger.withDefault(0)
