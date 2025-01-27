@@ -158,6 +158,14 @@ const app = new Hono<{ Bindings: CloudflareEnv }>()
             },
           },
         },
+        400: {
+          description: "Bad Request",
+          content: {
+            "application/json": {
+              schema: z.object({ error: z.string() }),
+            },
+          },
+        },
       },
     }),
     zValidator("json", createRoomSchema),
