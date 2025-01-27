@@ -6,6 +6,7 @@ import {
   updateRoomSettingsSchema,
   roomSettingsResponseSchema,
   createRoomSchema,
+  createRoomResponseSchema,
 } from "./schemas/room.schemas";
 import { createDb } from "../../db/index";
 import { describeRoute } from "hono-openapi";
@@ -141,31 +142,51 @@ const app = new Hono<{ Bindings: CloudflareEnv }>()
       return c.json(updatedSettings[0]);
     }
   )
-  .post("/", zValidator("json", createRoomSchema), async (c) => {
-    const { code, hostId, maxPlayers, numQuestions, timeLimit } =
-      c.req.valid("json");
+  .post(
+    "/",
+    describeRoute({
+      tags: ["Rooms"],
+      summary: "Create a room",
+      description: "Create a room",
+      validateResponse: true,
+      responses: {
+        200: {
+          description: "Room created",
+          content: {
+            "application/json": {
+              schema: resolver(createRoomResponseSchema),
+            },
+          },
+        },
+      },
+    }),
+    zValidator("json", createRoomSchema),
+    async (c) => {
+      const { code, hostId, maxPlayers, numQuestions, timeLimit } =
+        c.req.valid("json");
 
-    const db = await createDb(c);
-    const newRoom = await db
-      .insert(rooms)
-      .values({
-        code,
-        hostId,
-        maxPlayers,
-        numQuestions,
-        timeLimit,
-      })
-      .returning({
-        id: rooms.id,
-        code: rooms.code,
-        host_id: rooms.hostId,
-        max_players: rooms.maxPlayers,
-        num_questions: rooms.numQuestions,
-        time_limit: rooms.timeLimit,
-        created_at: rooms.createdAt,
-      });
+      const db = await createDb(c);
+      const newRoom = await db
+        .insert(rooms)
+        .values({
+          code,
+          hostId,
+          maxPlayers,
+          numQuestions,
+          timeLimit,
+        })
+        .returning({
+          id: rooms.id,
+          code: rooms.code,
+          host_id: rooms.hostId,
+          max_players: rooms.maxPlayers,
+          num_questions: rooms.numQuestions,
+          time_limit: rooms.timeLimit,
+          created_at: rooms.createdAt,
+        });
 
-    return c.json(newRoom[0], 201);
-  });
+      return c.json(newRoom[0], 201);
+    }
+  );
 
 export default app;
