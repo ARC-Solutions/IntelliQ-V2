@@ -1,12 +1,9 @@
-import ClientSection from "@/components/landing/client-section";
-import CallToActionSection from "@/components/landing/cta-section";
 import HeroSection from "@/components/landing/hero-section";
-import PricingSection from "@/components/landing/pricing-section";
+import MembersSection from "@/components/landing/members-section";
+import PoweringIntelliq from "@/components/landing/powering-intelliq";
+import VisualEnhance from "@/components/landing/visual-section";
 import Particles from "@/components/magicui/particles";
 import { SphereMask } from "@/components/magicui/sphere-mask";
-import PoweringIntelliq from "@/components/landing/powering-intelliq";
-import MembersSection from "@/components/landing/members-section";
-import VisualEnhance from "@/components/landing/visual-section"
 
 export default async function Page() {
   return (
