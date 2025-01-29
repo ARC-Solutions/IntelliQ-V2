@@ -9,16 +9,27 @@ export const roomResponseSchema = z.object({
 });
 
 export const roomDetailsResponseSchema = z.object({
-  id: z.string().uuid(),
-  quizId: z.string().uuid().nullable(),
-  hostId: z.string().uuid(),
-  maxPlayers: z.number().int().positive(),
-  numQuestions: z.number().int().positive(),
+  // UUIDs or strings
+  id: z.string(),
+  quizId: z.string().nullable(), // Because it can be null
+  hostId: z.string(),
+
+  // Numbers
+  maxPlayers: z.number(),
+  numQuestions: z.number(),
+  timeLimit: z.number(),
+
+  // Strings
   code: z.string(),
-  createdAt: z.string().datetime(),
-  endedAt: z.string().datetime().nullable(),
-  timeLimit: z.number().int().positive(),
-  topic: z.string().nullable(),
+  topic: z.string(),
+
+  // Dates or strings
+  // If `createdAt` is just a string in the response, use z.string()
+  // If you prefer an actual Date object, you'd do z.coerce.date()
+  createdAt: z.string(),
+
+  // endedAt can be null
+  endedAt: z.string().nullable(),
 });
 
 export const updateRoomSettingsSchema = z.object({
