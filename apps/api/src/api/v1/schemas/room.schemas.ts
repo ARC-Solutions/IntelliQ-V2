@@ -21,7 +21,7 @@ export const roomDetailsResponseSchema = z.object({
 
   // Strings
   code: z.string(),
-  topic: z.string(),
+  topic: z.string().nullable(),
 
   // Dates or strings
   // If `createdAt` is just a string in the response, use z.string()
