@@ -7,6 +7,8 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import Lottie from 'lottie-react';
+import Loading from '../../../public/Loading.json';
 import {
   Select,
   SelectContent,
@@ -39,7 +41,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { RoomResponse, RoomDetailsResponse } from '@intelliq/api';
 import { useDebouncedCallback } from 'use-debounce';
-
+import { useQuiz } from '@/contexts/quiz-context';
+import { QuizData } from '../../contexts/quiz-creation-context';
 interface PresenceData {
   currentUser: {
     id: string;
@@ -68,6 +71,7 @@ export default function Lobby() {
     topic,
     setTopic,
   } = useMultiplayer();
+  const { isLoading, fetchQuestions, fetchingFinished, dispatch, currentQuiz } = useQuiz();
   const routerParams = useParams();
   const router = useRouter();
   const roomCode = routerParams['roomCode'] as string;
@@ -130,20 +134,6 @@ export default function Lobby() {
     }));
 
     setPlayers(updatedPlayers as Player[]);
-
-    // if (updatedPlayers[0].settings) {
-    //   await roomChannel.send({
-    //     type: 'broadcast',
-    //     event: 'settings-update',
-    //     payload: { type: 'timeLimit', value: updatedPlayers[0].settings.timeLimit },
-    //   });
-
-    //   await roomChannel.send({
-    //     type: 'broadcast',
-    //     event: 'settings-update',
-    //     payload: { type: 'topic', value: updatedPlayers[0].settings.topic },
-    //   });
-    // }
 
     // Update isCreator status for current user
     if (currentUser && updatedPlayers.length > 0) {
@@ -216,11 +206,12 @@ export default function Lobby() {
       });
 
     roomChannel
-      .on('broadcast', { event: 'quiz-started' }, async (payload) => {
-        router.push(`/${roomCode}/play`);
-      })
+
       .on('broadcast', { event: 'change-amount-of-players' }, async ({ payload }) => {
         setMaxPlayers(payload.newAmount);
+      })
+      .on('broadcast', { event: 'loading-animation' }, async ({ payload }) => {
+        dispatch({ type: 'FETCH_QUIZ_REQUEST' });
       })
       .on('broadcast', { event: 'settings-update' }, ({ payload }) => {
         const { type, value } = payload;
@@ -238,6 +229,7 @@ export default function Lobby() {
         }
       })
       .on('broadcast', { event: 'quiz-start' }, ({ payload }) => {
+        dispatch({ type: 'FETCH_QUIZ_SUCCESS', payload: payload.currentQuiz });
         router.push(`/multiplayer/${roomCode}/play`);
       });
 
@@ -299,7 +291,6 @@ export default function Lobby() {
     if (!channel || !isCreator) return;
 
     try {
-
       // Update local state and broadcast to others
       switch (type) {
         case 'numQuestions':
@@ -354,12 +345,48 @@ export default function Lobby() {
       });
       return;
     }
-    console.log('start ' + response.ok);
+    const quizCreation = {
+      topic,
+      number: questionCount,
+      description: topic,
+      tags: [topic],
+      showCorrectAnswers: true,
+      passingScore: 70,
+      questions: [],
+    } as QuizData;
+    fetchQuestions(quizCreation);
 
-    router.push(`/multiplayer/${roomCode}/play`);
-    await channel.send({ type: 'broadcast', event: 'quiz-start', payload: {} });
+    // router.push(`/multiplayer/${roomCode}/play`);
+    // await channel.send({ type: 'broadcast', event: 'quiz-start', payload: {} });
   };
 
+  useEffect(() => {
+    const handleQuizFinished = async () => {
+      if (!channel) return;
+      if (isLoading) {
+        await channel.send({
+          type: 'broadcast',
+          event: 'loading-animation',
+          payload: {},
+        });
+      }
+
+      if (fetchingFinished && currentQuiz && !isLoading) {
+        await channel.send({ type: 'broadcast', event: 'quiz-start', payload: { currentQuiz } });
+        router.push(`/multiplayer/${roomCode}/play`);
+      }
+    };
+
+    handleQuizFinished();
+  }, [fetchingFinished, currentQuiz, isLoading]);
+
+  if (isLoading) {
+    return (
+      <div className='absolute left-1/2 top-1/2 flex w-[40] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[30vw]'>
+        <Lottie animationData={Loading} />
+      </div>
+    );
+  }
   return (
     <>
       <div className='min-h-screen w-full bg-black text-white relative flex flex-col'>
