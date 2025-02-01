@@ -41,6 +41,7 @@ const MultiplayerContext = createContext<MultiContextType | undefined>(undefined
 export const MultiplayerProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   // const [state, dispatch] = useReducer(multiplayerGameReducer, initialState);
   const [players, setPlayers] = useState<Player[]>([]);
+  const [currentPlayer, setCurrentPlayer] = useState<Player>(null);
   const [isCreator, setIsCreator] = useState<boolean>(false);
   const [channel, setChannel] = useState<RealtimeChannel | null>(null);
   const [maxPlayers, setMaxPlayers] = useState<number>(5);

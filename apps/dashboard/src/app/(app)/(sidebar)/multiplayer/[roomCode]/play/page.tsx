@@ -1,5 +1,5 @@
 import React from 'react';
-import Quiz from '@/components/single-player-quiz/single-player';
+import Quiz from '@/components/multiplayer-page/multiplayer';
 export const runtime = 'edge';
 
 const MultiplayerQuiz = () => {
