@@ -176,6 +176,7 @@ export const QuizProvider = ({ children }: Props) => {
         description: quizDescription,
         tags: quizTags,
         showCorrectAnswers,
+        passingScore,
       } = userQuizData;
       const client = createApiClient();
       dispatch({ type: 'FETCH_QUIZ_REQUEST' });

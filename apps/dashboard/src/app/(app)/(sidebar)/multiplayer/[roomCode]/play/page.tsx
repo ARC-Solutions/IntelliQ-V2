@@ -1,9 +1,9 @@
 import React from 'react';
-
-export const runtime = "edge";
+import Quiz from '@/components/single-player-quiz/single-player';
+export const runtime = 'edge';
 
 const MultiplayerQuiz = () => {
-  return <div>MultiplayerQuiz</div>;
+  return <Quiz />;
 };
 
 export default MultiplayerQuiz;
