@@ -299,27 +299,6 @@ export default function Lobby() {
     if (!channel || !isCreator) return;
 
     try {
-      const client = createApiClient();
-      const response = await client.api.v1.rooms[':roomCode']['settings'].$patch({
-        param: {
-          roomCode: roomCode,
-        },
-        json: {
-          type,
-          value,
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = (await response.json()) as { error: string };
-        toast({
-          duration: 3500,
-          variant: 'destructive',
-          title: 'Something went wrong.',
-          description: errorData.error,
-        });
-        return;
-      }
 
       // Update local state and broadcast to others
       switch (type) {
@@ -354,7 +333,30 @@ export default function Lobby() {
 
   const startQuiz = async () => {
     if (!channel || !isCreator) return;
-    router.push(`/multiplayer/${roomCode}/play`);
+    const client = createApiClient();
+    const response = await client.api.v1.rooms[':roomCode']['settings'].$patch({
+      param: {
+        roomCode: roomCode,
+      },
+      json: {
+        type: 'topic',
+        value: topic,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = (await response.json()) as { error: string };
+      toast({
+        duration: 3500,
+        variant: 'destructive',
+        title: 'Something went wrong.',
+        description: errorData.error,
+      });
+      return;
+    }
+    console.log('start ' + response.ok);
+
+    router.push(`/multiplayer/${roomCode}/play`);`
     await channel.send({ type: 'broadcast', event: 'quiz-start', payload: {} });
   };
 
