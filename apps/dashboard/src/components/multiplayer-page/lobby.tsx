@@ -356,7 +356,7 @@ export default function Lobby() {
     }
     console.log('start ' + response.ok);
 
-    router.push(`/multiplayer/${roomCode}/play`);`
+    router.push(`/multiplayer/${roomCode}/play`);
     await channel.send({ type: 'broadcast', event: 'quiz-start', payload: {} });
   };
 
