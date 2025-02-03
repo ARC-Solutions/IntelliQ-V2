@@ -38,21 +38,12 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { Brain, Crown, Sparkles, UsersRound, Zap } from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { RoomResponse, RoomDetailsResponse } from '@intelliq/api';
 import { useDebouncedCallback } from 'use-debounce';
 import { useQuiz } from '@/contexts/quiz-context';
 import { QuizData } from '../../contexts/quiz-creation-context';
-interface PresenceData {
-  currentUser: {
-    id: string;
-    email: string;
-    name: string;
-  };
-  settings?: { timeLimit: number; topic: string };
-  maxPlayers: number;
-  presence_ref: string;
-}
+import { PresenceData } from '@/contexts/multiplayer-context';
 export default function Lobby() {
   const { currentUser } = useAuth();
   const {
@@ -134,7 +125,7 @@ export default function Lobby() {
     }));
 
     setPlayers(updatedPlayers as Player[]);
-
+     
     // Update isCreator status for current user
     if (currentUser && updatedPlayers.length > 0) {
       setIsCreator(updatedPlayers[0].id === currentUser.id);
@@ -190,7 +181,6 @@ export default function Lobby() {
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED' && currentUser) {
           const maxPlayers = await checkAndJoinRoom(roomChannel);
-
           const presenceData = {
             currentUser,
             maxPlayers,
@@ -199,14 +189,13 @@ export default function Lobby() {
               topic,
             },
           };
-          console.log(presenceData);
+        
 
           await roomChannel.track(presenceData);
         }
       });
 
     roomChannel
-
       .on('broadcast', { event: 'change-amount-of-players' }, async ({ payload }) => {
         setMaxPlayers(payload.newAmount);
       })
@@ -284,35 +273,60 @@ export default function Lobby() {
     }
   };
 
-  const updateGameSettings = async (
-    type: 'numQuestions' | 'timeLimit' | 'topic' | 'showAnswers',
-    value: number | string | boolean,
-  ) => {
-    if (!channel || !isCreator) return;
+  const updateGameSettings = useMemo(() => {
+    return async (
+      type: 'numQuestions' | 'timeLimit' | 'topic',
+      value: number | string | boolean,
+    ) => {
+      if (!channel || !isCreator) return;
 
-    try {
-      // Update local state and broadcast to others
-      switch (type) {
-        case 'numQuestions':
-          setQuestionCount(value as number);
-          break;
-        case 'timeLimit':
-          setTimeLimit(value as number);
-          break;
-        case 'topic':
-          setTopic(value as string);
-          break;
+      try {
+        const client = createApiClient();
+        if (type != 'topic') {
+          const response = await client.api.v1.rooms[':roomCode']['settings'].$patch({
+            param: {
+              roomCode: roomCode,
+            },
+            json: {
+              type,
+              value: value,
+            },
+          });
+          if (!response.ok) {
+            const errorData = (await response.json()) as { error: string };
+            toast({
+              duration: 3500,
+              variant: 'destructive',
+              title: 'Something went wrong.',
+              description: errorData.error,
+            });
+            return;
+          }
+        }
+
+        // Update local state and broadcast to others
+        switch (type) {
+          case 'numQuestions':
+            setQuestionCount(value as number);
+            break;
+          case 'timeLimit':
+            setTimeLimit(value as number);
+            break;
+          case 'topic':
+            setTopic(value as string);
+            break;
+        }
+
+        await channel.send({
+          type: 'broadcast',
+          event: 'settings-update',
+          payload: { type, value },
+        });
+      } catch (error) {
+        console.error('Failed to update game settings:', error);
       }
-
-      await channel.send({
-        type: 'broadcast',
-        event: 'settings-update',
-        payload: { type, value },
-      });
-    } catch (error) {
-      console.error('Failed to update game settings:', error);
-    }
-  };
+    };
+  }, [channel, isCreator, roomCode, toast, setQuestionCount, setTimeLimit, setTopic]);
 
   // debounce the updateGameSettings function to prevent multiple API requests
   const debouncedUpdateSettings = useDebouncedCallback(
@@ -325,6 +339,7 @@ export default function Lobby() {
   const startQuiz = async () => {
     if (!channel || !isCreator) return;
     const client = createApiClient();
+
     const response = await client.api.v1.rooms[':roomCode']['settings'].$patch({
       param: {
         roomCode: roomCode,
@@ -379,6 +394,14 @@ export default function Lobby() {
 
     handleQuizFinished();
   }, [fetchingFinished, currentQuiz, isLoading]);
+
+  // useEffect(() => {
+  //   if (currentQuiz) {
+  //     router.push(`/multiplayer/${roomCode}/play`);
+  //   }
+  // }, []);
+
+   console.log('players', players);
 
   if (isLoading) {
     return (
@@ -550,7 +573,7 @@ export default function Lobby() {
                       <Slider
                         disabled={!isCreator}
                         value={[timeLimit]}
-                        max={60}
+                        max={40}
                         min={5}
                         step={5}
                         className='flex-1'
@@ -559,7 +582,7 @@ export default function Lobby() {
                           debouncedUpdateSettings('timeLimit', value[0]);
                         }}
                       />
-                      <span className='text-sm text-gray-400'>60s</span>
+                      <span className='text-sm text-gray-400'>40s</span>
                     </div>
                   </div>
 
@@ -571,7 +594,7 @@ export default function Lobby() {
                       className='bg-transparent border-gray-800'
                       value={topic}
                       onChange={(e) => {
-                        updateGameSettings('topic', e.target.value);
+                        debouncedUpdateSettings('topic', e.target.value);
                         setTopic(e.target.value);
                       }}
                     />

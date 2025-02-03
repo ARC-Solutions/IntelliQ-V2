@@ -119,7 +119,6 @@ const Quiz = () => {
         <QAndA
           quiz={currentQuiz.quiz}
           questionNumber={questionNumber}
-          showCorrectAnswers={currentQuiz?.showCorrectAnswers || undefined}
           userAnswer={selectedAnswer}
           correctAnswer={currentQuiz.quiz[questionNumber].correctAnswer.slice(3)}
         />
