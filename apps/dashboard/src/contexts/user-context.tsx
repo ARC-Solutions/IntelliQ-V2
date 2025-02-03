@@ -47,7 +47,6 @@ export const AuthProvider = ({ children }: Props) => {
   const [isNewUser, setIsNewUser] = useState<boolean>(true);
   const [otpSent, setOtpSent] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isLobbyCreator, setIsLobbyCreator] = useState<boolean>(false);
 
   const { supabase } = useSupabase();
   const router = useRouter();

@@ -6,7 +6,7 @@ import { useQuiz } from './quiz-context';
 export interface UserAnswer {
   question: string;
   correctAnswer: string;
-  userAnswer: string;
+  userAnswer: string | null;
 }
 export interface QuizLogicValues {
   selectedAnswer: string | null;
@@ -22,6 +22,8 @@ export interface ContextValue extends QuizLogicValues {
   setProgressValue: React.Dispatch<React.SetStateAction<number>>;
   showCorrectAnswer: boolean;
   setShowCorrectAnswer: React.Dispatch<React.SetStateAction<boolean>>;
+  isMultiplayer: boolean;
+  setIsMultiplayer: React.Dispatch<React.SetStateAction<boolean>>;
 }
 export type Action =
   | { type: 'QUIZ_FINISHED' }
@@ -46,14 +48,15 @@ const QuizLogicContextProvider = ({ children }: { children: React.ReactNode }) =
   const [progressValue, setProgressValue] = useState<number>(
     currentQuiz ? ((questionNumber + 1) / currentQuiz.quiz.length) * 100 : 0,
   );
+  const [isMultiplayer, setIsMultiplayer] = useState<boolean>(false);
   const [state, dispatch] = useReducer(quizLogicReducer, initialState);
   useEffect(() => {
-    if (state.correctAnswer > 0) {
+    if (state.correctAnswer > 0 && !isMultiplayer) {
       showToast('success', 'CORRECT!', "You've answered the question correctly");
     }
   }, [state.correctAnswer]);
   useEffect(() => {
-    if (state.wrongAnswer > 0) {
+    if (state.wrongAnswer > 0 && !isMultiplayer) {
       showToast('destructive', 'INCORRECT!', "Oops, that's not the correct answer. Keep trying!");
     }
   }, [state.wrongAnswer]);
@@ -69,6 +72,8 @@ const QuizLogicContextProvider = ({ children }: { children: React.ReactNode }) =
         setProgressValue,
         showCorrectAnswer,
         setShowCorrectAnswer,
+        isMultiplayer,
+        setIsMultiplayer,
       }}
     >
       {children}

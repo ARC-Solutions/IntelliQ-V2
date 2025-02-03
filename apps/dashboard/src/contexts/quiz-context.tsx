@@ -27,6 +27,7 @@ interface CurrentQuiz {
   topic: string;
   showCorrectAnswers: boolean;
 }
+
 export interface QuizHistory {
   quiz_id: string;
   rawQuestions: {

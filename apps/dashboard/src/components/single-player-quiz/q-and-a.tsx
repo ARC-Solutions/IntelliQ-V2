@@ -8,15 +8,19 @@ import { useQuizLogic } from '@/contexts/quiz-logic-context';
 type Props = {
   quiz: Quiz[];
   questionNumber: number;
-  showCorrectAnswers?: boolean;
   userAnswer: string | null;
   correctAnswer?: string;
 };
 
-const QAndA = ({ quiz, questionNumber, showCorrectAnswers, userAnswer, correctAnswer }: Props) => {
+const QAndA = ({
+  quiz,
+  questionNumber,
+  userAnswer,
+  correctAnswer,
+}: Props) => {
   const questionsAndAnswers = quiz[questionNumber] as Quiz;
   let { options: answers, text: question } = questionsAndAnswers;
-  const {showCorrectAnswer} = useQuizLogic();
+  const { showCorrectAnswer } = useQuizLogic();
   return (
     <section>
       <h1 className='w-full items-center rounded-md bg-primary p-6 text-center text-base font-bold text-black sm:text-2xl'>

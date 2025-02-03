@@ -8,12 +8,24 @@ export type Player = {
   email: string;
   isCreator?: boolean;
   score?: number;
+  selectedAnswer: string | null;
   settings?: {
     timeLimit: number;
     topic: string;
   };
 } | null;
-
+export interface PresenceData {
+  currentUser: {
+    id: string;
+    email: string;
+    name: string;
+    score: number;
+    selectedAnswer: string | null;
+  };
+  settings?: { timeLimit: number; topic: string };
+  maxPlayers: number;
+  presence_ref: string;
+}
 type MultiContextType = {
   players: Player[];
   setPlayers: (players: Player[]) => void;
@@ -44,9 +56,10 @@ export const MultiplayerProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [isCreator, setIsCreator] = useState<boolean>(false);
   const [channel, setChannel] = useState<RealtimeChannel | null>(null);
   const [maxPlayers, setMaxPlayers] = useState<number>(5);
-  const [questionCount, setQuestionCount] = useState(5);
-  const [timeLimit, setTimeLimit] = useState(25);
-  const [topic, setTopic] = useState('');
+  const [questionCount, setQuestionCount] = useState<number>(5);
+  const [timeLimit, setTimeLimit] = useState<number>(25);
+  const [topic, setTopic] = useState<string>('');
+
   return (
     <MultiplayerContext.Provider
       value={{
