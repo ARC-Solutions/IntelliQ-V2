@@ -87,7 +87,7 @@ const Quiz = () => {
   }, [quizFinished]);
 
   useEffect(() => {
-    // Broadcast the timer expiration event
+
     if (channel && isCreator) {
       setShowCorrectAnswer(false);
       channel.send({
@@ -98,10 +98,6 @@ const Quiz = () => {
     }
     setProgressValue((questionNumber / currentQuiz.quiz.length) * 100);
   }, [questionNumber]);
-
-  // useEffect(() => {
-  //   validateAnswer();
-  // }, [selectedAnswer]);
 
   const validateAnswer = async () => {
     if (!showCorrectAnswer && (selectedAnswer || selectedAnswer === null)) {
@@ -168,7 +164,6 @@ const Quiz = () => {
 
     // Consolidated event listeners for score updates, next question, and quiz completion
     roomChannel
-      .on('broadcast', { event: 'score_update' }, () => {})
       .on('broadcast', { event: 'next-question' }, async ({ payload }) => {
         // Broadcast the timer expiration event
         if (payload.questionNumber >= currentQuiz.quiz.length) {
@@ -179,11 +174,6 @@ const Quiz = () => {
 
         setProgressValue((payload.questionNumber / currentQuiz.quiz.length) * 100);
         dispatch({ type: 'RESET_SELECTED_ANSWER' });
-      })
-      .on('broadcast', { event: 'timer-expired' }, async () => {
-        // Validate the answer when the timer expires
-        validateAnswer();
-        setShowCorrectAnswer(true);
       })
       .on('broadcast', { event: 'quiz_completed' }, () => {});
 
@@ -198,6 +188,7 @@ const Quiz = () => {
   useEffect(() => {
     if (timer === 0 && !showCorrectAnswer) {
       validateAnswer();
+      
       setShowCorrectAnswer(true);
     }
   }, [timer, showCorrectAnswer, validateAnswer]);
@@ -222,16 +213,18 @@ const Quiz = () => {
             <Timer className='mr-2 text-base sm:text-2xl' />{' '}
             <span id='time'>Time left: {timer} seconds</span>
           </Button>
-          <Card className='flex items-center rounded-lg border-b-[0.5px] border-white border-opacity-20 text-2xl font-bold text-green-500'>
-            <div className='mx-2 flex items-center'>
-              <CircleCheck className='text-2xl sm:text-3xl ' />
-              <span className='mb-1 ml-1 text-2xl sm:text-3xl'>{correctAnswer}</span>
-            </div>
-            <div className='mx-2 flex items-center text-red-500'>
-              <span className='mb-1 mr-1 text-2xl sm:text-3xl'>{wrongAnswer}</span>
-              <CircleX className='text-2xl sm:text-3xl' />
-            </div>
-          </Card>
+          {showCorrectAnswer && (
+            <Card className='flex items-center rounded-lg border-b-[0.5px] border-white border-opacity-20 text-2xl font-bold text-green-500'>
+              <div className='mx-2 flex items-center'>
+                <CircleCheck className='text-2xl sm:text-3xl ' />
+                <span className='mb-1 ml-1 text-2xl sm:text-3xl'>{correctAnswer}</span>
+              </div>
+              <div className='mx-2 flex items-center text-red-500'>
+                <span className='mb-1 mr-1 text-2xl sm:text-3xl'>{wrongAnswer}</span>
+                <CircleX className='text-2xl sm:text-3xl' />
+              </div>
+            </Card>
+          )}
         </div>
         <CardDescription className='my-3 flex items-start text-sm sm:text-base'>
           <span>{questionNumber + 1}</span>&nbsp;out of {currentQuiz.quiz.length} Questions
