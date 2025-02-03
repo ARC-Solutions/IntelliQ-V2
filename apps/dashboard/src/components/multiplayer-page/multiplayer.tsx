@@ -52,25 +52,8 @@ const Quiz = () => {
       clearInterval(intervalRef.current);
     }
 
-    // Start a new interval
     intervalRef.current = setInterval(() => {
-      setTimer((prev) => {
-        if (prev <= 1) {
-          clearInterval(intervalRef.current!); // Clear the interval when the timer reaches 0
-          // Broadcast the timer expiration event
-          if (channel && isCreator) {
-            channel.send({
-              type: 'broadcast',
-              event: 'timer-expired',
-              payload: {},
-            });
-          }
-          validateAnswer();
-          setShowCorrectAnswer(true);
-          return 0;
-        }
-        return prev - 1;
-      });
+      setTimer((prev) => (prev <= 1 ? 0 : prev - 1));
     }, 1000);
   };
 
@@ -98,6 +81,7 @@ const Quiz = () => {
       setTimeout(() => {
         // submitQuiz(userAnswer, totalTimeInSeconds);
         alert('finished');
+        router.push(`/multiplayer/${roomCode}`);
       }, 3000);
     }
   }, [quizFinished]);
@@ -105,6 +89,7 @@ const Quiz = () => {
   useEffect(() => {
     // Broadcast the timer expiration event
     if (channel && isCreator) {
+      setShowCorrectAnswer(false);
       channel.send({
         type: 'broadcast',
         event: 'next-question',
@@ -154,22 +139,15 @@ const Quiz = () => {
               userName: data.presenceData.currentUser.name,
               score: data.presenceData.currentUser.score,
               selectedAnswer: data.presenceData.currentUser.selectedAnswer,
+              isCreator: data.presenceData.currentUser.isCreator,
             } as Player;
           });
 
         // First player in the list is the leader
-        const updatedPlayers = playersList.map((player, index) => ({
-          ...player,
-          isCreator: index === 0,
-        }));
-        console.log('players', updatedPlayers);
 
-        setPlayers(updatedPlayers as Player[]);
+        console.log('players', playersList);
 
-        // Update isCreator status for current user
-        if (currentUser && updatedPlayers.length > 0) {
-          setIsCreator(updatedPlayers[0].id === currentUser.id);
-        }
+        setPlayers(playersList as Player[]);
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED' && currentUser) {
@@ -179,7 +157,8 @@ const Quiz = () => {
               email: currentUser.email,
               name: currentUser.name,
               score: correctAnswer,
-              selectedAnswer: selectedAnswer,
+              selectedAnswer,
+              isCreator,
             },
           };
 
@@ -192,9 +171,13 @@ const Quiz = () => {
       .on('broadcast', { event: 'score_update' }, () => {})
       .on('broadcast', { event: 'next-question' }, async ({ payload }) => {
         // Broadcast the timer expiration event
+        if (payload.questionNumber >= currentQuiz.quiz.length) {
+          setQuizFinished(true);
+        }
         setQuestionNumber(payload.questionNumber);
-        setProgressValue((payload.questionNumber / currentQuiz.quiz.length) * 100);
         setShowCorrectAnswer(false);
+
+        setProgressValue((payload.questionNumber / currentQuiz.quiz.length) * 100);
         dispatch({ type: 'RESET_SELECTED_ANSWER' });
       })
       .on('broadcast', { event: 'timer-expired' }, async () => {
@@ -207,11 +190,17 @@ const Quiz = () => {
     return () => {
       supabase.removeChannel(roomChannel);
     };
-  }, [supabase, roomCode, router, currentUser, selectedAnswer, correctAnswer]);
+  }, [supabase, roomCode, router, currentUser, selectedAnswer, correctAnswer, questionNumber]);
 
   useEffect(() => {
     setIsMultiplayer(true);
   }, []);
+  useEffect(() => {
+    if (timer === 0 && !showCorrectAnswer) {
+      validateAnswer();
+      setShowCorrectAnswer(true);
+    }
+  }, [timer, showCorrectAnswer, validateAnswer]);
 
   if (quizFinished) {
     return (
@@ -262,27 +251,29 @@ const Quiz = () => {
           <Button
             disabled={quizFinished}
             onClick={() => {
-              const checkQuizFinished = () => {
-                if (questionNumber >= currentQuiz.quiz.length - 1) {
-                  setQuizFinished(true);
-                }
-              };
-              if (currentQuiz.showCorrectAnswers) {
-                setQuestionNumber((prevQuestionNumber) => {
-                  return prevQuestionNumber >= currentQuiz.quiz.length - 1
-                    ? prevQuestionNumber
-                    : prevQuestionNumber + 1;
+              const newQuestionNumber = questionNumber + 1;
+
+              // Broadcast the "next-question" event to all players
+              if (channel && isCreator) {
+                channel.send({
+                  type: 'broadcast',
+                  event: 'next-question',
+                  payload: {
+                    questionNumber: newQuestionNumber,
+                  },
                 });
-                setShowCorrectAnswer(false);
-                dispatch({ type: 'RESET_SELECTED_ANSWER' });
-                checkQuizFinished();
               }
 
-              if (!selectedAnswer && !showCorrectAnswer) {
-                showToast('destructive', 'WARNING!', 'Please choose an answer before proceeding');
+              // Update local state for the creator
+
+              setQuestionNumber(newQuestionNumber);
+              dispatch({ type: 'RESET_SELECTED_ANSWER' });
+
+              // Check if the quiz should finish
+              if (newQuestionNumber >= currentQuiz.quiz.length) {
+                setQuizFinished(true);
               }
             }}
-            className='w-full/50 mt-4 rounded-lg px-6 py-2 text-center text-base font-bold hover:bg-primary/90 active:bg-primary/80'
           >
             Next <ChevronRight />
           </Button>
