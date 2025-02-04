@@ -9,21 +9,16 @@ type Props = {
 };
 
 const Answer = ({ answer, letter }: Props) => {
-  const { dispatch, selectedAnswer, setShowCorrectAnswer, questionNumber } = useQuizLogic();
+  const { dispatch, selectedAnswer, questionNumber, isMultiplayer } = useQuizLogic();
   const { currentQuiz } = useQuiz();
-  // Handle setting the selected answer
-  const handleAnswerClick = () => {
-    if (!selectedAnswer) {
-      dispatch({ type: 'SET_SELECTED_ANSWER', payload: answer });
-    }
-  };
+
   return (
     <Button
-      disabled={selectedAnswer != null}
+      disabled={isMultiplayer && selectedAnswer != null}
       onClick={() => {
         dispatch({ type: 'SET_SELECTED_ANSWER', payload: answer });
         // Validate answer immediately when selected
-        if (!selectedAnswer && currentQuiz) {
+        if (isMultiplayer && currentQuiz) {
           dispatch({
             type: 'VALIDATE_ANSWER',
             payload: {

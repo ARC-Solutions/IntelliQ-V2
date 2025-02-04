@@ -81,7 +81,7 @@ const Quiz = () => {
       setTimeout(() => {
         // submitQuiz(userAnswer, totalTimeInSeconds);
         alert('finished');
-        router.push(`/multiplayer/${roomCode}`);
+        // router.push(`/multiplayer/${roomCode}`);
       }, 3000);
     }
   }, [quizFinished]);
@@ -186,15 +186,15 @@ const Quiz = () => {
   }, []);
 
   useEffect(() => {
-    if (timer === 0 && !showCorrectAnswer) {
+    if (timer === 0) {
       console.log('validated');
+
+      setShowCorrectAnswer(true);
       if (selectedAnswer === null) {
         validateAnswer();
       }
-
-      setShowCorrectAnswer(true);
     }
-  }, [timer, showCorrectAnswer, validateAnswer]);
+  }, [timer, validateAnswer]);
 
   if (quizFinished) {
     return (
