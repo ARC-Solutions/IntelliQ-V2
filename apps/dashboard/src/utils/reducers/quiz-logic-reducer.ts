@@ -7,10 +7,10 @@ export const quizLogicReducer = (state: QuizLogicValues, action: Action) => {
     const { correctAnswer, userAnswer, question } = action.payload;
     let scoreCORRECT = state.correctAnswer;
     let scoreINCORRECT = state.wrongAnswer;
-    if (userAnswer === correctAnswer) {
-      scoreCORRECT += 1;
-    } else {
+    if (userAnswer !== correctAnswer) {
       scoreINCORRECT += 1;
+    } else {
+      scoreCORRECT += 1;
     }
     return {
       ...state,
