@@ -87,7 +87,6 @@ const Quiz = () => {
   }, [quizFinished]);
 
   useEffect(() => {
-
     if (channel && isCreator) {
       setShowCorrectAnswer(false);
       channel.send({
@@ -170,10 +169,10 @@ const Quiz = () => {
           setQuizFinished(true);
         }
         setQuestionNumber(payload.questionNumber);
+        // dispatch({ type: 'RESET_SELECTED_ANSWER' });
         setShowCorrectAnswer(false);
 
         setProgressValue((payload.questionNumber / currentQuiz.quiz.length) * 100);
-        dispatch({ type: 'RESET_SELECTED_ANSWER' });
       })
       .on('broadcast', { event: 'quiz_completed' }, () => {});
 
@@ -185,10 +184,14 @@ const Quiz = () => {
   useEffect(() => {
     setIsMultiplayer(true);
   }, []);
+
   useEffect(() => {
     if (timer === 0 && !showCorrectAnswer) {
-      validateAnswer();
-      
+      console.log('validated');
+      if (selectedAnswer === null) {
+        validateAnswer();
+      }
+
       setShowCorrectAnswer(true);
     }
   }, [timer, showCorrectAnswer, validateAnswer]);
@@ -260,7 +263,6 @@ const Quiz = () => {
               // Update local state for the creator
 
               setQuestionNumber(newQuestionNumber);
-              dispatch({ type: 'RESET_SELECTED_ANSWER' });
 
               // Check if the quiz should finish
               if (newQuestionNumber >= currentQuiz.quiz.length) {

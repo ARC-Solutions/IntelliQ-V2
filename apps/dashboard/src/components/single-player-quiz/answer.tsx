@@ -20,7 +20,20 @@ const Answer = ({ answer, letter }: Props) => {
   return (
     <Button
       disabled={selectedAnswer != null}
-      onClick={handleAnswerClick}
+      onClick={() => {
+        dispatch({ type: 'SET_SELECTED_ANSWER', payload: answer });
+        // Validate answer immediately when selected
+        if (!selectedAnswer && currentQuiz) {
+          dispatch({
+            type: 'VALIDATE_ANSWER',
+            payload: {
+              question: currentQuiz.quiz[questionNumber].text,
+              correctAnswer: currentQuiz.quiz[questionNumber].correctAnswer.slice(3),
+              userAnswer: answer,
+            },
+          });
+        }
+      }}
       className='group my-3 w-full justify-start rounded-lg border border-primary border-opacity-30 bg-black p-7 text-sm font-normal text-white hover:border-none hover:text-black focus:bg-primary focus:text-black sm:text-lg'
     >
       <span
