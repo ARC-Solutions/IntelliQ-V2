@@ -2,6 +2,7 @@
 import { RealtimeChannel } from '@supabase/supabase-js';
 import React, { createContext, useContext, useState, ReactNode, useReducer } from 'react';
 // import { quizReducer } from '@/utils/reducers/quiz-reducer';
+import { SupportedLanguages } from './quiz-context';
 export type Player = {
   id: string;
   userName: string;
@@ -41,6 +42,8 @@ type MultiContextType = {
   setTimeLimit: (timeLimit: number) => void;
   topic: string;
   setTopic: (topic: string) => void;
+  language: string;
+  setLanguage: (language: SupportedLanguages) => void;
 };
 type GameState = {
   status: 'idle' | 'started' | 'finished';
@@ -59,6 +62,7 @@ export const MultiplayerProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [questionCount, setQuestionCount] = useState<number>(5);
   const [timeLimit, setTimeLimit] = useState<number>(25);
   const [topic, setTopic] = useState<string>('');
+  const [language, setLanguage] = useState<SupportedLanguages>(SupportedLanguages.English);
 
   return (
     <MultiplayerContext.Provider
@@ -77,6 +81,8 @@ export const MultiplayerProvider: React.FC<{ children: ReactNode }> = ({ childre
         setTimeLimit,
         topic,
         setTopic,
+        language,
+        setLanguage,
       }}
     >
       {children}

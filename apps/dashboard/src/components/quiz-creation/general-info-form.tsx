@@ -9,11 +9,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { BookOpen, HelpCircle, Tag, Hash } from 'lucide-react';
 import { useQuizCreation } from '@/contexts/quiz-creation-context';
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 const GeneralInfoForm = () => {
   const { formValues, register, errors, control, addTag, removeTag } = useQuizCreation();
   const [newTag, setNewTag] = useState('');
-
+ 
   return (
     <form className='space-y-6'>
       <div className='space-y-2'>
@@ -110,6 +116,8 @@ const GeneralInfoForm = () => {
           />
         </div>
       </div>
+
+      
 
       <div className='space-y-2'>
         <Label htmlFor='newTag'>Quiz Tags</Label>

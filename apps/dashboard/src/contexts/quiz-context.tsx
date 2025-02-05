@@ -11,6 +11,17 @@ import { createApiClient } from '@/utils/api-client';
 type Props = {
   children: React.ReactNode;
 };
+export enum SupportedLanguages {
+  English = 'en',
+  German = 'de',
+  French = 'fr',
+  Spanish = 'es',
+  Italian = 'it',
+  Romanian = 'ro',
+  Serbian = 'sr',
+  Tagalog = 'tl',
+  Polish = 'pl',
+}
 export interface Quiz {
   correctAnswer: string;
   options: string[];
@@ -178,6 +189,7 @@ export const QuizProvider = ({ children }: Props) => {
         tags: quizTags,
         showCorrectAnswers,
         passingScore,
+        quizLanguage: language,
       } = userQuizData;
       const client = createApiClient();
       dispatch({ type: 'FETCH_QUIZ_REQUEST' });
@@ -187,6 +199,7 @@ export const QuizProvider = ({ children }: Props) => {
           quizDescription: quizDescription!,
           numberOfQuestions: numberOfQuestions.toString(),
           quizTags: quizTags,
+          language,
         },
       });
 

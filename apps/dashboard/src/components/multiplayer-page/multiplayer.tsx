@@ -112,17 +112,12 @@ const Quiz = () => {
   };
 
   useEffect(() => {
-    console.log(currentUser?.name, correctAnswer);
-  }, [correctAnswer, wrongAnswer]);
-
-  useEffect(() => {
     const roomChannel = supabase.channel(roomCode);
     setChannel(roomChannel);
 
     roomChannel
       .on('presence', { event: 'sync' }, () => {
         const newState = roomChannel.presenceState();
-        console.log(newState);
 
         const playersList = Object.values(newState)
           .flat()
@@ -187,8 +182,6 @@ const Quiz = () => {
 
   useEffect(() => {
     if (timer === 0) {
-      console.log('validated');
-
       setShowCorrectAnswer(true);
       if (selectedAnswer === null) {
         validateAnswer();
