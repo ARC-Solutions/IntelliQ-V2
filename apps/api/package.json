@@ -6,7 +6,7 @@
     "postdev": "node toggle-config.js prod",
     "predeploy": "node toggle-config.js prod",
     "deploy": "wrangler deploy --minify",
-    "db:introspect": "npx drizzle-kit pull",
+    "db:introspect": "infisical run --path=/apps/api npx drizzle-kit pull",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
