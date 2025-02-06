@@ -39,7 +39,7 @@ const QAndA = ({
               </span>
             </button>
 
-            <button className='group my-3 w-full justify-start rounded-lg bg-black p-4 text-sm font-normal text-white  sm:text-lg'>
+            <button className='group my-3 w-full justify-start rounded-lg dark:bg-black bg-inherit p-4 text-sm font-normal dark:text-white text-black sm:text-lg'>
               <span id='answer' className='capitalize'>
                 Correct Answer: {correctAnswer}
               </span>
