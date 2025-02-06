@@ -9,7 +9,7 @@ import { Card, CardDescription } from '@/components/ui/card';
 import { Timer, CircleCheck, CircleX, ChevronRight, User, CheckCircle } from 'lucide-react';
 import QAndA from '../single-player-quiz/q-and-a';
 import Lottie from 'lottie-react';
-import Summarizing from '../../../public/IntelliQ summarizing.json';
+import Summarizing from '../../../public/intelliq_summarizing.json';
 import { Progress } from '@/components/ui/progress';
 import { Player, useMultiplayer } from '@/contexts/multiplayer-context';
 import { createClient } from '@/lib/supabase/supabase-client-side';
@@ -199,7 +199,7 @@ const Quiz = () => {
   }
 
   return (
-    <div className='mx-auto flex w-[400] flex-col items-center justify-center p-4 text-white sm:w-[800px] '>
+    <div className='mx-auto flex w-[400] flex-col items-center justify-center p-4 dark:text-white sm:w-[800px] '>
       <header className='mb-4 text-center text-2xl font-bold sm:text-4xl'>
         {currentQuiz.quiz[questionNumber].questionTitle}
       </header>

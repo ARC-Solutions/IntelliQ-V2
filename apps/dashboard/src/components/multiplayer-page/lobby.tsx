@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Lottie from 'lottie-react';
-import Loading from '../../../public/Loading.json';
+import Loading from '../../../public/loading.json';
+import LoadingDark from '../../../public/loading-dark.json';
 import {
   Select,
   SelectContent,
@@ -43,6 +44,8 @@ import { RoomResponse, RoomDetailsResponse } from '@intelliq/api';
 import { useDebouncedCallback } from 'use-debounce';
 import { SupportedLanguages, useQuiz } from '@/contexts/quiz-context';
 import { languages, QuizData } from '../../contexts/quiz-creation-context';
+import { useTheme } from 'next-themes';
+
 interface PresenceData {
   currentUser: {
     id: string;
@@ -389,37 +392,47 @@ export default function Lobby() {
     handleQuizFinished();
   }, [fetchingFinished, currentQuiz, isLoading]);
 
+  const { resolvedTheme } = useTheme();
   if (isLoading) {
     return (
       <div className='absolute left-1/2 top-1/2 flex w-[40] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[30vw]'>
-        <Lottie animationData={Loading} />
+        <Lottie animationData={resolvedTheme === "dark" ? LoadingDark : Loading} />
       </div>
     );
   }
   return (
     <>
-      <div className='min-h-screen w-full bg-black text-white relative flex flex-col'>
-        <div className='relative z-10 w-full p-8 flex flex-col gap-8'>
+      <div className="min-h-screen w-full relative flex flex-col">
+        <div className="relative z-10 w-full p-8 flex flex-col gap-8">
           {/* Logo */}
-          <div className='flex justify-center'>
-            <Image src='/logo-dark.svg' alt='IntelliQ' width={250} height={250} />
+          <div className="flex justify-center">
+            <Image
+              src={resolvedTheme === "dark" ? "/logo-dark.svg" : "/logo.svg"}
+              alt="IntelliQ"
+              width={250}
+              height={250}
+            />
           </div>
 
-          <div className='grid lg:grid-cols-[300px_1fr] gap-8 max-w-7xl mx-auto w-full'>
+          <div className="grid lg:grid-cols-[300px_1fr] gap-8 max-w-7xl mx-auto w-full">
             {/* Player List */}
-            <div className='space-y-4'>
-              <div className='flex items-center gap-2 text-primary'>
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-primary">
                 <UsersRound />
-                <div className='flex items-center gap-1'>
-                  <h2 className='text-xl font-semibold uppercase flex items-center'>
+                <div className="flex items-center gap-1">
+                  <h2 className="text-xl font-semibold uppercase flex items-center">
                     <NumberFlow
                       willChange
                       plugins={[continuous]}
                       value={players.length}
-                      prefix='players '
+                      prefix="players "
                     />
                     /
-                    <NumberFlow willChange plugins={[continuous]} value={maxPlayers} />
+                    <NumberFlow
+                      willChange
+                      plugins={[continuous]}
+                      value={maxPlayers}
+                    />
                   </h2>
                 </div>
               </div>
@@ -431,21 +444,25 @@ export default function Lobby() {
                 }}
                 value={`${maxPlayers}`}
               >
-                <SelectTrigger className='w-full bg-black border-gray-800'>
-                  <SelectValue placeholder='Select players' />
+                <SelectTrigger className="w-full border-gray-800">
+                  <SelectValue placeholder="Select players" />
                 </SelectTrigger>
                 <SelectContent>
                   {[...Array(9)].map((slot, i) => {
                     return (
-                      <SelectItem disabled={i + 2 < players.length} key={i} value={`${i + 2}`}>
+                      <SelectItem
+                        disabled={i + 2 < players.length}
+                        key={i}
+                        value={`${i + 2}`}
+                      >
                         {i + 2} Players
                       </SelectItem>
                     );
                   })}
                 </SelectContent>
               </Select>
-              <ScrollArea className='w-full h-[400px]'>
-                <div className='space-y-4'>
+              <ScrollArea className="w-full h-[400px]">
+                <div className="space-y-4">
                   {[...Array(maxPlayers)].map((_, i) => {
                     if (i === 0 && players.length > 0) {
                       // Render the leader of the lobby
@@ -453,22 +470,23 @@ export default function Lobby() {
                       return (
                         <div
                           key={i}
-                          className='flex items-center gap-2 p-4 rounded-lg bg-gray-900/50'
+                          className="flex items-center gap-2 p-4 rounded-lg dark:bg-gray-900/50 bg-gray-200"
                         >
-                          <Avatar className='h-8 w-8'>
-                            <AvatarFallback className='bg-primary/20 text-primary'>
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback className="bg-primary/20 text-black dark:text-primary">
                               {leader?.email.charAt(0)}
                             </AvatarFallback>
                           </Avatar>
                           <span
                             className={`${
-                              leader?.userName === currentUser?.name && 'font-extrabold'
+                              leader?.userName === currentUser?.name &&
+                              "font-extrabold"
                             }`}
                           >
-                            {leader?.userName}{' '}
+                            {leader?.userName}{" "}
                           </span>
-                          <div className='flex gap-1 ml-auto'>
-                            <Crown className='w-6 h-6 text-primary' />
+                          <div className="flex gap-1 ml-auto">
+                            <Crown className="w-6 h-6 text-primary" />
                           </div>
                         </div>
                       );
@@ -478,16 +496,17 @@ export default function Lobby() {
                       return (
                         <div
                           key={i}
-                          className='flex items-center gap-2 p-4 rounded-lg bg-gray-900/50'
+                          className="flex items-center gap-2 p-4 rounded-lg dark:bg-gray-900/50 bg-gray-200"
                         >
-                          <Avatar className='h-8 w-8'>
-                            <AvatarFallback className='bg-primary/20 text-primary'>
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback className="bg-primary/20 text-primary">
                               {player?.email.charAt(0)}
                             </AvatarFallback>
                           </Avatar>
                           <span
                             className={`${
-                              player?.userName === currentUser?.name && 'font-extrabold'
+                              player?.userName === currentUser?.name &&
+                              "font-extrabold"
                             }`}
                           >
                             {player?.userName}
@@ -499,10 +518,10 @@ export default function Lobby() {
                     return (
                       <div
                         key={i}
-                        className='flex items-center gap-2 p-4 rounded-lg bg-gray-900/50'
+                        className="flex items-center gap-2 p-4 rounded-lg dark:bg-gray-900/50 bg-gray-200"
                       >
-                        <div className='h-8 w-8 rounded-full border border-gray-800' />
-                        <span className='text-gray-400'>Empty</span>
+                        <div className="h-8 w-8 rounded-full border dark:border-gray-800 border-gray-500" />
+                        <span className="text-gray-400">Empty</span>
                       </div>
                     );
                   })}
@@ -510,83 +529,86 @@ export default function Lobby() {
               </ScrollArea>
             </div>
 
-            <div className='space-y-8'>
+            <div className="space-y-8">
               {/* Game Modes */}
-              <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-                <Card className='bg-primary/10 border-primary/20 p-6 flex flex-col items-center justify-center gap-2'>
-                  <Brain className='w-8 h-8 text-primary' />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="bg-primary/10 border-primary/20 p-6 flex flex-col items-center justify-center gap-2">
+                  <Brain className="w-8 h-8 text-primary" />
                   <span>Default</span>
                 </Card>
-                <Card className='bg-black border-gray-800 p-6 flex flex-col items-center justify-center gap-2'>
-                  <Zap className='w-8 h-8 text-primary' />
+                <Card className="dark:bg-black dark:border-gray-800 p-6 flex flex-col items-center justify-center gap-2">
+                  <Zap className="w-8 h-8 text-primary" />
                   <span>Fast</span>
                 </Card>
-                <Card className='bg-black border-gray-800 p-6 flex flex-col items-center justify-center gap-2'>
-                  <Sparkles className='w-8 h-8 text-primary' />
+                <Card className="dark:bg-black dark:border-gray-800 p-6 flex flex-col items-center justify-center gap-2">
+                  <Sparkles className="w-8 h-8 text-primary" />
                   <span>Custom</span>
                 </Card>
               </div>
 
               {/* Settings */}
-              <div className='space-y-6'>
-                <h2 className='text-2xl'>Settings</h2>
+              <div className="space-y-6">
+                <h2 className="text-2xl">Settings</h2>
 
-                <div className='space-y-8'>
-                  <div className='space-y-4'>
+                <div className="space-y-8">
+                  <div className="space-y-4">
                     <Label>Question count</Label>
-                    <div className='flex items-center gap-4'>
-                      <span className='text-sm text-gray-400'>1</span>
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm text-gray-400">1</span>
                       <Slider
                         disabled={!isCreator}
                         value={[questionCount]}
                         max={10}
                         min={1}
                         step={1}
-                        className='flex-1'
+                        className="flex-1"
                         onValueChange={(value) => {
                           setQuestionCount(value[0]);
-                          debouncedUpdateSettings('numQuestions', value[0]);
+                          debouncedUpdateSettings("numQuestions", value[0]);
                         }}
                       />
-                      <span className='text-sm text-gray-400'>10</span>
+                      <span className="text-sm text-gray-400">10</span>
                     </div>
                   </div>
 
-                  <div className='space-y-4'>
+                  <div className="space-y-4">
                     <Label>Time Limit per Question</Label>
-                    <div className='flex items-center gap-4'>
-                      <span className='text-sm text-gray-400'>5s</span>
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm text-gray-400">5s</span>
                       <Slider
                         disabled={!isCreator}
                         value={[timeLimit]}
                         max={60}
                         min={5}
                         step={5}
-                        className='flex-1'
+                        className="flex-1"
                         onValueChange={(value) => {
                           setTimeLimit(value[0]);
-                          debouncedUpdateSettings('timeLimit', value[0]);
+                          debouncedUpdateSettings("timeLimit", value[0]);
                         }}
                       />
-                      <span className='text-sm text-gray-400'>60s</span>
+                      <span className="text-sm text-gray-400">60s</span>
                     </div>
                   </div>
 
-                  <div className='space-y-4'>
-                    <div className='flex'>
-                      <Label htmlFor='quizLanguage' className='flex items-center space-x-2'>
+                  <div className="space-y-4">
+                    <div className="flex">
+                      <Label
+                        htmlFor="quizLanguage"
+                        className="flex items-center space-x-2"
+                      >
                         <span>Language</span>
 
                         <Select
                           disabled={!isCreator}
                           onValueChange={(value: SupportedLanguages) => {
                             setLanguage(value);
-                            debouncedUpdateSettings('language', value);
+                            debouncedUpdateSettings("language", value);
                           }}
                           value={language}
                         >
-                          <SelectTrigger className='w-full bg-black border-gray-800'>
-                            <SelectValue placeholder='Select Language' />
+                          <SelectTrigger className="w-full dark:bg-black dark:border-gray-800">
+                            <SelectValue placeholder="Select Language" />
                           </SelectTrigger>
                           <SelectContent>
                             {languages.map((lang) => (
@@ -600,15 +622,15 @@ export default function Lobby() {
                     </div>
                   </div>
 
-                  <div className='space-y-4'>
+                  <div className="space-y-4">
                     <Label>Topic</Label>
                     <Input
                       disabled={!isCreator}
-                      placeholder='Formula One'
-                      className='bg-transparent border-gray-800'
+                      placeholder="Formula One"
+                      className="bg-transparent dark:bg-black dark:border-gray-800"
                       value={topic}
                       onChange={(e) => {
-                        updateGameSettings('topic', e.target.value);
+                        updateGameSettings("topic", e.target.value);
                         setTopic(e.target.value);
                       }}
                     />
@@ -618,12 +640,12 @@ export default function Lobby() {
             </div>
           </div>
           {/* Action Buttons */}
-          <div className='flex gap-4 justify-center'>
+          <div className="flex gap-4 justify-center">
             <InviteButton />
             {isCreator && (
               <Button
                 onClick={startQuiz}
-                className='bg-primary text-primary-foreground hover:bg-primary/90 min-w-[120px]'
+                className="bg-primary text-primary-foreground hover:bg-primary/90 min-w-[120px]"
               >
                 START
               </Button>
@@ -641,7 +663,9 @@ export default function Lobby() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => router.push('/')}>OK</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => router.push("/")}>
+              OK
+            </AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
