@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import { InviteButton } from '@/components/invite-button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import Lottie from 'lottie-react';
-import Loading from '../../../public/loading.json';
-import LoadingDark from '../../../public/loading-dark.json';
+import { InviteButton } from "@/components/invite-button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import Lottie from "lottie-react";
+import Loading from "../../../public/loading.json";
+import LoadingDark from "../../../public/loading-dark.json";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,24 +27,24 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { Slider } from '@/components/ui/slider';
-import { useToast } from '@/components/ui/use-toast';
-import { Player, useMultiplayer } from '@/contexts/multiplayer-context';
-import { useAuth } from '@/contexts/user-context';
-import { createClient } from '@/lib/supabase/supabase-client-side';
-import { createApiClient } from '@/utils/api-client';
-import NumberFlow, { continuous } from '@number-flow/react';
-import { RealtimeChannel } from '@supabase/supabase-js';
-import { Brain, Crown, Sparkles, UsersRound, Zap } from 'lucide-react';
-import Image from 'next/image';
-import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { RoomResponse, RoomDetailsResponse } from '@intelliq/api';
-import { useDebouncedCallback } from 'use-debounce';
-import { SupportedLanguages, useQuiz } from '@/contexts/quiz-context';
-import { languages, QuizData } from '../../contexts/quiz-creation-context';
-import { useTheme } from 'next-themes';
+} from "@/components/ui/alert-dialog";
+import { Slider } from "@/components/ui/slider";
+import { useToast } from "@/components/ui/use-toast";
+import { Player, useMultiplayer } from "@/contexts/multiplayer-context";
+import { useAuth } from "@/contexts/user-context";
+import { createClient } from "@/lib/supabase/supabase-client-side";
+import { createApiClient } from "@/utils/api-client";
+import NumberFlow, { continuous } from "@number-flow/react";
+import { RealtimeChannel } from "@supabase/supabase-js";
+import { Brain, Crown, Sparkles, UsersRound, Zap } from "lucide-react";
+import Image from "next/image";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { RoomResponse, RoomDetailsResponse } from "@intelliq/api";
+import { useDebouncedCallback } from "use-debounce";
+import { SupportedLanguages, useQuiz } from "@/contexts/quiz-context";
+import { languages, QuizData } from "../../contexts/quiz-creation-context";
+import { useTheme } from "next-themes";
 
 interface PresenceData {
   currentUser: {
@@ -76,10 +76,11 @@ export default function Lobby() {
     language,
     setLanguage,
   } = useMultiplayer();
-  const { isLoading, fetchQuestions, fetchingFinished, dispatch, currentQuiz } = useQuiz();
+  const { isLoading, fetchQuestions, fetchingFinished, dispatch, currentQuiz } =
+    useQuiz();
   const routerParams = useParams();
   const router = useRouter();
-  const roomCode = routerParams['roomCode'] as string;
+  const roomCode = routerParams["roomCode"] as string;
   const [isRoomFull, setIsRoomFull] = useState(false);
   const supabase = createClient();
   const { toast } = useToast();
@@ -88,7 +89,7 @@ export default function Lobby() {
     try {
       // Get current room data
       const client = createApiClient();
-      const response = await client.api.v1.rooms[':roomCode'].$get({
+      const response = await client.api.v1.rooms[":roomCode"].$get({
         param: {
           roomCode: roomCode,
         },
@@ -108,7 +109,7 @@ export default function Lobby() {
         return room.max_players;
       }
     } catch (error) {
-      console.error('Error joining room:', error);
+      console.error("Error joining room:", error);
       return false;
     }
   };
@@ -128,7 +129,7 @@ export default function Lobby() {
             topic: (player as PresenceData).settings?.topic,
           },
         } as Player;
-      }),
+      })
     );
 
     // First player in the list is the leader
@@ -148,7 +149,7 @@ export default function Lobby() {
   useEffect(() => {
     const updateSettings = async () => {
       const client = createApiClient();
-      const response = await client.api.v1.rooms[':roomCode'].details.$get({
+      const response = await client.api.v1.rooms[":roomCode"].details.$get({
         param: {
           roomCode: roomCode,
         },
@@ -157,7 +158,7 @@ export default function Lobby() {
 
       if (!response.ok) {
         const errorData = (await response.json()) as { error: string };
-        console.error('Error updating max players:', errorData.error);
+        console.error("Error updating max players:", errorData.error);
         return;
       }
 
@@ -175,16 +176,16 @@ export default function Lobby() {
     setChannel(roomChannel);
 
     roomChannel
-      .on('presence', { event: 'sync' }, () => {
+      .on("presence", { event: "sync" }, () => {
         updatePlayers(roomChannel);
       })
-      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+      .on("presence", { event: "join" }, ({ key, newPresences }) => {
         // const newState = roomChannel.presenceState();
         // Object.entries(newState).flatMap(([_, players]) => {
         //   console.log(players);
         // });
       })
-      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+      .on("presence", { event: "leave" }, ({ key, leftPresences }) => {
         const newState = roomChannel.presenceState();
         if (Object.keys(newState).length === 0) {
           setIsCreator(false);
@@ -192,7 +193,7 @@ export default function Lobby() {
         }
       })
       .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED' && currentUser) {
+        if (status === "SUBSCRIBED" && currentUser) {
           const maxPlayers = await checkAndJoinRoom(roomChannel);
 
           const presenceData = {
@@ -210,31 +211,35 @@ export default function Lobby() {
 
     roomChannel
 
-      .on('broadcast', { event: 'change-amount-of-players' }, async ({ payload }) => {
-        setMaxPlayers(payload.newAmount);
+      .on(
+        "broadcast",
+        { event: "change-amount-of-players" },
+        async ({ payload }) => {
+          setMaxPlayers(payload.newAmount);
+        }
+      )
+      .on("broadcast", { event: "loading-animation" }, async ({ payload }) => {
+        dispatch({ type: "FETCH_QUIZ_REQUEST" });
       })
-      .on('broadcast', { event: 'loading-animation' }, async ({ payload }) => {
-        dispatch({ type: 'FETCH_QUIZ_REQUEST' });
-      })
-      .on('broadcast', { event: 'settings-update' }, ({ payload }) => {
+      .on("broadcast", { event: "settings-update" }, ({ payload }) => {
         const { type, value } = payload;
 
         switch (type) {
-          case 'numQuestions':
+          case "numQuestions":
             setQuestionCount(value as number);
             break;
-          case 'timeLimit':
+          case "timeLimit":
             setTimeLimit(value as number);
             break;
-          case 'topic':
+          case "topic":
             setTopic(value as string);
-          case 'language':
+          case "language":
             setLanguage(value as SupportedLanguages);
             break;
         }
       })
-      .on('broadcast', { event: 'quiz-start' }, ({ payload }) => {
-        dispatch({ type: 'FETCH_QUIZ_SUCCESS', payload: payload.currentQuiz });
+      .on("broadcast", { event: "quiz-start" }, ({ payload }) => {
+        dispatch({ type: "FETCH_QUIZ_SUCCESS", payload: payload.currentQuiz });
         router.push(`/multiplayer/${roomCode}/play`);
       });
 
@@ -247,8 +252,8 @@ export default function Lobby() {
 
   useEffect(() => {
     if (isCreator) {
-      updateGameSettings('topic', topic);
-      updateGameSettings('timeLimit', timeLimit);
+      updateGameSettings("topic", topic);
+      updateGameSettings("timeLimit", timeLimit);
     }
   }, [players]);
 
@@ -257,12 +262,14 @@ export default function Lobby() {
 
     try {
       const client = createApiClient();
-      const response = await client.api.v1.rooms[':roomCode']['settings'].$patch({
+      const response = await client.api.v1.rooms[":roomCode"][
+        "settings"
+      ].$patch({
         param: {
           roomCode: roomCode,
         },
         json: {
-          type: 'maxPlayers',
+          type: "maxPlayers",
           value: newAmount,
         },
       });
@@ -270,8 +277,8 @@ export default function Lobby() {
         const errorData = (await response.json()) as { error: string };
         toast({
           duration: 3500,
-          variant: 'destructive',
-          title: 'Something went wrong.',
+          variant: "destructive",
+          title: "Something went wrong.",
           description: errorData.error,
         });
         return;
@@ -280,18 +287,18 @@ export default function Lobby() {
       // Update local state and broadcast to others
       setMaxPlayers(newAmount);
       await channel.send({
-        type: 'broadcast',
-        event: 'change-amount-of-players',
+        type: "broadcast",
+        event: "change-amount-of-players",
         payload: { newAmount },
       });
     } catch (error) {
-      console.error('Failed to update max players:', error);
+      console.error("Failed to update max players:", error);
     }
   };
 
   const updateGameSettings = async (
-    type: 'numQuestions' | 'timeLimit' | 'topic' | 'language',
-    value: number | string | boolean,
+    type: "numQuestions" | "timeLimit" | "topic" | "language",
+    value: number | string | boolean
   ) => {
     if (!channel || !isCreator) return;
 
@@ -300,8 +307,8 @@ export default function Lobby() {
 
       // Update on the Database
       // To Do type === 'language' ||
-      if (type === 'timeLimit' || type === 'numQuestions') {
-        await client.api.v1.rooms[':roomCode']['settings'].$patch({
+      if (type === "timeLimit" || type === "numQuestions") {
+        await client.api.v1.rooms[":roomCode"]["settings"].$patch({
           param: {
             roomCode: roomCode,
           },
@@ -313,35 +320,35 @@ export default function Lobby() {
       }
 
       await channel.send({
-        type: 'broadcast',
-        event: 'settings-update',
+        type: "broadcast",
+        event: "settings-update",
         payload: { type, value },
       });
     } catch (error) {
-      console.error('Failed to update game settings:', error);
+      console.error("Failed to update game settings:", error);
     }
   };
 
   // debounce the updateGameSettings function to prevent multiple API requests
   const debouncedUpdateSettings = useDebouncedCallback(
     (
-      type: 'numQuestions' | 'timeLimit' | 'topic' | 'language',
-      value: number | string | SupportedLanguages,
+      type: "numQuestions" | "timeLimit" | "topic" | "language",
+      value: number | string | SupportedLanguages
     ) => {
       updateGameSettings(type, value);
     },
-    555,
+    555
   );
 
   const startQuiz = async () => {
     if (!channel || !isCreator) return;
     const client = createApiClient();
-    const response = await client.api.v1.rooms[':roomCode']['settings'].$patch({
+    const response = await client.api.v1.rooms[":roomCode"]["settings"].$patch({
       param: {
         roomCode: roomCode,
       },
       json: {
-        type: 'topic',
+        type: "topic",
         value: topic,
       },
     });
@@ -350,8 +357,8 @@ export default function Lobby() {
       const errorData = (await response.json()) as { error: string };
       toast({
         duration: 3500,
-        variant: 'destructive',
-        title: 'Something went wrong.',
+        variant: "destructive",
+        title: "Something went wrong.",
         description: errorData.error,
       });
       return;
@@ -377,14 +384,18 @@ export default function Lobby() {
       if (!channel) return;
       if (isLoading) {
         await channel.send({
-          type: 'broadcast',
-          event: 'loading-animation',
+          type: "broadcast",
+          event: "loading-animation",
           payload: {},
         });
       }
 
       if (fetchingFinished && currentQuiz && !isLoading) {
-        await channel.send({ type: 'broadcast', event: 'quiz-start', payload: { currentQuiz } });
+        await channel.send({
+          type: "broadcast",
+          event: "quiz-start",
+          payload: { currentQuiz },
+        });
         router.push(`/multiplayer/${roomCode}/play`);
       }
     };
@@ -395,8 +406,10 @@ export default function Lobby() {
   const { resolvedTheme } = useTheme();
   if (isLoading) {
     return (
-      <div className='absolute left-1/2 top-1/2 flex w-[40] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[30vw]'>
-        <Lottie animationData={resolvedTheme === "dark" ? LoadingDark : Loading} />
+      <div className="absolute left-1/2 top-1/2 flex w-[40] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[30vw]">
+        <Lottie
+          animationData={resolvedTheme === "dark" ? LoadingDark : Loading}
+        />
       </div>
     );
   }
