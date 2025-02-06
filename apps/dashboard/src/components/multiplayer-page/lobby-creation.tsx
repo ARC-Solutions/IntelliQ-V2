@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import { createApiClient } from '@/utils/api-client';
 import { useState } from 'react';
 import { RoomResponse } from '@intelliq/api';
-
+import { useTheme } from 'next-themes';
 export default function LobbyScreen() {
   const router = useRouter();
   const supabase = createClient();
@@ -80,78 +80,91 @@ export default function LobbyScreen() {
 
     router.push(`/multiplayer/${roomCode}`);
   };
+  const { resolvedTheme } = useTheme();
   return (
-    <div className='min-h-screen w-full bg-black text-white relative overflow-hidden flex flex-col items-center justify-center'>
+    <div className="min-h-screen w-full  relative overflow-hidden flex flex-col items-center justify-center">
       {/* Content */}
-      <div className='relative z-10 w-full px-4 py-8 flex flex-col items-center'>
+      <div className="relative z-10 w-full px-4 py-8 flex flex-col items-center">
         {/* Logo */}
-        <div className='mb-10 justify-self-start'>
-          <Image src='/logo-dark.svg' alt='IntelliQ' width={250} height={250} />
+        <div className="mb-10 justify-self-start">
+          <Image
+            src={resolvedTheme === "dark" ? "/logo-dark.svg" : "/logo.svg"}
+            alt="IntelliQ"
+            width={250}
+            height={250}
+          />
         </div>
 
-        <div className='w-full max-w-6xl grid md:grid-cols-2 gap-10'>
+        <div className="w-full max-w-6xl grid md:grid-cols-2 gap-10">
           {/* Left Side - Join with Code */}
-          <div className='space-y-6 text-center'>
-            <h1 className='text-3xl text-white'>Join with invite code</h1>
-            <div className='flex justify-center'>
-              <Mail className='w-12 h-12 text-purple-300' />
+          <div className="space-y-6 text-center">
+            <h1 className="text-3xl">Join with invite code</h1>
+            <div className="flex justify-center">
+              <Mail className="w-12 h-12 text-purple-300" />
             </div>
 
-            <div className='flex justify-center'>
+            <div className="flex justify-center">
               <InputOTP
                 maxLength={4}
                 value={inviteCode}
                 onChange={(value) => setInviteCode(value)}
-                className='gap-2'
+                className="gap-2"
               >
                 <InputOTPGroup>
                   <InputOTPSlot
                     index={0}
-                    className='w-12 h-12 text-center text-xl bg-transparent border-gray-700 focus:border-purple-300'
+                    className="w-12 h-12 text-center text-xl bg-transparent border-gray-700 focus:border-purple-300"
                   />
                   <InputOTPSlot
                     index={1}
-                    className='w-12 h-12 text-center text-xl bg-transparent border-gray-700 focus:border-purple-300'
+                    className="w-12 h-12 text-center text-xl bg-transparent border-gray-700 focus:border-purple-300"
                   />
                   <InputOTPSlot
                     index={2}
-                    className='w-12 h-12 text-center text-xl bg-transparent border-gray-700 focus:border-purple-300'
+                    className="w-12 h-12 text-center text-xl bg-transparent border-gray-700 focus:border-purple-300"
                   />
                   <InputOTPSlot
                     index={3}
-                    className='w-12 h-12 text-center text-xl bg-transparent border-gray-700 focus:border-purple-300'
+                    className="w-12 h-12 text-center text-xl bg-transparent border-gray-700 focus:border-purple-300"
                   />
                 </InputOTPGroup>
               </InputOTP>
             </div>
             <Button
               onClick={joinLobby}
-              className='w-full max-w-xs bg-purple-300 text-black hover:bg-purple-400'
+              className="w-full max-w-xs bg-purple-300 text-black hover:bg-purple-400"
             >
               Join
             </Button>
-            <p className='text-gray-400 text-sm'>Got an invite code? Enter above.</p>
+            <p className="text-gray-400 text-sm">
+              Got an invite code? Enter above.
+            </p>
           </div>
 
           {/* Right Side - Create Private Lobby */}
-          <div className='flex flex-col items-center justify-between space-y-6 text-center h-full'>
-            <h1 className='text-3xl'>Create a Lobby</h1>
-            <div className='flex-grow flex items-center justify-center'>
-              <Plus className='w-16 h-16 text-purple-300' />
+          <div className="space-y-6 text-center">
+            <h1 className="text-3xl">Create a Lobby</h1>
+            <div className="flex justify-center">
+              <Plus className="w-12 h-12 text-purple-300" />
             </div>
             <Button
               onClick={createLobby}
-              className='w-full max-w-xs bg-purple-300 text-black hover:bg-purple-400'
+              className="w-full max-w-xs bg-purple-300 text-black hover:bg-purple-400"
             >
               Create
             </Button>
-            <p className='text-gray-400 text-sm'>Create a lobby and invite your friends</p>
+            <p className="text-gray-400 text-sm">
+              Create a lobby and invite your friends
+            </p>
           </div>
         </div>
 
         {/* Back Link */}
-        <div className='mt-16'>
-          <Link href='/' className='text-purple-300 hover:text-purple-400 text-sm'>
+        <div className="mt-16">
+          <Link
+            href="/"
+            className="text-purple-300 hover:text-purple-400 text-sm"
+          >
             ← Back to start
           </Link>
         </div>

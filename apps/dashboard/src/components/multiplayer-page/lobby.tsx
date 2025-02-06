@@ -1,14 +1,21 @@
 "use client";
 
 import { InviteButton } from "@/components/invite-button";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import Lottie from "lottie-react";
-import Loading from "../../../public/Loading.json";
 import {
   Select,
   SelectContent,
@@ -16,41 +23,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/components/ui/use-toast";
 import { Player, useMultiplayer } from "@/contexts/multiplayer-context";
+import { SupportedLanguages, useQuiz } from "@/contexts/quiz-context";
 import { useAuth } from "@/contexts/user-context";
 import { createClient } from "@/lib/supabase/supabase-client-side";
 import { createApiClient } from "@/utils/api-client";
+import { QuizType, RoomDetailsResponse, RoomResponse } from "@intelliq/api";
 import NumberFlow, { continuous } from "@number-flow/react";
 import { RealtimeChannel } from "@supabase/supabase-js";
+import Lottie from "lottie-react";
 import { Brain, Crown, Sparkles, UsersRound, Zap } from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { RoomResponse, RoomDetailsResponse, QuizType } from "@intelliq/api";
 import { useDebouncedCallback } from "use-debounce";
-import { SupportedLanguages, useQuiz } from "@/contexts/quiz-context";
-import { languages, QuizData } from "../../contexts/quiz-creation-context";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Switch } from "@/components/ui/switch";
-import { HelpCircle } from "lucide-react";
+import LoadingDark from "../../../public/loading-dark.json";
+import Loading from "../../../public/loading.json";
+import { QuizData, languages } from "../../contexts/quiz-creation-context";
+import { useTheme } from "next-themes";
 
 interface PresenceData {
   currentUser: {
@@ -437,21 +429,24 @@ export default function Lobby() {
     handleQuizFinished();
   }, [fetchingFinished, currentQuiz, isLoading]);
 
+  const { resolvedTheme } = useTheme();
   if (isLoading) {
     return (
       <div className="absolute left-1/2 top-1/2 flex w-[40] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[30vw]">
-        <Lottie animationData={Loading} />
+        <Lottie
+          animationData={resolvedTheme === "dark" ? LoadingDark : Loading}
+        />
       </div>
     );
   }
   return (
     <>
-      <div className="min-h-screen w-full bg-black text-white relative flex flex-col">
+      <div className="min-h-screen w-full relative flex flex-col">
         <div className="relative z-10 w-full p-8 flex flex-col gap-8">
           {/* Logo */}
           <div className="flex justify-center">
             <Image
-              src="/logo-dark.svg"
+              src={resolvedTheme === "dark" ? "/logo-dark.svg" : "/logo.svg"}
               alt="IntelliQ"
               width={250}
               height={250}
@@ -488,7 +483,7 @@ export default function Lobby() {
                 }}
                 value={`${maxPlayers}`}
               >
-                <SelectTrigger className="w-full bg-black border-gray-800">
+                <SelectTrigger className="w-full border-gray-800">
                   <SelectValue placeholder="Select players" />
                 </SelectTrigger>
                 <SelectContent>
@@ -514,11 +509,11 @@ export default function Lobby() {
                       return (
                         <div
                           key={i}
-                          className="flex items-center gap-2 p-4 rounded-lg bg-gray-900/50"
+                          className="flex items-center gap-2 p-4 rounded-lg dark:bg-gray-900/50 bg-gray-200"
                         >
                           <Avatar className="h-8 w-8">
                             <AvatarImage src={leader?.avatar} />
-                            <AvatarFallback className="bg-primary/20 text-primary">
+                            <AvatarFallback className="bg-primary/20 text-black dark:text-primary">
                               {leader?.userName.charAt(0)}
                             </AvatarFallback>
                           </Avatar>
@@ -541,7 +536,7 @@ export default function Lobby() {
                       return (
                         <div
                           key={i}
-                          className="flex items-center gap-2 p-4 rounded-lg bg-gray-900/50"
+                          className="flex items-center gap-2 p-4 rounded-lg dark:bg-gray-900/50 bg-gray-200"
                         >
                           <Avatar className="h-8 w-8">
                             <AvatarImage src={player?.avatar} />
@@ -564,7 +559,7 @@ export default function Lobby() {
                     return (
                       <div
                         key={i}
-                        className="flex items-center gap-2 p-4 rounded-lg bg-gray-900/50"
+                        className="flex items-center gap-2 p-4 rounded-lg dark:bg-gray-900/50 bg-gray-200"
                       >
                         <div className="h-8 w-8 rounded-full border border-gray-800" />
                         <span className="text-gray-400">Empty</span>
@@ -582,11 +577,11 @@ export default function Lobby() {
                   <Brain className="w-8 h-8 text-primary" />
                   <span>Default</span>
                 </Card>
-                <Card className="bg-black border-gray-800 p-6 flex flex-col items-center justify-center gap-2">
+                <Card className="dark:bg-black dark:border-gray-800 p-6 flex flex-col items-center justify-center gap-2">
                   <Zap className="w-8 h-8 text-primary" />
                   <span>Fast</span>
                 </Card>
-                <Card className="bg-black border-gray-800 p-6 flex flex-col items-center justify-center gap-2">
+                <Card className="dark:bg-black dark:border-gray-800 p-6 flex flex-col items-center justify-center gap-2">
                   <Sparkles className="w-8 h-8 text-primary" />
                   <span>Custom</span>
                 </Card>
@@ -651,7 +646,7 @@ export default function Lobby() {
                           }}
                           value={language}
                         >
-                          <SelectTrigger className="w-full bg-black border-gray-800">
+                          <SelectTrigger className="w-full dark:bg-black dark:border-gray-800">
                             <SelectValue placeholder="Select Language" />
                           </SelectTrigger>
                           <SelectContent>
@@ -671,7 +666,7 @@ export default function Lobby() {
                     <Input
                       disabled={!isCreator}
                       placeholder="Formula One"
-                      className="bg-transparent border-gray-800"
+                      className="bg-transparent dark:bg-black dark:border-gray-800"
                       value={topic}
                       onChange={(e) => {
                         debouncedUpdateSettings("topic", e.target.value);
