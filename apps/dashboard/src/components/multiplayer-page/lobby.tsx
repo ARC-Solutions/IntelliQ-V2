@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Lottie from "lottie-react";
-import Loading from "../../../public/Loading.json";
+import Loading from "@/assets/loading.json";
+import LoadingDark from "@/assets/loading-dark.json";
 import {
   Select,
   SelectContent,
@@ -442,7 +443,9 @@ export default function Lobby() {
   if (isLoading) {
     return (
       <div className="absolute left-1/2 top-1/2 flex w-[40] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[30vw]">
-        <Lottie animationData={Loading} />
+        <Lottie
+          animationData={resolvedTheme === "dark" ? LoadingDark : Loading}
+        />
       </div>
     );
   }

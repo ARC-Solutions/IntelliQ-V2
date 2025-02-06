@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Controller } from "react-hook-form";
 import Lottie from "lottie-react";
-import Loading from "../../../public/loading.json";
+import Loading from "@/assets/loading.json";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
