@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Lottie from "lottie-react";
-import Loading from "../../../public/loading.json";
-import LoadingDark from "../../../public/loading-dark.json";
+import Loading from "@/assets/loading.json";
+import LoadingDark from "@/assets/loading-dark.json";
 import {
   Select,
   SelectContent,
