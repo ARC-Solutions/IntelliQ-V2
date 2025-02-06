@@ -1,21 +1,14 @@
 "use client";
 
 import { InviteButton } from "@/components/invite-button";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import Lottie from "lottie-react";
+import Loading from "../../../public/Loading.json";
 import {
   Select,
   SelectContent,
@@ -23,25 +16,41 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/components/ui/use-toast";
 import { Player, useMultiplayer } from "@/contexts/multiplayer-context";
-import { SupportedLanguages, useQuiz } from "@/contexts/quiz-context";
 import { useAuth } from "@/contexts/user-context";
 import { createClient } from "@/lib/supabase/supabase-client-side";
 import { createApiClient } from "@/utils/api-client";
-import { QuizType, RoomDetailsResponse, RoomResponse } from "@intelliq/api";
 import NumberFlow, { continuous } from "@number-flow/react";
 import { RealtimeChannel } from "@supabase/supabase-js";
-import Lottie from "lottie-react";
 import { Brain, Crown, Sparkles, UsersRound, Zap } from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { RoomResponse, RoomDetailsResponse, QuizType } from "@intelliq/api";
 import { useDebouncedCallback } from "use-debounce";
-import LoadingDark from "../../../public/loading-dark.json";
-import Loading from "../../../public/loading.json";
-import { QuizData, languages } from "../../contexts/quiz-creation-context";
+import { SupportedLanguages, useQuiz } from "@/contexts/quiz-context";
+import { languages, QuizData } from "../../contexts/quiz-creation-context";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Switch } from "@/components/ui/switch";
+import { HelpCircle } from "lucide-react";
 import { useTheme } from "next-themes";
 
 interface PresenceData {
@@ -93,6 +102,7 @@ export default function Lobby() {
   const [isRoomFull, setIsRoomFull] = useState(false);
   const supabase = createClient();
   const { toast } = useToast();
+  const { resolvedTheme } = useTheme();
 
   const checkAndJoinRoom = async (channel: RealtimeChannel) => {
     try {
@@ -429,13 +439,10 @@ export default function Lobby() {
     handleQuizFinished();
   }, [fetchingFinished, currentQuiz, isLoading]);
 
-  const { resolvedTheme } = useTheme();
   if (isLoading) {
     return (
       <div className="absolute left-1/2 top-1/2 flex w-[40] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[30vw]">
-        <Lottie
-          animationData={resolvedTheme === "dark" ? LoadingDark : Loading}
-        />
+        <Lottie animationData={Loading} />
       </div>
     );
   }
