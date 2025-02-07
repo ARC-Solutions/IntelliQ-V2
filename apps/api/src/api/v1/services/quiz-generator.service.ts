@@ -22,10 +22,10 @@ export interface QuizGenerationResult {
 export async function generateQuiz(
   c: { env: { GPT_MODEL: string; OPENAI_API_KEY: string } },
   quizTopic: string,
-  quizDescription: string,
   numberOfQuestions: number,
-  quizTags: string[],
-  language: string
+  language: string,
+  quizTags?: string[],
+  quizDescription?: string
 ): Promise<QuizGenerationResult> {
   try {
     const GPT_MODEL = c.env.GPT_MODEL;
@@ -43,7 +43,7 @@ export async function generateQuiz(
       schema: quizSchema,
       prompt: generateQuizPrompt(
         quizTopic,
-        quizDescription,
+        quizDescription ?? "",
         numberOfQuestions,
         quizTags,
         language

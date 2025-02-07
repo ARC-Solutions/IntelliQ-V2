@@ -1,21 +1,18 @@
 'use client';
-import { useQuiz } from '@/contexts/quiz-context';
-import { redirect, useParams, useRouter } from 'next/navigation';
-import React, { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { showToast } from '@/utils/show-toast';
-import { useQuizLogic } from '@/contexts/quiz-logic-context';
 import { Card, CardDescription } from '@/components/ui/card';
-import { Timer, CircleCheck, CircleX, ChevronRight, User, CheckCircle } from 'lucide-react';
-import QAndA from '../single-player-quiz/q-and-a';
-import Lottie from 'lottie-react';
-import Summarizing from '../../../public/IntelliQ summarizing.json';
 import { Progress } from '@/components/ui/progress';
 import { Player, useMultiplayer } from '@/contexts/multiplayer-context';
-import { createClient } from '@/lib/supabase/supabase-client-side';
-import { createApiClient } from '@/utils/api-client';
+import { useQuiz } from '@/contexts/quiz-context';
+import { useQuizLogic } from '@/contexts/quiz-logic-context';
 import { useAuth } from '@/contexts/user-context';
-import { PresenceData } from '@/contexts/multiplayer-context';
+import { createClient } from '@/lib/supabase/supabase-client-side';
+import Lottie from 'lottie-react';
+import { ChevronRight, CircleCheck, CircleX, Timer } from 'lucide-react';
+import { redirect, useParams, useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+import Summarizing from '../../../public/IntelliQ summarizing.json';
+import QAndA from '../single-player-quiz/q-and-a';
 const Quiz = () => {
   const { currentQuiz, submitQuiz, summaryQuiz, dispatch: dispatchQuiz } = useQuiz();
   const {

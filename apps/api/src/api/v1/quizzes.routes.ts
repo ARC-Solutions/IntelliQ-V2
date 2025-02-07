@@ -4,6 +4,7 @@ import {
   quizGenerationRequestSchema,
   quizResponseSchema,
 } from "./schemas/quiz.schemas";
+import { quizType } from "./schemas/common.schemas";
 import { createDb } from "../../db/index";
 import { userUsageData } from "../../../drizzle/schema";
 import { getSupabase } from "./middleware/auth.middleware";
@@ -71,14 +72,27 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
     async (c) => {
       const validatedData = c.req.valid("query");
 
-      const { quiz, metrics } = await generateQuiz(
-        c,
-        validatedData.quizTopic,
-        validatedData.quizDescription,
-        validatedData.numberOfQuestions,
-        validatedData.quizTags,
-        validatedData.language
-      );
+      let quiz, metrics;
+
+      if (validatedData.quizType === quizType.Enum.singleplayer) {
+        // Singleplayer: /generate?quizTopic=formula%20one&quizDescription=not%20much&numberOfQuestions=2&quizTags=f1&language=en&quizType=singleplayer
+        ({ quiz, metrics } = await generateQuiz(
+          c,
+          validatedData.quizTopic,
+          validatedData.numberOfQuestions,
+          validatedData.language,
+          validatedData.quizTags,
+          validatedData.quizDescription
+        ));
+      } else {
+        // Multiplayer: /generate?quizTopic=formula%20one&numberOfQuestions=2&language=en&quizType=multiplayer
+        ({ quiz, metrics } = await generateQuiz(
+          c,
+          validatedData.quizTopic,
+          validatedData.numberOfQuestions,
+          validatedData.language,
+        ));
+      }
 
       const supabase = getSupabase(c);
       const {
@@ -96,6 +110,7 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
         responseTimeTaken: metrics.durationInSeconds,
         prompt: validatedData.quizTopic,
         language: validatedData.language,
+        quizType: validatedData.quizType,
       });
 
       return c.json({ quiz: quiz } as const);

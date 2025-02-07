@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { useQuiz, SupportedLanguages } from './quiz-context';
 import { useQueryState, parseAsInteger, parseAsBoolean, parseAsArrayOf, parseAsString } from 'nuqs';
 import * as LZString from 'lz-string';
+import { QuizType } from "@intelliq/api";
 
 const QuestionSchema = z.object({
   text: z.string().min(1, { message: 'Question text is required' }),
@@ -25,6 +26,7 @@ const QuizDataSchema = z.object({
   quizLanguage: z.nativeEnum(SupportedLanguages, {
     message: 'Choose a valid Language',
   }),
+  quizType: z.nativeEnum(QuizType.Enum),
 });
 
 export type QuizData = z.infer<typeof QuizDataSchema>;
@@ -75,6 +77,7 @@ const initialState = {
   questions: [],
   number: '',
   quizLangauge: 'en',
+  quizType: QuizType.Enum.singleplayer,
 };
 
 const QuizCreationContext = createContext<QuizContextValues | null>(null);
