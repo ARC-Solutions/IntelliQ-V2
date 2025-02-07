@@ -39,7 +39,7 @@ import { Brain, Crown, Sparkles, UsersRound, Zap } from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { RoomResponse, RoomDetailsResponse } from '@intelliq/api';
+import { RoomResponse, RoomDetailsResponse, QuizType } from '@intelliq/api';
 import { useDebouncedCallback } from 'use-debounce';
 import { SupportedLanguages, useQuiz } from '@/contexts/quiz-context';
 import { languages, QuizData } from '../../contexts/quiz-creation-context';
@@ -362,6 +362,7 @@ export default function Lobby() {
       passingScore: 70,
       questions: [],
       quizLanguage: language,
+      quizType: QuizType.Enum.multiplayer,
     } as QuizData;
     fetchQuestions(quizCreation);
 
