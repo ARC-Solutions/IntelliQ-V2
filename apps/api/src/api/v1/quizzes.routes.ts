@@ -72,27 +72,14 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
     async (c) => {
       const validatedData = c.req.valid("query");
 
-      let quiz, metrics;
-
-      if (validatedData.quizType === quizType.Enum.singleplayer) {
-        // Singleplayer: /generate?quizTopic=formula%20one&quizDescription=not%20much&numberOfQuestions=2&quizTags=f1&language=en&quizType=singleplayer
-        ({ quiz, metrics } = await generateQuiz(
-          c,
-          validatedData.quizTopic,
-          validatedData.numberOfQuestions,
-          validatedData.language,
-          validatedData.quizTags,
-          validatedData.quizDescription
-        ));
-      } else {
-        // Multiplayer: /generate?quizTopic=formula%20one&numberOfQuestions=2&language=en&quizType=multiplayer
-        ({ quiz, metrics } = await generateQuiz(
-          c,
-          validatedData.quizTopic,
-          validatedData.numberOfQuestions,
-          validatedData.language,
-        ));
-      }
+      const { quiz, metrics } = await generateQuiz(
+        c,
+        validatedData.quizTopic,
+        validatedData.numberOfQuestions,
+        validatedData.quizDescription!,
+        validatedData.quizTags,
+        validatedData.language
+      );
 
       const supabase = getSupabase(c);
       const {
