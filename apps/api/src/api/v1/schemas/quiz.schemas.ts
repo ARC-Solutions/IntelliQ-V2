@@ -38,16 +38,27 @@ export const quizResponseSchema = z.object({
 
 export const quizSubmissionMultiplayerRequestSchema = z.object({
   quizTitle: z.string(),
+  quizTopics: z.array(z.string()),
   language: supportedLanguages,
-  userScore: z.number().positive(),
-  topics: z.array(z.string()),
   questions: z.array(
     z.object({
+      questionTitle: z.string(),
       text: z.string(),
-      userAnswer: z.string(),
-      correctAnswer: z.string(),
-      timeTaken: z.number().positive(),
       options: z.array(z.string()),
+      correctAnswer: z.string(),
+    })
+  ),
+});
+
+export const quizSubmissionMultiplayerResponseSchema = z.object({
+  quizId: z.string().uuid(),
+  questions: z.array(
+    z.object({
+      questionTitle: z.string(),
+      id: z.string().uuid(),
+      text: z.string(),
+      options: z.array(z.string()),
+      correctAnswer: z.string(),
     })
   ),
 });
@@ -72,3 +83,39 @@ export const quizSubmissionMultiplayerRequestSchema = z.object({
 //     })
 //   ),
 // });
+
+// Schema for POST /:roomId/submissions response
+export const quizSubmissionMultiplayerSubmitResponseSchema = z.object({
+  success: z.boolean(),
+  submission: z.object({
+    id: z.string().uuid(),
+    userId: z.string().uuid(),
+    quizId: z.string().uuid(),
+    roomId: z.string().uuid(),
+    userScore: z.number(),
+    correctAnswersCount: z.number(),
+    createdAt: z.string(),
+  }),
+  correctAnswers: z.number(),
+});
+
+// Schema for GET /:roomId/leaderboard response
+export const quizLeaderboardResponseSchema = z.object({
+  leaderboard: z.array(
+    z.object({
+      userName: z.string(),
+      score: z.number(),
+      correctAnswers: z.number(),
+    })
+  ),
+});
+
+export const quizSubmissionAnswerSchema = z.object({
+  questionId: z.string().uuid(),
+  userAnswer: z.string(),
+});
+
+export const quizSubmissionRequestSchema = z.object({
+  score: z.number(),
+  answers: z.array(quizSubmissionAnswerSchema),
+});

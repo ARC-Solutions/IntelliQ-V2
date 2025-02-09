@@ -1,104 +1,271 @@
 import { createDb } from "@/db";
-import { questions, quizzes, rooms, userResponses } from "@drizzle/schema";
+import {
+  questions as questionsTable,
+  quizzes,
+  rooms,
+  userResponses,
+  multiplayerQuizSubmissions,
+} from "@drizzle/schema";
 import { desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
-import { validator as zValidator } from "hono-openapi/zod";
+import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 import { getSupabase } from "./middleware/auth.middleware";
 import { quizType } from "./schemas/common.schemas";
-import { quizSubmissionMultiplayerRequestSchema } from "./schemas/quiz.schemas";
+import {
+  quizSubmissionMultiplayerRequestSchema,
+  quizSubmissionMultiplayerResponseSchema,
+  quizSubmissionMultiplayerSubmitResponseSchema,
+  quizLeaderboardResponseSchema,
+  quizSubmissionAnswerSchema,
+  quizSubmissionRequestSchema,
+} from "./schemas/quiz.schemas";
+import { describeRoute } from "hono-openapi";
 
-const quizSubmissions = new Hono<{ Bindings: CloudflareEnv }>().post(
-  "/:roomId",
-  zValidator("param", z.object({ roomId: z.string().uuid() })),
-  zValidator("json", quizSubmissionMultiplayerRequestSchema),
-  async (c) => {
-    const validatedData = c.req.valid("json");
-    const { roomId } = c.req.valid("param");
-
-    const supabase = getSupabase(c);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    const db = await createDb(c);
-    let createdQuizId: string = "";
-
-    try {
-      const quiz = await db.transaction(async (tx) => {
-        const [createdQuiz] = await tx
-          .insert(quizzes)
-          .values({
-            userId: user!.id,
-            title: validatedData.quizTitle,
-            topic: validatedData.topics,
-            language: validatedData.language,
-            userScore: validatedData.userScore,
-            type: quizType.Enum.multiplayer,
-            correctAnswersCount: validatedData.questions.reduce(
-              (count, q) => count + (q.userAnswer === q.correctAnswer ? 1 : 0),
-              0
-            ),
-            questionsCount: validatedData.questions.length,
-            roomId: roomId,
-          })
-          .returning({ id: quizzes.id });
-
-        createdQuizId = createdQuiz.id;
-
-        for (const question of validatedData.questions) {
-          const [createdQuestion] = await tx
-            .insert(questions)
-            .values({
-              quizId: createdQuizId,
-              text: question.text,
-              options: question.options,
-              correctAnswer: question.correctAnswer,
-            })
-            .returning({ id: questions.id });
-
-          await tx.insert(userResponses).values({
-            userId: user!.id,
-            quizId: createdQuizId,
-            questionId: createdQuestion.id,
-            roomId: roomId,
-            answer: question.userAnswer,
-            isCorrect: question.userAnswer === question.correctAnswer,
-          });
-        }
-        await tx
-          .update(rooms)
-          .set({ quizId: createdQuizId })
-          .where(eq(rooms.id, roomId));
-
-        // Get all quizzes for this room
-        const submissions = await tx.query.quizzes.findMany({
-          where: eq(quizzes.roomId, roomId),
-          orderBy: desc(quizzes.userScore),
-          with: {
-            user: {
-              columns: {
-                name: true,
-              },
+const quizSubmissions = new Hono<{ Bindings: CloudflareEnv }>()
+  .post(
+    "/:roomId/quiz",
+    describeRoute({
+      tags: ["Quiz Submissions Multiplayer"],
+      summary: "Submit a quiz",
+      description:
+        "This route is called once by the host user. It creates one quiz and one set of questions for the entire lobby.",
+      responses: {
+        201: {
+          description: "Quiz submitted successfully",
+          content: {
+            "application/json": {
+              schema: resolver(quizSubmissionMultiplayerResponseSchema),
             },
+          },
+        },
+      },
+    }),
+    zValidator("json", quizSubmissionMultiplayerRequestSchema),
+    zValidator("param", z.object({ roomId: z.string().uuid() })),
+    async (c) => {
+      const validatedData = c.req.valid("json");
+      const { roomId } = c.req.valid("param");
+
+      const supabase = getSupabase(c);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      const db = await createDb(c);
+
+      try {
+        const result = await db.transaction(async (tx) => {
+          const room = await tx.query.rooms.findFirst({
+            where: eq(rooms.id, roomId),
+          });
+
+          if (!room) {
+            throw new Error(`Room with ID ${roomId} not found`);
+          }
+
+          const { quizTitle, quizTopics, language, questions } = validatedData;
+
+          const [createdQuiz] = await tx
+            .insert(quizzes)
+            .values({
+              userId: room.hostId,
+              title: quizTitle,
+              topic: quizTopics,
+              language: language,
+              questionsCount: questions.length,
+              type: quizType.Enum.multiplayer,
+              roomId: roomId,
+            })
+            .returning({
+              id: quizzes.id,
+              title: quizzes.title,
+            });
+
+          const createdQuestions = [];
+          for (const question of questions) {
+            const [createdQuestion] = await tx
+              .insert(questionsTable)
+              .values({
+                text: question.text,
+                options: question.options,
+                correctAnswer: question.correctAnswer,
+                quizId: createdQuiz.id,
+              })
+              .returning({
+                id: questionsTable.id,
+                text: questionsTable.text,
+                options: questionsTable.options,
+                correctAnswer: questionsTable.correctAnswer,
+              });
+
+            createdQuestions.push({
+              questionTitle: createdQuiz.title,
+              ...createdQuestion,
+            });
+          }
+
+          return {
+            quizId: createdQuiz.id,
+            questions: createdQuestions,
+          };
+        });
+        return c.json(result, 201);
+      } catch (error) {
+        console.error(error);
+        return c.json({ error: `Internal server error ${error}` }, 500);
+      }
+    }
+  )
+  .post(
+    "/:roomId/submissions",
+    describeRoute({
+      tags: ["Quiz Submissions Multiplayer"],
+      summary: "Submit a quiz",
+      description: "Submit a quiz for a multiplayer room",
+      responses: {
+        201: {
+          description: "Quiz submission successful",
+          content: {
+            "application/json": {
+              schema: resolver(quizSubmissionMultiplayerSubmitResponseSchema),
+            },
+          },
+        },
+      },
+    }),
+    zValidator("param", z.object({ roomId: z.string().uuid() })),
+    zValidator("json", quizSubmissionRequestSchema),
+    async (c) => {
+      const { roomId } = c.req.valid("param");
+      const { score, answers } = c.req.valid("json");
+
+      const supabase = getSupabase(c);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      const db = await createDb(c);
+
+      const result = await db.transaction(async (tx) => {
+        // First get the quiz associated with this room
+        const quiz = await tx.query.quizzes.findFirst({
+          where: eq(quizzes.roomId, roomId),
+          columns: {
+            id: true,
           },
         });
 
+        if (!quiz) {
+          throw new Error("No quiz found for this room");
+        }
+
+        // Verify all questions exist and belong to this quiz
+        const questions = await tx.query.questions.findMany({
+          where: eq(questionsTable.quizId, quiz.id),
+          columns: {
+            id: true,
+            correctAnswer: true,
+          },
+        });
+
+        const questionMap = new Map(
+          questions.map((q) => [q.id, q.correctAnswer])
+        );
+
+        let correctCount = 0;
+
+        // Process each answer
+        for (const ans of answers) {
+          const correctAnswer = questionMap.get(ans.questionId);
+
+          if (!correctAnswer) {
+            throw new Error(`Invalid question ID: ${ans.questionId}`);
+          }
+
+          const isCorrect = ans.userAnswer === correctAnswer;
+          if (isCorrect) correctCount++;
+
+          await tx.insert(userResponses).values({
+            userId: user!.id,
+            quizId: quiz.id,
+            questionId: ans.questionId,
+            roomId: roomId,
+            answer: ans.userAnswer,
+            isCorrect: isCorrect,
+          });
+        }
+
+        const [submission] = await tx
+          .insert(multiplayerQuizSubmissions)
+          .values({
+            userId: user!.id,
+            quizId: quiz.id,
+            roomId: roomId,
+            userScore: score,
+            correctAnswersCount: correctCount,
+          })
+          .returning();
+
         return {
-          quizId: createdQuizId,
-          submissions: submissions.map((submission) => ({
-            name: submission.user.name,
-            score: submission.userScore,
-          })),
+          success: true,
+          submission,
+          correctAnswers: correctCount,
         };
       });
 
-      return c.json(quiz, 201);
-    } catch (error) {
-      console.error("Error creating quiz:", error);
-      return c.json({ error: `Failed to create quiz: ${error}` }, 500);
+      return c.json(result, 201);
     }
-  }
-);
+  )
+  .get(
+    "/:roomId/leaderboard",
+    describeRoute({
+      tags: ["Quiz Submission Multiplayer"],
+      summary: "Get the leaderboard for a multiplayer room",
+      description: "Get the leaderboard for a multiplayer room",
+      responses: {
+        200: {
+          description: "Leaderboard retrieved successfully",
+          content: {
+            "application/json": {
+              schema: resolver(quizLeaderboardResponseSchema),
+            },
+          },
+        },
+      },
+    }),
+    zValidator("param", z.object({ roomId: z.string().uuid() })),
+    async (c) => {
+      const { roomId } = c.req.valid("param");
 
+      const supabase = getSupabase(c);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      const db = await createDb(c);
+
+      // fetch all submissions for this room
+      const submissions = await db.query.multiplayerQuizSubmissions.findMany({
+        where: eq(multiplayerQuizSubmissions.roomId, roomId),
+        with: {
+          user: {
+            columns: {
+              name: true,
+            },
+          },
+        },
+        orderBy: desc(multiplayerQuizSubmissions.userScore),
+      });
+
+      // shape it for the client
+      const result = submissions.map((sub) => ({
+        userName: sub.user.name,
+        score: sub.userScore,
+        correctAnswers: sub.correctAnswersCount,
+      }));
+
+      return c.json({ leaderboard: result });
+    }
+  );
 export default quizSubmissions;

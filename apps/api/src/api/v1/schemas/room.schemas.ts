@@ -65,7 +65,6 @@ export const createRoomResponseSchema = z.object({
 export const roomSettingsResponseSchema = z.object({
   code: roomSchema.shape.roomCode,
   id: roomDetailsResponseSchema.shape.id,
-  quizId: roomDetailsResponseSchema.shape.quizId,
   hostId: roomDetailsResponseSchema.shape.hostId,
   maxPlayers: roomDetailsResponseSchema.shape.maxPlayers,
   numQuestions: roomDetailsResponseSchema.shape.numQuestions,

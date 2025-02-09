@@ -1,4 +1,4 @@
-import { pgTable, foreignKey, uuid, smallint, timestamp, pgPolicy, text, boolean, integer, real, bigint, jsonb, vector, unique, type AnyPgColumn, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, foreignKey, uuid, smallint, timestamp, pgPolicy, text, boolean, integer, real, bigint, jsonb, vector, unique, pgEnum } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const quizType = pgEnum("quiz_type", ['singleplayer', 'multiplayer', 'document', 'random'])
@@ -156,7 +156,6 @@ export const bookmarks = pgTable("bookmarks", {
 
 export const rooms = pgTable("rooms", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	quizId: uuid("quiz_id"),
 	hostId: uuid("host_id").notNull(),
 	maxPlayers: smallint("max_players").default(sql`'4'`).notNull(),
 	numQuestions: smallint("num_questions").notNull(),
@@ -172,11 +171,6 @@ export const rooms = pgTable("rooms", {
 			foreignColumns: [users.id],
 			name: "rooms_host_id_fkey"
 		}),
-	foreignKey({
-			columns: [table.quizId],
-			foreignColumns: [quizzes.id],
-			name: "rooms_quiz_id_fkey"
-		}).onUpdate("cascade").onDelete("cascade"),
 	unique("rooms_code_key").on(table.code),
 	pgPolicy("Anyone can view rooms", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
 	pgPolicy("Room hosts can update rooms", { as: "permissive", for: "update", to: ["authenticated"] }),
@@ -196,16 +190,21 @@ export const quizzes = pgTable("quizzes", {
 	type: quizType().notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	language: text().notNull(),
-	userScore: smallint("user_score").notNull(),
-	correctAnswersCount: smallint("correct_answers_count").notNull(),
+	userScore: smallint("user_score"),
+	correctAnswersCount: smallint("correct_answers_count"),
 	questionsCount: smallint("questions_count").notNull(),
-	roomId: uuid("room_id").defaultRandom(),
+	roomId: uuid("room_id"),
 }, (table) => [
+	foreignKey({
+			columns: [table.documentId],
+			foreignColumns: [documents.id],
+			name: "quizzes_document_id_fkey"
+		}).onUpdate("cascade").onDelete("cascade"),
 	foreignKey({
 			columns: [table.roomId],
 			foreignColumns: [rooms.id],
 			name: "quizzes_room_id_fkey"
-		}),
+		}).onUpdate("cascade").onDelete("cascade"),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [users.id],
