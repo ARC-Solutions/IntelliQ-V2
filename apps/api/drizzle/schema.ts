@@ -154,29 +154,6 @@ export const bookmarks = pgTable("bookmarks", {
 	pgPolicy("Users can view their own bookmarks", { as: "permissive", for: "select", to: ["authenticated"] }),
 ]);
 
-export const rooms = pgTable("rooms", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	hostId: uuid("host_id").notNull(),
-	maxPlayers: smallint("max_players").default(sql`'4'`).notNull(),
-	numQuestions: smallint("num_questions").notNull(),
-	code: text().notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	endedAt: timestamp("ended_at", { withTimezone: true, mode: 'string' }),
-	timeLimit: smallint("time_limit").notNull(),
-	topic: text(),
-	language: text(),
-}, (table) => [
-	foreignKey({
-			columns: [table.hostId],
-			foreignColumns: [users.id],
-			name: "rooms_host_id_fkey"
-		}),
-	unique("rooms_code_key").on(table.code),
-	pgPolicy("Anyone can view rooms", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
-	pgPolicy("Room hosts can update rooms", { as: "permissive", for: "update", to: ["authenticated"] }),
-	pgPolicy("Users can create rooms", { as: "permissive", for: "insert", to: ["authenticated"] }),
-]);
-
 export const quizzes = pgTable("quizzes", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	userId: uuid("user_id").notNull(),
@@ -213,4 +190,27 @@ export const quizzes = pgTable("quizzes", {
 	pgPolicy("Users can create quizzes", { as: "permissive", for: "insert", to: ["authenticated"], withCheck: sql`(( SELECT auth.uid() AS uid) = user_id)`  }),
 	pgPolicy("Users can delete their own quizzes", { as: "permissive", for: "delete", to: ["authenticated"] }),
 	pgPolicy("Users can update their own quizzes", { as: "permissive", for: "update", to: ["authenticated"] }),
+]);
+
+export const rooms = pgTable("rooms", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	hostId: uuid("host_id").notNull(),
+	maxPlayers: smallint("max_players").default(sql`'4'`).notNull(),
+	numQuestions: smallint("num_questions").notNull(),
+	code: text().notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	endedAt: timestamp("ended_at", { withTimezone: true, mode: 'string' }),
+	timeLimit: smallint("time_limit").notNull(),
+	topic: text(),
+	language: text(),
+}, (table) => [
+	foreignKey({
+			columns: [table.hostId],
+			foreignColumns: [users.id],
+			name: "rooms_host_id_fkey"
+		}),
+	unique("rooms_code_key").on(table.code),
+	pgPolicy("Anyone can view rooms", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
+	pgPolicy("Room hosts can update rooms", { as: "permissive", for: "update", to: ["authenticated"] }),
+	pgPolicy("Users can create rooms", { as: "permissive", for: "insert", to: ["authenticated"] }),
 ]);

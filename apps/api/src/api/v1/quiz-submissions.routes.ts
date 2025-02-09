@@ -1,26 +1,25 @@
-import { createDb } from "@/db";
-import {
-  questions as questionsTable,
-  quizzes,
-  rooms,
-  userResponses,
-  multiplayerQuizSubmissions,
-} from "@drizzle/schema";
 import { desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
+import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
+import {
+  multiplayerQuizSubmissions,
+  questions as questionsTable,
+  quizzes,
+  userResponses,
+  rooms
+} from "../../../drizzle/schema";
+import { createDb } from "../../db/index";
 import { getSupabase } from "./middleware/auth.middleware";
 import { quizType } from "./schemas/common.schemas";
 import {
+  quizLeaderboardResponseSchema,
   quizSubmissionMultiplayerRequestSchema,
   quizSubmissionMultiplayerResponseSchema,
   quizSubmissionMultiplayerSubmitResponseSchema,
-  quizLeaderboardResponseSchema,
-  quizSubmissionAnswerSchema,
-  quizSubmissionRequestSchema,
+  quizSubmissionRequestSchema
 } from "./schemas/quiz.schemas";
-import { describeRoute } from "hono-openapi";
 
 const quizSubmissions = new Hono<{ Bindings: CloudflareEnv }>()
   .post(
@@ -56,13 +55,9 @@ const quizSubmissions = new Hono<{ Bindings: CloudflareEnv }>()
 
       try {
         const result = await db.transaction(async (tx) => {
-          const room = await tx.query.rooms.findFirst({
-            where: eq(rooms.id, roomId),
-          });
-
-          if (!room) {
-            throw new Error(`Room with ID ${roomId} not found`);
-          }
+          const room = (await tx.query.rooms.findFirst({
+            where: (rooms) => eq(rooms.id, roomId),
+          }))!;
 
           const { quizTitle, quizTopics, language, questions } = validatedData;
 
