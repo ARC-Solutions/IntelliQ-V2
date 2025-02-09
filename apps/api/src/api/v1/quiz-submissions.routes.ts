@@ -121,8 +121,8 @@ const quizSubmissions = new Hono<{ Bindings: CloudflareEnv }>()
     "/:roomId/submissions",
     describeRoute({
       tags: ["Quiz Submissions Multiplayer"],
-      summary: "Submit a quiz",
-      description: "Submit a quiz for a multiplayer room",
+      summary: "Submit quiz answers for a multiplayer room",
+      description: "Submit quiz answers for a multiplayer room",
       responses: {
         201: {
           description: "Quiz submission successful",
@@ -220,7 +220,7 @@ const quizSubmissions = new Hono<{ Bindings: CloudflareEnv }>()
   .get(
     "/:roomId/leaderboard",
     describeRoute({
-      tags: ["Quiz Submission Multiplayer"],
+      tags: ["Quiz Submissions Multiplayer"],
       summary: "Get the leaderboard for a multiplayer room",
       description: "Get the leaderboard for a multiplayer room",
       responses: {

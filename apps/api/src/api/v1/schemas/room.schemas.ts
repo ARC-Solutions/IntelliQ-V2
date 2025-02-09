@@ -11,7 +11,6 @@ export const roomResponseSchema = z.object({
 export const roomDetailsResponseSchema = z.object({
   // UUIDs or strings
   id: z.string(),
-  quizId: z.string().nullable(), // Because it can be null
   hostId: z.string(),
 
   // Numbers
