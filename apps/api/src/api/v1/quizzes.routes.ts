@@ -74,10 +74,10 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
       const { quiz, metrics } = await generateQuiz(
         c,
         validatedData.quizTopic,
-        validatedData.quizDescription,
+        validatedData.quizDescription!,
         validatedData.numberOfQuestions,
         validatedData.quizTags,
-        validatedData.language
+        validatedData.language,
       );
 
       const supabase = getSupabase(c);

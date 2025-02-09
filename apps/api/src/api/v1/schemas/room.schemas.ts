@@ -39,6 +39,7 @@ export const updateRoomSettingsSchema = z.object({
     "topic",
     "showAnswers",
     "maxPlayers",
+    "language",
   ]),
   value: z.union([z.number(), z.string(), z.boolean()]),
 });

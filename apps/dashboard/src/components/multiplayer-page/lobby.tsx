@@ -296,9 +296,15 @@ export default function Lobby() {
       const client = createApiClient();
 
       // Update on the Database
-      // To Do type === 'language' ||
-      if (type === 'timeLimit' || type === 'numQuestions') {
-        await client.api.v1.rooms[':roomCode']['settings'].$patch({
+      // To Do type === 'language' || -- February 5th
+      // Done: -- February 9th
+      if (
+        type === "timeLimit" ||
+        type === "numQuestions" ||
+        type === "language" ||
+        type === "topic"
+      ) {
+        await client.api.v1.rooms[":roomCode"]["settings"].$patch({
           param: {
             roomCode: roomCode,
           },
@@ -310,8 +316,8 @@ export default function Lobby() {
       }
 
       await channel.send({
-        type: 'broadcast',
-        event: 'settings-update',
+        type: "broadcast",
+        event: "settings-update",
         payload: { type, value },
       });
     } catch (error) {
@@ -608,7 +614,7 @@ export default function Lobby() {
                       className='bg-transparent border-gray-800'
                       value={topic}
                       onChange={(e) => {
-                        updateGameSettings('topic', e.target.value);
+                        debouncedUpdateSettings('topic', e.target.value);
                         setTopic(e.target.value);
                       }}
                     />

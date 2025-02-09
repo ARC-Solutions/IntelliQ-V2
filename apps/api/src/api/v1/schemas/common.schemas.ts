@@ -12,3 +12,10 @@ export const supportedLanguages = z.enum([
   "tl",
   "pl",
 ]);
+
+export const quizType = z.enum([
+  "singleplayer",
+  "multiplayer",
+  "document",
+  "random",
+]);
