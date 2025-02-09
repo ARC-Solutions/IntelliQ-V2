@@ -76,7 +76,7 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
         validatedData.quizTopic,
         validatedData.quizDescription!,
         validatedData.numberOfQuestions,
-        validatedData.quizTags,
+        validatedData.quizTags!,
         validatedData.language,
       );
 
@@ -96,6 +96,7 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
         responseTimeTaken: metrics.durationInSeconds,
         prompt: validatedData.quizTopic,
         language: validatedData.language,
+        quizType: validatedData.quizType,
       });
 
       return c.json({ quiz: quiz } as const);
