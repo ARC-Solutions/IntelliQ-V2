@@ -43,6 +43,15 @@ import { RoomResponse, RoomDetailsResponse, QuizType } from '@intelliq/api';
 import { useDebouncedCallback } from 'use-debounce';
 import { SupportedLanguages, useQuiz } from '@/contexts/quiz-context';
 import { languages, QuizData } from '../../contexts/quiz-creation-context';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Switch } from '@/components/ui/switch';
+import { HelpCircle } from 'lucide-react';
+
 interface PresenceData {
   currentUser: {
     id: string;
@@ -72,6 +81,8 @@ export default function Lobby() {
     setTopic,
     language,
     setLanguage,
+    showCorrectAnswers,
+    setShowCorrectAnswers,
   } = useMultiplayer();
   const { isLoading, fetchQuestions, fetchingFinished, dispatch, currentQuiz } = useQuiz();
   const routerParams = useParams();
@@ -578,7 +589,28 @@ export default function Lobby() {
                       <span className='text-sm text-gray-400'>60s</span>
                     </div>
                   </div>
-
+                  <div className='space-y-4'>
+                    <div className='flex items-center justify-between'>
+                      <Label htmlFor='showCorrectAnswers' className='flex items-center space-x-2'>
+                        <span>Show Correct Answers</span>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <HelpCircle size={16} className='text-gray-500' />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Display correct answers between questions</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </Label>
+                      <Switch
+                        id='showCorrectAnswers'
+                        checked={showCorrectAnswers}
+                        onCheckedChange={setShowCorrectAnswers}
+                      />
+                    </div>
+                  </div>
                   <div className='space-y-4'>
                     <div className='flex'>
                       <Label htmlFor='quizLanguage' className='flex items-center space-x-2'>
