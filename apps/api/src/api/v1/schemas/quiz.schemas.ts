@@ -119,3 +119,16 @@ export const quizSubmissionRequestSchema = z.object({
   score: z.number(),
   answers: z.array(quizSubmissionAnswerSchema),
 });
+
+export const quizQuestionResponseSchema = z.object({
+  id: z.string().uuid(),
+  questionTitle: z.string(),
+  text: z.string(),
+  options: z.array(z.string()),
+});
+
+export const quizQuestionsResponseSchema = z.object({
+  quizId: z.string().uuid(),
+  quizTitle: z.string(),
+  questions: z.array(quizQuestionResponseSchema),
+});
