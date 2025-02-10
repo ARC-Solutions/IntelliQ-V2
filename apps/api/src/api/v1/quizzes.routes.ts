@@ -4,6 +4,7 @@ import {
   quizGenerationRequestSchema,
   quizResponseSchema,
 } from "./schemas/quiz.schemas";
+import { quizType } from "./schemas/common.schemas";
 import { createDb } from "../../db/index";
 import { userUsageData } from "../../../drizzle/schema";
 import { getSupabase } from "./middleware/auth.middleware";
@@ -74,10 +75,10 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
       const { quiz, metrics } = await generateQuiz(
         c,
         validatedData.quizTopic,
-        validatedData.quizDescription!,
         validatedData.numberOfQuestions,
-        validatedData.quizTags!,
-        validatedData.language,
+        validatedData.quizDescription!,
+        validatedData.quizTags,
+        validatedData.language
       );
 
       const supabase = getSupabase(c);
