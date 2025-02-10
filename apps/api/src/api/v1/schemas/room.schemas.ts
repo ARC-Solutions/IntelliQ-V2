@@ -11,7 +11,6 @@ export const roomResponseSchema = z.object({
 export const roomDetailsResponseSchema = z.object({
   // UUIDs or strings
   id: z.string(),
-  quizId: z.string().nullable(), // Because it can be null
   hostId: z.string(),
 
   // Numbers
@@ -39,6 +38,7 @@ export const updateRoomSettingsSchema = z.object({
     "topic",
     "showAnswers",
     "maxPlayers",
+    "language",
   ]),
   value: z.union([z.number(), z.string(), z.boolean()]),
 });
@@ -64,7 +64,6 @@ export const createRoomResponseSchema = z.object({
 export const roomSettingsResponseSchema = z.object({
   code: roomSchema.shape.roomCode,
   id: roomDetailsResponseSchema.shape.id,
-  quizId: roomDetailsResponseSchema.shape.quizId,
   hostId: roomDetailsResponseSchema.shape.hostId,
   maxPlayers: roomDetailsResponseSchema.shape.maxPlayers,
   numQuestions: roomDetailsResponseSchema.shape.numQuestions,

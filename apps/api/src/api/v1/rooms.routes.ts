@@ -126,7 +126,6 @@ const app = new Hono<{ Bindings: CloudflareEnv }>()
         .returning({
           code: rooms.code,
           id: rooms.id,
-          quizId: rooms.quizId,
           hostId: rooms.hostId,
           maxPlayers: rooms.maxPlayers,
           numQuestions: rooms.numQuestions,
