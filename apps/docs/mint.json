@@ -63,6 +63,10 @@
       "pages": ["local-development-arc-devs"]
     },
     {
+      "group": "Multiplayer Features",
+      "pages": ["multiplayer-flow"]
+    },
+    {
       "group": "Essentials",
       "pages": [
         "essentials/markdown",
