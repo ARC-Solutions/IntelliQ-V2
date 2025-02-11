@@ -22,6 +22,8 @@ import {
   quizSubmissionRequestSchema,
   singlePlayerQuizSubmissionRequestSchema,
   singlePlayerQuizSubmissionResponseSchema,
+  filterQuerySchema,
+  filteredQuizResponseSchema,
 } from "./schemas/quiz.schemas";
 
 const quizSubmissions = new Hono<{ Bindings: CloudflareEnv }>()
@@ -449,6 +451,91 @@ const quizSubmissions = new Hono<{ Bindings: CloudflareEnv }>()
         console.error(error);
         return c.json({ error: "Internal server error" }, 500);
       }
+    }
+  )
+  .get(
+    "/singleplayer/:quizId/questions",
+    describeRoute({
+      tags: ["Quiz Submissions Singleplayer"],
+      summary: "Get the questions for a single player quiz",
+      description: "Get the questions for a single player quiz",
+      validateResponse: true,
+      responses: {
+        200: {
+          description: "Questions retrieved successfully",
+          content: {
+            "application/json": {
+              schema: resolver(filteredQuizResponseSchema),
+            },
+          },
+        },
+      },
+    }),
+    zValidator("param", z.object({ quizId: z.string().uuid() })),
+    zValidator("query", filterQuerySchema),
+    async (c) => {
+      const { quizId } = c.req.valid("param");
+      const { filter } = c.req.valid("query");
+
+      const supabase = getSupabase(c);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      const db = await createDb(c);
+
+      const quiz = await db.query.quizzes.findFirst({
+        where: eq(quizzes.id, quizId),
+        columns: {
+          id: true,
+          title: true,
+          userScore: true,
+          totalTimeTaken: true,
+          correctAnswersCount: true,
+          questionsCount: true,
+        },
+        with: {
+          questions: {
+            with: {
+              userResponses: {
+                where: eq(userResponses.userId, user!.id),
+              },
+            },
+          },
+        },
+      });
+
+      if (!quiz) {
+        return c.json({ error: "Quiz not found" }, 404);
+      }
+
+      const formattedQuestions = quiz.questions.map((q) => ({
+        text: q.text,
+        correctAnswer: q.correctAnswer,
+        userAnswer: q.userResponses[0]?.answer!,
+      }));
+
+      const filteredQuestions = formattedQuestions.filter((question) => {
+        const isCorrect = question.userAnswer === question.correctAnswer;
+        switch (filter) {
+          case "correct":
+            return isCorrect;
+          case "incorrect":
+            return !isCorrect;
+          default:
+            return true;
+        }
+      });
+
+      return c.json({
+        quizId: quiz.id,
+        quizTitle: quiz.title,
+        quizScore: quiz.userScore,
+        totalTime: quiz.totalTimeTaken,
+        correctAnswersCount: quiz.correctAnswersCount,
+        totalQuestions: quiz.questionsCount,
+        questions: filteredQuestions,
+      });
     }
   );
 export default quizSubmissions;
