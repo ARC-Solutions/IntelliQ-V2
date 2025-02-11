@@ -148,7 +148,6 @@ const quizSubmissions = new Hono<{ Bindings: CloudflareEnv }>()
       const db = await createDb(c);
 
       const result = await db.transaction(async (tx) => {
-        // First get the quiz associated with this room
         const quiz = await tx.query.quizzes.findFirst({
           where: eq(quizzes.roomId, roomId),
           columns: {
