@@ -164,7 +164,7 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
           .returning();
 
         const correctAnswersCount = questions.reduce(
-          (count: number, question: any) =>
+          (count, question) =>
             count + (question.userAnswer === question.correctAnswer ? 1 : 0),
           0
         );
@@ -204,7 +204,7 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
           totalTime: createdQuiz.totalTimeTaken,
           correctAnswersCount,
           totalQuestions: createdQuiz.questionsCount,
-          questions: questions.map((question: any) => ({
+          questions: questions.map((question) => ({
             text: question.text,
             correctAnswer: question.correctAnswer,
             userAnswer: question.userAnswer,
