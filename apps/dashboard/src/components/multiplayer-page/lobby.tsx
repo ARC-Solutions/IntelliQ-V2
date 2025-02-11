@@ -97,12 +97,12 @@ export default function Lobby() {
         const presenceState = channel.presenceState();
         const currentPlayerCount = Object.values(presenceState).flat().length;
 
-        if (currentPlayerCount === room.max_players) {
+        if (currentPlayerCount === room.maxPlayers) {
           setIsRoomFull(true);
           return;
         }
 
-        return room.max_players;
+        return room.maxPlayers;
       }
     } catch (error) {
       console.error('Error joining room:', error);

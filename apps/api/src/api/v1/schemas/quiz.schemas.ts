@@ -171,3 +171,26 @@ export const singlePlayerQuizSubmissionResponseSchema = z.object({
   totalQuestions: z.number(),
   questions: z.array(singlePlayerQuizSubmissionResponseQuestionSchema),
 });
+
+// Schema for filtered quiz question response
+const filteredQuizQuestionSchema = z.object({
+  text: z.string(),
+  correctAnswer: z.string(),
+  userAnswer: z.string(),
+});
+
+// Schema for filtered quiz response
+export const filteredQuizResponseSchema = z.object({
+  quizId: z.string().uuid(),
+  quizTitle: z.string(),
+  quizScore: z.number(),
+  totalTime: z.number(),
+  correctAnswersCount: z.number(),
+  totalQuestions: z.number(),
+  questions: z.array(filteredQuizQuestionSchema),
+});
+
+// Query parameter schema for filtering
+export const filterQuerySchema = z.object({
+  filter: z.enum(["all", "correct", "incorrect"]),
+});

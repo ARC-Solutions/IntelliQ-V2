@@ -8,7 +8,6 @@ import {
   questions as questionsTable,
   quizzes,
   userResponses,
-  rooms,
 } from "../../../drizzle/schema";
 import { createDb } from "../../db/index";
 import { getSupabase } from "./middleware/auth.middleware";
@@ -20,11 +19,9 @@ import {
   quizSubmissionMultiplayerResponseSchema,
   quizSubmissionMultiplayerSubmitResponseSchema,
   quizSubmissionRequestSchema,
-  singlePlayerQuizSubmissionRequestSchema,
-  singlePlayerQuizSubmissionResponseSchema,
 } from "./schemas/quiz.schemas";
 
-const quizSubmissions = new Hono<{ Bindings: CloudflareEnv }>()
+const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
   .post(
     "/:roomId/quiz",
     describeRoute({
@@ -216,115 +213,6 @@ const quizSubmissions = new Hono<{ Bindings: CloudflareEnv }>()
       return c.json(result, 201);
     }
   )
-  .post(
-    "/submit",
-    describeRoute({
-      tags: ["Quiz Submissions Singleplayer"],
-      summary: "Submit a single player quiz",
-      description: "Submit a single player quiz",
-      validateResponse: true,
-      responses: {
-        201: {
-          description: "Quiz submission successful",
-          content: {
-            "application/json": {
-              schema: resolver(singlePlayerQuizSubmissionResponseSchema),
-            },
-          },
-        },
-      },
-    }),
-    zValidator("json", singlePlayerQuizSubmissionRequestSchema),
-    async (c) => {
-      const {
-        quizTitle,
-        description,
-        topic,
-        tags,
-        passingScore,
-        language,
-        userScore,
-        questions,
-        timeTaken,
-      } = c.req.valid("json");
-
-      const supabase = getSupabase(c);
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      const db = await createDb(c);
-
-      const result = await db.transaction(async (tx) => {
-        const [createdQuiz] = await tx
-          .insert(quizzes)
-          .values({
-            userId: user!.id,
-            title: quizTitle,
-            description,
-            topic,
-            tags,
-            passingScore,
-            language,
-            type: quizType.enum.singleplayer,
-            questionsCount: questions.length,
-            totalTimeTaken: timeTaken,
-            userScore,
-          })
-          .returning();
-
-        const correctAnswersCount = questions.reduce(
-          (count: number, question: any) =>
-            count + (question.userAnswer === question.correctAnswer ? 1 : 0),
-          0
-        );
-
-        for (const question of questions) {
-          const [createdQuestion] = await tx
-            .insert(questionsTable)
-            .values({
-              quizId: createdQuiz.id,
-              text: question.text,
-              options: question.options,
-              correctAnswer: question.correctAnswer,
-            })
-            .returning();
-
-          await tx.insert(userResponses).values({
-            userId: user!.id,
-            quizId: createdQuiz.id,
-            questionId: createdQuestion.id,
-            answer: question.userAnswer,
-            isCorrect: question.userAnswer === question.correctAnswer,
-          });
-        }
-
-        await tx
-          .update(quizzes)
-          .set({
-            correctAnswersCount,
-            userScore,
-          })
-          .where(eq(quizzes.id, createdQuiz.id));
-
-        return {
-          quizId: createdQuiz.id,
-          quizTitle: quizTitle,
-          quizScore: createdQuiz.userScore,
-          totalTime: createdQuiz.totalTimeTaken,
-          correctAnswersCount,
-          totalQuestions: createdQuiz.questionsCount,
-          questions: questions.map((question: any) => ({
-            text: question.text,
-            correctAnswer: question.correctAnswer,
-            userAnswer: question.userAnswer,
-          })),
-        };
-      });
-
-      return c.json(result, 201);
-    }
-  )
   .get(
     "/:roomId/leaderboard",
     describeRoute({
@@ -451,4 +339,4 @@ const quizSubmissions = new Hono<{ Bindings: CloudflareEnv }>()
       }
     }
   );
-export default quizSubmissions;
+export default multiplayerQuizSubmissionsRoutes;

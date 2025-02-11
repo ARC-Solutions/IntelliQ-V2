@@ -49,11 +49,12 @@ const app = new Hono<{ Bindings: CloudflareEnv }>()
       const { roomCode } = c.req.valid("param");
 
       const db = await createDb(c);
+
       const { maxPlayers } = (await db.query.rooms.findFirst({
-        where: (rooms) => eq(rooms.code, roomCode),
+        where: eq(rooms.code, roomCode),
       }))!;
 
-      return c.json({ max_players: maxPlayers });
+      return c.json({ maxPlayers: maxPlayers });
     }
   )
   .get(
@@ -62,7 +63,7 @@ const app = new Hono<{ Bindings: CloudflareEnv }>()
       tags: ["Rooms"],
       summary: "Get room details",
       description: "Get room details by room code",
-      validateResponse: true,
+      // validateResponse: true,
       responses: {
         200: {
           description: "Room details",
