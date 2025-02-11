@@ -63,7 +63,7 @@ const app = new Hono<{ Bindings: CloudflareEnv }>()
       tags: ["Rooms"],
       summary: "Get room details",
       description: "Get room details by room code",
-      // validateResponse: true,
+      validateResponse: true,
       responses: {
         200: {
           description: "Room details",
