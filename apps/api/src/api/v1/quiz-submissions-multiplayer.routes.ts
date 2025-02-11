@@ -20,6 +20,10 @@ import {
   quizSubmissionMultiplayerSubmitResponseSchema,
   quizSubmissionRequestSchema,
 } from "./schemas/quiz.schemas";
+import {
+  MEDIUM_CACHE,
+  createCacheMiddleware,
+} from "./middleware/cache.middleware";
 
 const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
   .post(
@@ -215,6 +219,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
   )
   .get(
     "/:roomId/leaderboard",
+    createCacheMiddleware("quiz-leaderboard", MEDIUM_CACHE),
     describeRoute({
       tags: ["Quiz Submissions Multiplayer"],
       summary: "Get the leaderboard for a multiplayer room",
@@ -267,6 +272,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
   )
   .get(
     "/:roomId/questions",
+    createCacheMiddleware("quiz-questions", MEDIUM_CACHE),
     describeRoute({
       tags: ["Quiz Submissions Multiplayer"],
       summary: "Get the questions for a multiplayer room",

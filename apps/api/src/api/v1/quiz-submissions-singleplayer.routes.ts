@@ -4,25 +4,30 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 import {
-    questions as questionsTable,
-    quizzes,
-    userResponses
+  questions as questionsTable,
+  quizzes,
+  userResponses,
 } from "../../../drizzle/schema";
 import { createDb } from "../../db/index";
 import { getSupabase } from "./middleware/auth.middleware";
 import { quizType } from "./schemas/common.schemas";
 import {
-    filterQuerySchema,
-    filteredQuizResponseSchema,
-    singlePlayerQuizSubmissionRequestSchema,
-    singlePlayerQuizSubmissionResponseSchema
+  filterQuerySchema,
+  filteredQuizResponseSchema,
+  singlePlayerQuizSubmissionRequestSchema,
+  singlePlayerQuizSubmissionResponseSchema,
 } from "./schemas/quiz.schemas";
+import {
+  MEDIUM_CACHE,
+  createCacheMiddleware,
+} from "./middleware/cache.middleware";
 
 const singleplayerQuizSubmissionsRoutes = new Hono<{
   Bindings: CloudflareEnv;
 }>()
   .get(
     "/:quizId/questions",
+    createCacheMiddleware("quiz-questions", MEDIUM_CACHE),
     describeRoute({
       tags: ["Quiz Submissions Singleplayer"],
       summary: "Get the questions for a single player quiz",
