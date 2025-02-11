@@ -1,4 +1,4 @@
-import { pgTable, foreignKey, uuid, smallint, timestamp, pgPolicy, text, boolean, integer, real, bigint, jsonb, vector, unique, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, foreignKey, uuid, smallint, timestamp, integer, text, real, pgPolicy, boolean, bigint, jsonb, vector, unique, pgEnum } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const quizType = pgEnum("quiz_type", ['singleplayer', 'multiplayer', 'document', 'random'])
@@ -30,40 +30,6 @@ export const multiplayerQuizSubmissions = pgTable("multiplayer_quiz_submissions"
 		}).onUpdate("cascade").onDelete("cascade"),
 ]);
 
-export const userResponses = pgTable("user_responses", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	userId: uuid("user_id").notNull(),
-	quizId: uuid("quiz_id").notNull(),
-	questionId: uuid("question_id").notNull(),
-	roomId: uuid("room_id").notNull(),
-	answer: text().notNull(),
-	isCorrect: boolean("is_correct").notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.questionId],
-			foreignColumns: [questions.id],
-			name: "user_responses_question_id_fkey"
-		}).onUpdate("cascade").onDelete("cascade"),
-	foreignKey({
-			columns: [table.quizId],
-			foreignColumns: [quizzes.id],
-			name: "user_responses_quiz_id_fkey"
-		}).onUpdate("cascade").onDelete("cascade"),
-	foreignKey({
-			columns: [table.roomId],
-			foreignColumns: [rooms.id],
-			name: "user_responses_room_id_fkey"
-		}).onUpdate("cascade").onDelete("cascade"),
-	foreignKey({
-			columns: [table.userId],
-			foreignColumns: [users.id],
-			name: "user_responses_user_id_fkey"
-		}).onUpdate("cascade").onDelete("cascade"),
-	pgPolicy("Users can insert their own responses", { as: "permissive", for: "insert", to: ["authenticated"], withCheck: sql`(( SELECT auth.uid() AS uid) = user_id)`  }),
-	pgPolicy("Users can view their own responses", { as: "permissive", for: "select", to: ["authenticated"] }),
-]);
-
 export const userUsageData = pgTable("user_usage_data", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	userId: uuid("user_id").notNull(),
@@ -93,6 +59,40 @@ export const users = pgTable("users", {
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
 	pgPolicy("Users can update own profile", { as: "permissive", for: "update", to: ["authenticated"], using: sql`(( SELECT auth.uid() AS uid) = id)` }),
+]);
+
+export const userResponses = pgTable("user_responses", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	userId: uuid("user_id").notNull(),
+	quizId: uuid("quiz_id").notNull(),
+	questionId: uuid("question_id").notNull(),
+	roomId: uuid("room_id"),
+	answer: text().notNull(),
+	isCorrect: boolean("is_correct").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.questionId],
+			foreignColumns: [questions.id],
+			name: "user_responses_question_id_fkey"
+		}).onUpdate("cascade").onDelete("cascade"),
+	foreignKey({
+			columns: [table.quizId],
+			foreignColumns: [quizzes.id],
+			name: "user_responses_quiz_id_fkey"
+		}).onUpdate("cascade").onDelete("cascade"),
+	foreignKey({
+			columns: [table.roomId],
+			foreignColumns: [rooms.id],
+			name: "user_responses_room_id_fkey"
+		}).onUpdate("cascade").onDelete("cascade"),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "user_responses_user_id_fkey"
+		}).onUpdate("cascade").onDelete("cascade"),
+	pgPolicy("Users can insert their own responses", { as: "permissive", for: "insert", to: ["authenticated"], withCheck: sql`(( SELECT auth.uid() AS uid) = user_id)`  }),
+	pgPolicy("Users can view their own responses", { as: "permissive", for: "select", to: ["authenticated"] }),
 ]);
 
 export const documents = pgTable("documents", {
@@ -154,44 +154,6 @@ export const bookmarks = pgTable("bookmarks", {
 	pgPolicy("Users can view their own bookmarks", { as: "permissive", for: "select", to: ["authenticated"] }),
 ]);
 
-export const quizzes = pgTable("quizzes", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	userId: uuid("user_id").notNull(),
-	title: text().notNull(),
-	description: text(),
-	topic: text().array().notNull(),
-	tags: text().array(),
-	passingScore: smallint("passing_score"),
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	documentId: bigint("document_id", { mode: "number" }),
-	type: quizType().notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	language: text().notNull(),
-	userScore: smallint("user_score"),
-	correctAnswersCount: smallint("correct_answers_count"),
-	questionsCount: smallint("questions_count").notNull(),
-	roomId: uuid("room_id"),
-}, (table) => [
-	foreignKey({
-			columns: [table.documentId],
-			foreignColumns: [documents.id],
-			name: "quizzes_document_id_fkey"
-		}).onUpdate("cascade").onDelete("cascade"),
-	foreignKey({
-			columns: [table.roomId],
-			foreignColumns: [rooms.id],
-			name: "quizzes_room_id_fkey"
-		}).onUpdate("cascade").onDelete("cascade"),
-	foreignKey({
-			columns: [table.userId],
-			foreignColumns: [users.id],
-			name: "quizzes_user_id_fkey"
-		}).onUpdate("cascade").onDelete("cascade"),
-	pgPolicy("Users can create quizzes", { as: "permissive", for: "insert", to: ["authenticated"], withCheck: sql`(( SELECT auth.uid() AS uid) = user_id)`  }),
-	pgPolicy("Users can delete their own quizzes", { as: "permissive", for: "delete", to: ["authenticated"] }),
-	pgPolicy("Users can update their own quizzes", { as: "permissive", for: "update", to: ["authenticated"] }),
-]);
-
 export const rooms = pgTable("rooms", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	hostId: uuid("host_id").notNull(),
@@ -213,4 +175,43 @@ export const rooms = pgTable("rooms", {
 	pgPolicy("Anyone can view rooms", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
 	pgPolicy("Room hosts can update rooms", { as: "permissive", for: "update", to: ["authenticated"] }),
 	pgPolicy("Users can create rooms", { as: "permissive", for: "insert", to: ["authenticated"] }),
+]);
+
+export const quizzes = pgTable("quizzes", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	userId: uuid("user_id").notNull(),
+	title: text().notNull(),
+	description: text(),
+	topic: text().array().notNull(),
+	tags: text().array(),
+	passingScore: smallint("passing_score"),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	documentId: bigint("document_id", { mode: "number" }),
+	type: quizType().notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	language: text().notNull(),
+	userScore: smallint("user_score"),
+	correctAnswersCount: smallint("correct_answers_count"),
+	questionsCount: smallint("questions_count").notNull(),
+	roomId: uuid("room_id"),
+	totalTimeTaken: smallint("total_time_taken"),
+}, (table) => [
+	foreignKey({
+			columns: [table.documentId],
+			foreignColumns: [documents.id],
+			name: "quizzes_document_id_fkey"
+		}).onUpdate("cascade").onDelete("cascade"),
+	foreignKey({
+			columns: [table.roomId],
+			foreignColumns: [rooms.id],
+			name: "quizzes_room_id_fkey"
+		}).onUpdate("cascade").onDelete("cascade"),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "quizzes_user_id_fkey"
+		}).onUpdate("cascade").onDelete("cascade"),
+	pgPolicy("Users can create quizzes", { as: "permissive", for: "insert", to: ["authenticated"], withCheck: sql`(( SELECT auth.uid() AS uid) = user_id)`  }),
+	pgPolicy("Users can delete their own quizzes", { as: "permissive", for: "delete", to: ["authenticated"] }),
+	pgPolicy("Users can update their own quizzes", { as: "permissive", for: "update", to: ["authenticated"] }),
 ]);
