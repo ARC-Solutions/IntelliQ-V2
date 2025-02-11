@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
@@ -32,7 +32,7 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
       tags: ["Quiz Submissions Singleplayer"],
       summary: "Get the questions for a single player quiz",
       description: "Get the questions for a single player quiz",
-      validateResponse: true,
+        validateResponse: true,
       responses: {
         200: {
           description: "Questions retrieved successfully",
@@ -69,9 +69,23 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
         },
         with: {
           questions: {
+            columns: {
+              text: true,
+              correctAnswer: true,
+            },
             with: {
               userResponses: {
-                where: eq(userResponses.userId, user!.id),
+                where: and(
+                  eq(userResponses.userId, user!.id),
+                  filter === "correct"
+                    ? eq(userResponses.isCorrect, true)
+                    : filter === "incorrect"
+                    ? eq(userResponses.isCorrect, false)
+                    : undefined
+                ),
+                columns: {
+                    answer: true,
+                },
               },
             },
           },
@@ -85,20 +99,8 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
       const formattedQuestions = quiz.questions.map((q) => ({
         text: q.text,
         correctAnswer: q.correctAnswer,
-        userAnswer: q.userResponses[0]?.answer!,
+        userAnswer: q.userResponses[0]?.answer,
       }));
-
-      const filteredQuestions = formattedQuestions.filter((question) => {
-        const isCorrect = question.userAnswer === question.correctAnswer;
-        switch (filter) {
-          case "correct":
-            return isCorrect;
-          case "incorrect":
-            return !isCorrect;
-          default:
-            return true;
-        }
-      });
 
       return c.json({
         quizId: quiz.id,
@@ -107,7 +109,7 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
         totalTime: quiz.totalTimeTaken,
         correctAnswersCount: quiz.correctAnswersCount,
         totalQuestions: quiz.questionsCount,
-        questions: filteredQuestions,
+        questions: formattedQuestions,
       });
     }
   )
