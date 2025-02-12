@@ -1,16 +1,36 @@
-import { Hono } from "hono";
-import { getSupabase } from "./middleware/auth.middleware";
-import { createDb } from "../../db/index";
-import { quizzes } from "../../../drizzle/schema";
-import { eq, desc, arrayOverlaps, sql, count } from "drizzle-orm";
-import { quizType } from "./schemas/common.schemas";
-import { historyQuerySchema } from "./schemas/history.schemas";
-import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { format } from "date-fns";
+import { arrayOverlaps, count, desc, eq, sql } from "drizzle-orm";
+import { Hono } from "hono";
+import { resolver, validator as zValidator } from "hono-openapi/zod";
 import prettyMilliseconds from "pretty-ms";
+import { quizzes } from "../../../drizzle/schema";
+import { createDb } from "../../db/index";
+import { getSupabase } from "./middleware/auth.middleware";
+import {
+  MEDIUM_CACHE,
+  createCacheMiddleware,
+} from "./middleware/cache.middleware";
+import { historyQuerySchema, quizHistoryResponseSchema } from "./schemas/history.schemas";
+import { describeRoute } from "hono-openapi";
 
 const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>().get(
   "/",
+  describeRoute({
+    tags: ["Quizzes"],
+    summary: "Get user's quiz history",
+    description: "Get user's quiz history with optional filtering",
+    validateResponse: true,
+    responses: {
+      200: {
+        description: "Quiz history retrieved successfully",
+        content: {
+          "application/json": {
+            schema: resolver(quizHistoryResponseSchema),
+          },
+        },
+      },
+    },
+  }),
   zValidator(
     "query",
     historyQuerySchema.transform((data) => ({
@@ -22,8 +42,9 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>().get(
         : undefined,
     }))
   ),
+  createCacheMiddleware("quiz-history", MEDIUM_CACHE),
   async (c) => {
-    const { tags, type, status, page, limit, offset } = c.req.valid("query");
+    const { tags, type, status, page, limit } = c.req.valid("query");
 
     const supabase = getSupabase(c);
     const {
@@ -66,7 +87,7 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>().get(
         .where(whereConditions.reduce((acc, condition) => acc && condition))
         .orderBy(desc(quizzes.createdAt))
         .limit(limit)
-        .offset(offset);
+        .offset((page - 1) * limit);
 
       const quizResults = results.map((quiz) => ({
         ...quiz,
