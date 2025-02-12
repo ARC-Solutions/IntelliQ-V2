@@ -8,7 +8,12 @@
     "deploy": "wrangler deploy --minify",
     "db:introspect": "infisical run --path=/apps/api -- npx drizzle-kit pull",
     "db:studio": "infisical run --path=/apps/api -- npx drizzle-kit studio",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "k6:smoke": "k6 run --env STAGE=smoke",
+    "k6:load": "k6 run --env STAGE=load",
+    "k6:stress": "k6 run --env STAGE=stress",
+    "k6:get-routes:cloud": "k6 cloud run --local-execution k6-tests/get-routes.test.js",
+    "k6:get-routes:local": "k6 run k6-tests/get-routes.test.js"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.0.20",
