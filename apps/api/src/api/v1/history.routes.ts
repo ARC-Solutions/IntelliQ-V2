@@ -10,7 +10,10 @@ import {
   MEDIUM_CACHE,
   createCacheMiddleware,
 } from "./middleware/cache.middleware";
-import { historyQuerySchema, quizHistoryResponseSchema } from "./schemas/history.schemas";
+import {
+  historyQuerySchema,
+  quizHistoryResponseSchema,
+} from "./schemas/history.schemas";
 import { describeRoute } from "hono-openapi";
 
 const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>().get(

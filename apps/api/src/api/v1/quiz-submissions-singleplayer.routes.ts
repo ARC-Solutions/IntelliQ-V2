@@ -21,6 +21,7 @@ import {
   MEDIUM_CACHE,
   createCacheMiddleware,
 } from "./middleware/cache.middleware";
+import { incrementUserCacheVersion } from "@/utils/kv-user-version";
 
 const singleplayerQuizSubmissionsRoutes = new Hono<{
   Bindings: CloudflareEnv;
@@ -32,7 +33,7 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
       tags: ["Quiz Submissions Singleplayer"],
       summary: "Get the questions for a single player quiz",
       description: "Get the questions for a single player quiz",
-        validateResponse: true,
+      validateResponse: true,
       responses: {
         200: {
           description: "Questions retrieved successfully",
@@ -84,7 +85,7 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
                     : undefined
                 ),
                 columns: {
-                    answer: true,
+                  answer: true,
                 },
               },
             },
@@ -219,6 +220,8 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
           })),
         };
       });
+
+      await incrementUserCacheVersion(c.env.IntelliQ_CACHE_VERSION, user!.id);
 
       return c.json(result, 201);
     }
