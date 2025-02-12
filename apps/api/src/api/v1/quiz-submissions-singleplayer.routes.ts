@@ -21,6 +21,7 @@ import {
   MEDIUM_CACHE,
   createCacheMiddleware,
 } from "./middleware/cache.middleware";
+import { incrementUserCacheVersion } from "../../utils/kv-user-version";
 
 const singleplayerQuizSubmissionsRoutes = new Hono<{
   Bindings: CloudflareEnv;
@@ -32,7 +33,7 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
       tags: ["Quiz Submissions Singleplayer"],
       summary: "Get the questions for a single player quiz",
       description: "Get the questions for a single player quiz",
-        validateResponse: true,
+      validateResponse: true,
       responses: {
         200: {
           description: "Questions retrieved successfully",
@@ -75,16 +76,10 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
             },
             with: {
               userResponses: {
-                where: and(
-                  eq(userResponses.userId, user!.id),
-                  filter === "correct"
-                    ? eq(userResponses.isCorrect, true)
-                    : filter === "incorrect"
-                    ? eq(userResponses.isCorrect, false)
-                    : undefined
-                ),
+                where: eq(userResponses.userId, user!.id),
                 columns: {
-                    answer: true,
+                  answer: true,
+                  isCorrect: true,
                 },
               },
             },
@@ -96,11 +91,19 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
         return c.json({ error: "Quiz not found" }, 404);
       }
 
-      const formattedQuestions = quiz.questions.map((q) => ({
-        text: q.text,
-        correctAnswer: q.correctAnswer,
-        userAnswer: q.userResponses[0]?.answer,
-      }));
+      const formattedQuestions = quiz.questions
+        .filter((q) => {
+          if (filter === "correct")
+            return q.userResponses[0]?.isCorrect === true;
+          if (filter === "incorrect")
+            return q.userResponses[0]?.isCorrect === false;
+          return true;
+        })
+        .map((q) => ({
+          text: q.text,
+          correctAnswer: q.correctAnswer,
+          userAnswer: q.userResponses[0]?.answer,
+        }));
 
       return c.json({
         quizId: quiz.id,
@@ -219,6 +222,8 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
           })),
         };
       });
+
+      await incrementUserCacheVersion(c.env.IntelliQ_CACHE_VERSION, user!.id);
 
       return c.json(result, 201);
     }

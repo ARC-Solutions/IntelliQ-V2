@@ -1,3 +1,4 @@
+import { getUserCacheVersion } from "../../../utils/kv-user-version";
 import { Context, MiddlewareHandler } from "hono";
 import { cache } from "hono/cache";
 
@@ -8,19 +9,34 @@ export const LONG_CACHE = 1800; // 30 minutes
 export const createCacheMiddleware = (
   cacheName: string,
   maxAge: number = SHORT_CACHE
-): MiddlewareHandler => {
+): MiddlewareHandler<{ Bindings: CloudflareEnv }> => {
   return cache({
     cacheName,
     cacheControl: `public, max-age=${maxAge}`,
     vary: ["Accept-Encoding", "Accept", "Authorization"],
     wait: true,
-    keyGenerator: async (c: Context) => {
-      // Include auth context in cache key to prevent sharing between users
+    keyGenerator: async (c: Context<{ Bindings: CloudflareEnv }>) => {
+      // 1. Identify user via Supabase or some auth
       const supabase = c.get("supabase");
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      return `${c.req.url}#user=${user?.id ?? "anonymous"}`;
+
+      // If no user, fallback to anonymous with a static version=1
+      if (!user) {
+        return `${c.req.url}?v=1#user=anonymous`;
+      }
+
+      // 2. Get version from KV
+      const kv = c.env.IntelliQ_CACHE_VERSION;
+      const userVersion = await getUserCacheVersion(kv, user.id);
+
+      // 3. Append ?v=<version>
+      const url = new URL(c.req.url);
+      url.searchParams.set("v", String(userVersion));
+
+      // 4. Return final key => '...&v=2#user=abc123'
+      return `${url.href}#user=${user.id}`;
     },
   });
 };
