@@ -195,6 +195,7 @@ export const quizzes = pgTable("quizzes", {
 	questionsCount: smallint("questions_count").notNull(),
 	roomId: uuid("room_id"),
 	totalTimeTaken: smallint("total_time_taken"),
+	passed: boolean(),
 }, (table) => [
 	foreignKey({
 			columns: [table.documentId],
