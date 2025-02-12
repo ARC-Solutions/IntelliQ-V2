@@ -1,4 +1,4 @@
-import { getUserCacheVersion } from "@/utils/kv-user-version";
+import { getUserCacheVersion } from "../../../utils/kv-user-version";
 import { Context, MiddlewareHandler } from "hono";
 import { cache } from "hono/cache";
 
