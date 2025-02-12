@@ -2,7 +2,6 @@
 
 interface CloudflareEnv {
 	IntelliQ_CACHE_VERSION: KVNamespace;
-	ENVIRONMENT: "development";
 	id: "e4ba004cd93a4e25853e135da77c9509";
 	DATABASE_URL: string;
 	GPT_MODEL: string;
