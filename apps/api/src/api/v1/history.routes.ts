@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { getSupabase } from "./middleware/auth.middleware";
 import { createDb } from "../../db/index";
 import { quizzes } from "../../../drizzle/schema";
-import { eq, desc, arrayOverlaps, sql } from "drizzle-orm";
+import { eq, desc, arrayOverlaps, sql, count } from "drizzle-orm";
 import { quizType } from "./schemas/common.schemas";
 import { historyQuerySchema } from "./schemas/history.schemas";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
@@ -23,7 +23,7 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>().get(
     }))
   ),
   async (c) => {
-    const { tags, type, status, page, limit } = c.req.valid("query");
+    const { tags, type, status, page, limit, offset } = c.req.valid("query");
 
     const supabase = getSupabase(c);
     const {
@@ -47,6 +47,11 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>().get(
         whereConditions.push(arrayOverlaps(quizzes.tags, tags));
       }
 
+      const [{ count: totalCount }] = await tx
+        .select({ count: count() })
+        .from(quizzes)
+        .where(whereConditions.reduce((acc, condition) => acc && condition));
+
       const results = await tx
         .select({
           id: quizzes.id,
@@ -59,9 +64,11 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>().get(
         })
         .from(quizzes)
         .where(whereConditions.reduce((acc, condition) => acc && condition))
-        .orderBy(desc(quizzes.createdAt));
+        .orderBy(desc(quizzes.createdAt))
+        .limit(limit)
+        .offset(offset);
 
-      return results.map((quiz) => ({
+      const quizResults = results.map((quiz) => ({
         ...quiz,
         date: format(quiz.date, "dd.MM.yyyy"),
         totalTime: `${prettyMilliseconds(quiz.totalTime! * 1000, {
@@ -69,6 +76,18 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>().get(
           secondsDecimalDigits: 0,
         })} min`,
       }));
+
+      return {
+        data: quizResults,
+        pagination: {
+          page,
+          limit,
+          totalItems: totalCount,
+          totalPages: Math.ceil(totalCount / limit),
+          hasNextPage: page * limit < totalCount,
+          hasPreviousPage: page > 1,
+        },
+      };
     });
 
     return c.json(userQuizzes);
