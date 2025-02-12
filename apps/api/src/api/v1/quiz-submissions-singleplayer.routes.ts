@@ -21,7 +21,7 @@ import {
   MEDIUM_CACHE,
   createCacheMiddleware,
 } from "./middleware/cache.middleware";
-import { incrementUserCacheVersion } from "@/utils/kv-user-version";
+import { incrementUserCacheVersion } from "../../utils/kv-user-version";
 
 const singleplayerQuizSubmissionsRoutes = new Hono<{
   Bindings: CloudflareEnv;
