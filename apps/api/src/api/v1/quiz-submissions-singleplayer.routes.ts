@@ -167,6 +167,7 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
             questionsCount: questions.length,
             totalTimeTaken: timeTaken,
             userScore,
+            passed: userScore >= passingScore,
           })
           .returning();
 
