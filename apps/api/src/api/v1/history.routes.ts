@@ -19,7 +19,7 @@ import { describeRoute } from "hono-openapi";
 const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>().get(
   "/",
   describeRoute({
-    tags: ["Quizzes"],
+    tags: ["History"],
     summary: "Get user's quiz history",
     description: "Get user's quiz history with optional filtering",
     validateResponse: true,
