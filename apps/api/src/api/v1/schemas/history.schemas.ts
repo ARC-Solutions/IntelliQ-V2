@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { quizType } from "./common.schemas";
 
+// REQUEST api/v1/history?type=singleplayer&status=true&tags=tag1,tag2&page=1&limit=10
 export const historyQuerySchema = z.object({
   type: quizType.optional(),
   status: z
@@ -22,14 +23,16 @@ export const historyQuerySchema = z.object({
   limit: z.coerce.number().min(1).max(100).default(10),
 });
 
+// RESPONSE api/v1/history
+// ?type=singleplayer&status=true&tags=tag1,tag2&page=1&limit=10
 export const quizHistoryItemSchema = z.object({
   id: z.string(),
   title: z.string(),
-  score: z.number(),
+  score: z.number().nullable(),
   totalTime: z.string(),
   date: z.string(),
-  correct: z.number(),
-  incorrect: z.number(),
+  correct: z.number().nullable(),
+  incorrect: z.number().nullable(),
 });
 
 export const paginationSchema = z.object({

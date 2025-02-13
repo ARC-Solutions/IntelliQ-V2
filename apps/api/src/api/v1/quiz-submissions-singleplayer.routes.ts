@@ -22,6 +22,7 @@ import {
   createCacheMiddleware,
 } from "./middleware/cache.middleware";
 import { incrementUserCacheVersion } from "../../utils/kv-user-version";
+import prettyMilliseconds from "pretty-ms";
 
 const singleplayerQuizSubmissionsRoutes = new Hono<{
   Bindings: CloudflareEnv;
@@ -109,7 +110,10 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
         quizId: quiz.id,
         quizTitle: quiz.title,
         quizScore: quiz.userScore,
-        totalTime: quiz.totalTimeTaken,
+        totalTime: prettyMilliseconds(quiz.totalTimeTaken! * 1000, {
+          colonNotation: true,
+          secondsDecimalDigits: 0,
+        }),
         correctAnswersCount: quiz.correctAnswersCount,
         totalQuestions: quiz.questionsCount,
         questions: formattedQuestions,

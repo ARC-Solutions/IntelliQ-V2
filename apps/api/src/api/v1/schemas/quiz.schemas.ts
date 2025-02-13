@@ -184,7 +184,7 @@ export const filteredQuizResponseSchema = z.object({
   quizId: z.string().uuid(),
   quizTitle: z.string(),
   quizScore: z.number(),
-  totalTime: z.number(),
+  totalTime: z.string(),
   correctAnswersCount: z.number(),
   totalQuestions: z.number(),
   questions: z.array(filteredQuizQuestionSchema),
@@ -192,5 +192,5 @@ export const filteredQuizResponseSchema = z.object({
 
 // Query parameter schema for filtering
 export const filterQuerySchema = z.object({
-  filter: z.enum(["all", "correct", "incorrect"]),
+  filter: z.enum(["all", "correct", "incorrect"]).default("all"),
 });
