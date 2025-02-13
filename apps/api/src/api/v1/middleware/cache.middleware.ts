@@ -24,19 +24,18 @@ export const createCacheMiddleware = (
 
       // If no user, fallback to anonymous with a static version=1
       if (!user) {
-        return `${c.req.url}?v=1#user=anonymous`;
+        return `${c.req.url}&v=1#user=anonymous`;
       }
 
       // 2. Get version from KV
       const kv = c.env.IntelliQ_CACHE_VERSION;
       const userVersion = await getUserCacheVersion(kv, user.id);
 
-      // 3. Append ?v=<version>
-      const url = new URL(c.req.url);
-      url.searchParams.set("v", String(userVersion));
+      // 3. Create cache key by appending version and user
+      const separator = c.req.url.includes("?") ? "&" : "?";
+      const cacheKey = `${c.req.url}${separator}v=${userVersion}#user=${user.id}`;
 
-      // 4. Return final key => '...&v=2#user=abc123'
-      return `${url.href}#user=${user.id}`;
+      return cacheKey;
     },
   });
 };
