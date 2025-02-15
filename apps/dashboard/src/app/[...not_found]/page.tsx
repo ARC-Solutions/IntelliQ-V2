@@ -63,7 +63,7 @@ export default function NotFoundPage() {
                 <GridBorder bottom overflow />
 
                 <span className="text-primary-foreground dark:text-white ">
-                  Empowering intelligence, one query at a time.
+                  Empowering intelligence, one quiz at a time.
                 </span>
               </div>
             </div>
