@@ -23,11 +23,11 @@ export default function NotFoundPage() {
                 <span className="relative !leading-[.76] text-8xl lg:text-[200px] font-bold -tracking-[.06em] -ml-[.7%]">
                   <div
                     aria-hidden
-                    className="absolute inset-0 pointer-events-none select-none opacity-10 [mask-image:linear-gradient(to_bottom,black,transparent)]"
+                    className="absolute inset-0 pointer-events-none select-none opacity-10 dark:opacity-20 [mask-image:linear-gradient(to_bottom,black,transparent)]"
                   >
                     404
                   </div>
-                  <div className="relative [-webkit-text-fill-color:transparent] [-webkit-text-stroke:hsl(var(--primary-foreground)/0.5)_1px] dark:[mask-image:linear-gradient(to_bottom,black,transparent)]">
+                  <div className="relative [-webkit-text-fill-color:transparent] [-webkit-text-stroke:hsl(var(--primary-foreground)/0.5)_1px] dark:[-webkit-text-stroke:theme(colors.customPurple)_1px] dark:[mask-image:linear-gradient(to_bottom,theme(colors.customPurple)_60%,transparent)]">
                     404
                   </div>
                 </span>
@@ -62,7 +62,7 @@ export default function NotFoundPage() {
                 <GridBorder top />
                 <GridBorder bottom overflow />
 
-                <span className="text-primary-foreground dark:text-white">
+                <span className="text-primary-foreground dark:text-white ">
                   Empowering intelligence, one query at a time.
                 </span>
               </div>
