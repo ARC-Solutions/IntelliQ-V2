@@ -83,7 +83,7 @@
     --selection-foreground: 180 4% 5%;
   }
   ::selection {
-    background: hsl(var(--selection-background) / 0.3);
+    background: hsl(var(--selection-background)/0.85);
     color: hsl(var(--selection-foreground));
   }
 }
