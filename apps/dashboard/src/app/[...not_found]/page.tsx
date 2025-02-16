@@ -7,6 +7,8 @@ import { ChevronRight, Brain } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+export const runtime = "edge";
+
 export default function NotFoundPage() {
   const [number, setNumber] = useState(0);
 
