@@ -19,7 +19,6 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@drizzle/*": ["./drizzle/*"]
     },
     "types": ["./cloudflare-env.d.ts", "@cloudflare/workers-types"]
   },
