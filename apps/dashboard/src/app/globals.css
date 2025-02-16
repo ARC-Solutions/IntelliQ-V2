@@ -43,6 +43,8 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --selection-background: 255 100% 88%;
+    --selection-foreground: 240 5.9% 10%;
   }
   .dark {
     --background: 0 0% 2%;
@@ -77,9 +79,12 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --selection-background: 255 100% 86%;
+    --selection-foreground: 180 4% 5%;
   }
   ::selection {
-    @apply bg-primary/30 text-primary;
+    background: hsl(var(--selection-background) / 0.3);
+    color: hsl(var(--selection-foreground));
   }
 }
 
@@ -110,83 +115,6 @@
 
 .clip-cube {
   clip-path: polygon(0 0, 100% 0, 100% 70%, 60% 100%, 0 100%);
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-.animate-float-1 {
-  animation: float 4s ease-in-out infinite;
-}
-.animate-float-2 {
-  animation: float 6s ease-in-out infinite;
-}
-.animate-float-3 {
-  animation: float 5s ease-in-out infinite;
-}
-.animate-float-4 {
-  animation: float 7s ease-in-out infinite;
-}
-.animate-float-5 {
-  animation: float 8s ease-in-out infinite;
-}
-
-@keyframes fade-in-down {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in-down {
-  animation: fade-in-down 0.5s ease-out forwards;
-}
-
-@keyframes brain-float {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  20% {
-    opacity: 0.2;
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-  80% {
-    opacity: 0.2;
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-}
-
-.animate-brain-1 {
-  animation: brain-float 4s ease-in-out infinite;
-}
-.animate-brain-2 {
-  animation: brain-float 6s ease-in-out infinite;
-}
-.animate-brain-3 {
-  animation: brain-float 5s ease-in-out infinite;
-}
-.animate-brain-4 {
-  animation: brain-float 7s ease-in-out infinite;
-}
-.animate-brain-5 {
-  animation: brain-float 8s ease-in-out infinite;
 }
 
 @keyframes fade-in-down {
@@ -223,12 +151,6 @@
   }
 }
 
-.dark .animate-static-brain {
-  animation: static-brain 4s ease-in-out infinite;
-  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.1));
-}
-
 .animate-static-brain {
   animation: static-brain 4s ease-in-out infinite;
 }
-
