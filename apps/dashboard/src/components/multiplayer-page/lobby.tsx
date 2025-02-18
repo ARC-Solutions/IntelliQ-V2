@@ -239,6 +239,9 @@ export default function Lobby() {
           case 'language':
             setLanguage(value as SupportedLanguages);
             break;
+          case 'showCorrectAnswers':
+            setShowCorrectAnswers(value);
+            break;
         }
       })
       .on('broadcast', { event: 'quiz-start' }, ({ payload }) => {
@@ -298,7 +301,7 @@ export default function Lobby() {
   };
 
   const updateGameSettings = async (
-    type: 'numQuestions' | 'timeLimit' | 'topic' | 'language',
+    type: 'numQuestions' | 'timeLimit' | 'topic' | 'language' | 'showCorrectAnswers',
     value: number | string | boolean,
   ) => {
     if (!channel || !isCreator) return;
@@ -313,7 +316,8 @@ export default function Lobby() {
         type === "timeLimit" ||
         type === "numQuestions" ||
         type === "language" ||
-        type === "topic"
+        type === "topic" ||
+        type === "showCorrectAnswers"
       ) {
         await client.api.v1.rooms[":roomCode"]["settings"].$patch({
           param: {
@@ -339,8 +343,8 @@ export default function Lobby() {
   // debounce the updateGameSettings function to prevent multiple API requests
   const debouncedUpdateSettings = useDebouncedCallback(
     (
-      type: 'numQuestions' | 'timeLimit' | 'topic' | 'language',
-      value: number | string | SupportedLanguages,
+      type: 'numQuestions' | 'timeLimit' | 'topic' | 'language' | 'showCorrectAnswers',
+      value: number | string | SupportedLanguages | boolean,
     ) => {
       updateGameSettings(type, value);
     },
@@ -605,9 +609,22 @@ export default function Lobby() {
                         </TooltipProvider>
                       </Label>
                       <Switch
+                        disabled={!isCreator}
                         id='showCorrectAnswers'
                         checked={showCorrectAnswers}
-                        onCheckedChange={setShowCorrectAnswers}
+                        onCheckedChange={async (checked) => {
+                          setShowCorrectAnswers(checked);
+                          debouncedUpdateSettings('showCorrectAnswers', checked);
+                          
+                          // Broadcast the change to all players
+                          if (channel && isCreator) {
+                            await channel.send({
+                              type: 'broadcast',
+                              event: 'settings-update',
+                              payload: { type: 'showCorrectAnswers', value: checked },
+                            });
+                          }
+                        }}
                       />
                     </div>
                   </div>
