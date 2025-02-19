@@ -216,3 +216,30 @@ export const quizzes = pgTable("quizzes", {
 	pgPolicy("Users can delete their own quizzes", { as: "permissive", for: "delete", to: ["authenticated"] }),
 	pgPolicy("Users can update their own quizzes", { as: "permissive", for: "update", to: ["authenticated"] }),
 ]);
+
+export const sharedQuizzes = pgTable("shared_quizzes", {
+	shareId: uuid("share_id").defaultRandom().primaryKey().notNull(),
+	userId: uuid("user_id").notNull(),
+	quizId: uuid("quiz_id").notNull(),
+	roomId: uuid("room_id"),
+	type: quizType().notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	isPublic: boolean("is_public").default(true).notNull(),
+	isAnonymous: boolean("is_anonymous").default(false).notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.quizId],
+			foreignColumns: [quizzes.id],
+			name: "shared_quizzes_quiz_id_fkey"
+		}).onUpdate("cascade").onDelete("cascade"),
+	foreignKey({
+			columns: [table.roomId],
+			foreignColumns: [rooms.id],
+			name: "shared_quizzes_room_id_fkey"
+		}).onUpdate("cascade").onDelete("cascade"),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "shared_quizzes_user_id_fkey"
+		}).onUpdate("cascade").onDelete("cascade"),
+]);

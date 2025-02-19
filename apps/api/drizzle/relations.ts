@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { quizzes, multiplayerQuizSubmissions, rooms, users, userUsageData, questions, userResponses, documents, bookmarks } from "./schema";
+import { quizzes, multiplayerQuizSubmissions, rooms, users, userUsageData, questions, userResponses, documents, bookmarks, sharedQuizzes } from "./schema";
 
 export const multiplayerQuizSubmissionsRelations = relations(multiplayerQuizSubmissions, ({one}) => ({
 	quiz: one(quizzes, {
@@ -33,6 +33,7 @@ export const quizzesRelations = relations(quizzes, ({one, many}) => ({
 		fields: [quizzes.userId],
 		references: [users.id]
 	}),
+	sharedQuizzes: many(sharedQuizzes),
 }));
 
 export const roomsRelations = relations(rooms, ({one, many}) => ({
@@ -43,6 +44,7 @@ export const roomsRelations = relations(rooms, ({one, many}) => ({
 		references: [users.id]
 	}),
 	quizzes: many(quizzes),
+	sharedQuizzes: many(sharedQuizzes),
 }));
 
 export const usersRelations = relations(users, ({many}) => ({
@@ -53,6 +55,7 @@ export const usersRelations = relations(users, ({many}) => ({
 	bookmarks: many(bookmarks),
 	rooms: many(rooms),
 	quizzes: many(quizzes),
+	sharedQuizzes: many(sharedQuizzes),
 }));
 
 export const userUsageDataRelations = relations(userUsageData, ({one}) => ({
@@ -104,6 +107,21 @@ export const bookmarksRelations = relations(bookmarks, ({one}) => ({
 	}),
 	user: one(users, {
 		fields: [bookmarks.userId],
+		references: [users.id]
+	}),
+}));
+
+export const sharedQuizzesRelations = relations(sharedQuizzes, ({one}) => ({
+	quiz: one(quizzes, {
+		fields: [sharedQuizzes.quizId],
+		references: [quizzes.id]
+	}),
+	room: one(rooms, {
+		fields: [sharedQuizzes.roomId],
+		references: [rooms.id]
+	}),
+	user: one(users, {
+		fields: [sharedQuizzes.userId],
 		references: [users.id]
 	}),
 }));
