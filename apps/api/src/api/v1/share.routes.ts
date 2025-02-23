@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { createDb } from "../../db";
 import { getSupabase } from "./middleware/auth.middleware";
-import { quizzes, sharedQuizzes } from "@drizzle/schema";
+import { quizzes, sharedQuizzes } from "../../../drizzle/schema";
 import { quizType } from "./schemas/common.schemas";
 import { eq, and } from "drizzle-orm";
 import {
