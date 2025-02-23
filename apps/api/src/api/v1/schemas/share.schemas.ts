@@ -55,3 +55,11 @@ export const updateShareSingleplayerQuizResponseSchema = z.object({
     passed: z.boolean(),
   }),
 });
+
+// GET /api/v1/share/UUID
+export const getShareSingleplayerQuizResponseSchema =
+  updateShareSingleplayerQuizResponseSchema.extend({
+    quiz: updateShareSingleplayerQuizResponseSchema.shape.quiz.extend({
+      createdBy: z.string(),
+    }),
+  });

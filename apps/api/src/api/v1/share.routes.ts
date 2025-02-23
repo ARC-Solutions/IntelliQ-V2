@@ -17,6 +17,7 @@ import {
   updateShareSingleplayerQuizRequestSchema,
   updateShareSingleplayerQuizResponseSchema,
   updateShareSingleplayerQuizRequestSchemaParam,
+  getShareSingleplayerQuizResponseSchema,
 } from "./schemas/share.schemas";
 
 const shareRoutes = new Hono<{ Bindings: CloudflareEnv }>()
@@ -150,9 +151,26 @@ const shareRoutes = new Hono<{ Bindings: CloudflareEnv }>()
   )
   .get(
     "/:shareId",
+    describeRoute({
+      tags: ["Share"],
+      summary: "Get a singleplayer quiz share",
+      description: "Get a singleplayer quiz share",
+      validateResponse: true,
+      responses: {
+        200: {
+          description: "Quiz share retrieved successfully",
+          content: {
+            "application/json": {
+              schema: resolver(getShareSingleplayerQuizResponseSchema),
+            },
+          },
+        },
+      },
+    }),
+    zValidator("param", updateShareSingleplayerQuizRequestSchemaParam),
     createCacheMiddleware("share-quiz", MEDIUM_CACHE),
     async (c) => {
-      const { shareId } = c.req.param();
+      const { shareId } = c.req.valid("param");
       const db = await createDb(c);
 
       const sharedQuiz = await db.query.sharedQuizzes.findFirst({
