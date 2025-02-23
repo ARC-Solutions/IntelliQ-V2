@@ -2,6 +2,8 @@
 
 [App](https://app.intelliq.dev)
 
+[API Documentation](https://docs.intelliq.dev/)
+
 [Landing Page](https://beta.intelliq.dev)
 
 [Presentation Page](https://presentation.intelliq.dev)
