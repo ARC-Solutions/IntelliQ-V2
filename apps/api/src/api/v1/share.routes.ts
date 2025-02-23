@@ -14,6 +14,9 @@ import { describeRoute } from "hono-openapi";
 import {
   shareSingleplayerQuizResponseSchema,
   shareSingleplayerQuizRequestSchema,
+  updateShareSingleplayerQuizRequestSchema,
+  updateShareSingleplayerQuizResponseSchema,
+  updateShareSingleplayerQuizRequestSchemaParam,
 } from "./schemas/share.schemas";
 
 const shareRoutes = new Hono<{ Bindings: CloudflareEnv }>()
@@ -84,46 +87,67 @@ const shareRoutes = new Hono<{ Bindings: CloudflareEnv }>()
       );
     }
   )
-  .patch("/:shareId", async (c) => {
-    const { shareId } = c.req.param();
-    const { isPublic, isAnonymous } = await c.req.json();
+  .patch(
+    "/:shareId",
+    describeRoute({
+      tags: ["Share"],
+      summary: "Update a singleplayer quiz share",
+      description: "Update a singleplayer quiz share",
+      validateResponse: true,
+      responses: {
+        200: {
+          description: "Quiz share updated successfully",
+          content: {
+            "application/json": {
+              schema: resolver(updateShareSingleplayerQuizResponseSchema),
+            },
+          },
+        },
+      },
+    }),
+    zValidator("json", updateShareSingleplayerQuizRequestSchema),
+    zValidator("param", updateShareSingleplayerQuizRequestSchemaParam),
+    async (c) => {
+      const { shareId } = c.req.valid("param");
+      const { isPublic, isAnonymous } = c.req.valid("json");
 
-    const supabase = getSupabase(c);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      const supabase = getSupabase(c);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    const db = await createDb(c);
+      const db = await createDb(c);
 
-    const [updatedShare] = await db
-      .update(sharedQuizzes)
-      .set({ isPublic: isPublic, isAnonymous: isAnonymous })
-      .where(
-        and(
-          eq(sharedQuizzes.shareId, shareId),
-          eq(sharedQuizzes.userId, user!.id)
+      const [updatedShare] = await db
+        .update(sharedQuizzes)
+        .set({ isPublic: isPublic, isAnonymous: isAnonymous })
+        .where(
+          and(
+            eq(sharedQuizzes.shareId, shareId),
+            eq(sharedQuizzes.userId, user!.id)
+          )
         )
-      )
-      .returning();
+        .returning();
 
-    const quiz = await db.query.quizzes.findFirst({
-      where: eq(quizzes.id, updatedShare.quizId),
-    });
+      const quiz = await db.query.quizzes.findFirst({
+        where: eq(quizzes.id, updatedShare.quizId),
+      });
 
-    const shareUrl = new URL(c.req.url);
-    shareUrl.pathname = `/api/v1/share/${updatedShare.shareId}`;
+      const shareUrl = new URL(c.req.url);
+      shareUrl.pathname = `/api/v1/share/${updatedShare.shareId}`;
 
-    await incrementUserCacheVersion(c.env.IntelliQ_CACHE_VERSION, user!.id);
+      await incrementUserCacheVersion(c.env.IntelliQ_CACHE_VERSION, user!.id);
 
-    return c.json({
-      shareId: updatedShare.shareId,
-      shareUrl: shareUrl.toString(),
-      isPublic: updatedShare.isPublic,
-      isAnonymous: updatedShare.isAnonymous,
-      type: updatedShare.type,
-      quiz,
-    });
-  })
+      return c.json({
+        shareId: updatedShare.shareId,
+        shareUrl: shareUrl.toString(),
+        isPublic: updatedShare.isPublic,
+        isAnonymous: updatedShare.isAnonymous,
+        type: updatedShare.type,
+        quiz,
+      });
+    }
+  )
   .get(
     "/:shareId",
     createCacheMiddleware("share-quiz", MEDIUM_CACHE),
