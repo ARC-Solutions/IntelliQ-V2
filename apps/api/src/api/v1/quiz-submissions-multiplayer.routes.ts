@@ -24,6 +24,7 @@ import {
   MEDIUM_CACHE,
   createCacheMiddleware,
 } from "./middleware/cache.middleware";
+import { HTTPException } from "hono/http-exception";
 
 const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
   .post(
@@ -157,7 +158,9 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
         });
 
         if (!quiz) {
-          throw new Error("No quiz found for this room");
+          throw new HTTPException(404, {
+            message: "No quiz found for this room",
+          });
         }
 
         // Verify all questions exist and belong to this quiz
@@ -180,7 +183,9 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           const correctAnswer = questionMap.get(ans.questionId);
 
           if (!correctAnswer) {
-            throw new Error(`Invalid question ID: ${ans.questionId}`);
+            throw new HTTPException(400, {
+              message: `Invalid question ID: ${ans.questionId}`,
+            });
           }
 
           const isCorrect = ans.userAnswer === correctAnswer;
@@ -307,7 +312,9 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           });
 
           if (!quiz) {
-            throw new Error("No quiz found for this room");
+            throw new HTTPException(404, {
+              message: "No quiz found for this room",
+            });
           }
 
           // get all questions for this quiz
