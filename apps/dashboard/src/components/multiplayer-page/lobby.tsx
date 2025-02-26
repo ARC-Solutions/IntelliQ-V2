@@ -287,8 +287,8 @@ export default function Lobby() {
   };
 
   const updateGameSettings = async (
-    type: 'numQuestions' | 'timeLimit' | 'topic' | 'language',
-    value: number | string | boolean,
+    type: 'numQuestions' | 'timeLimit' | 'topic' | 'language' | 'showAnswers',
+    value: number | string | SupportedLanguages | boolean,
   ) => {
     if (!channel || !isCreator) return;
 
@@ -328,8 +328,8 @@ export default function Lobby() {
   // debounce the updateGameSettings function to prevent multiple API requests
   const debouncedUpdateSettings = useDebouncedCallback(
     (
-      type: 'numQuestions' | 'timeLimit' | 'topic' | 'language',
-      value: number | string | SupportedLanguages,
+      type: 'numQuestions' | 'timeLimit' | 'topic' | 'language' | 'showAnswers',
+      value: number | string | SupportedLanguages | boolean,
     ) => {
       updateGameSettings(type, value);
     },
