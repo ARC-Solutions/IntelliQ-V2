@@ -55,10 +55,10 @@ export default function Hero() {
 
         <div
           className="absolute transform-gpu opacity-86 pointer-events-none 
-          
+          -right-[20px] -top-[-350px] scale-[1.25]
           sm:-right-[350px] sm:scale-[0.45] sm:-top-[200px]
           md:-top-[-25px] md:-right-[630px] md:scale-[0.35] md:mt-0
-          lg:-right-[575px] lg:scale-[0.45] lg:-top-[-20px]
+          lg:-right-[600px] lg:scale-[0.40] lg:-top-[400px]
           xl:-right-[600px] xl:scale-[0.6] xl:-top-[200px] xl:rotate-[4deg]"
         >
           <div className="clip-cube">
