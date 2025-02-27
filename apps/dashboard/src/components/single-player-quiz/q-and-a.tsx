@@ -4,6 +4,7 @@ import { Quiz } from '@/contexts/quiz-context';
 import Answer from '@/components/single-player-quiz/answer';
 import { Button } from '@/components/ui/button';
 import { useQuizLogic } from '@/contexts/quiz-logic-context';
+import { useMultiplayer } from '@/contexts/multiplayer-context';
 
 type Props = {
   quiz: Quiz[];
@@ -21,13 +22,14 @@ const QAndA = ({
   const questionsAndAnswers = quiz[questionNumber] as Quiz;
   let { options: answers, text: question } = questionsAndAnswers;
   const { showCorrectAnswer } = useQuizLogic();
+  const { showCorrectAnswers } = useMultiplayer(); 
   return (
     <section>
       <h1 className='w-full items-center rounded-md bg-primary p-6 text-center text-base font-bold text-black sm:text-2xl'>
         {question}
       </h1>
       <div className='mt-4 w-auto'>
-        {showCorrectAnswer ? (
+        {(showCorrectAnswer && showCorrectAnswers) ? ( 
           <>
             <button
               className={`group my-3 w-full justify-start rounded-lg p-4 text-sm font-normal text-white sm:text-lg ${

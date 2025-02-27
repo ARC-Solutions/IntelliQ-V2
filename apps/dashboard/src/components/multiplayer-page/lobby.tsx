@@ -26,23 +26,32 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Slider } from "@/components/ui/slider";
-import { useToast } from "@/components/ui/use-toast";
-import { Player, useMultiplayer } from "@/contexts/multiplayer-context";
-import { useAuth } from "@/contexts/user-context";
-import { createClient } from "@/lib/supabase/supabase-client-side";
-import { createApiClient } from "@/utils/api-client";
-import NumberFlow, { continuous } from "@number-flow/react";
-import { RealtimeChannel } from "@supabase/supabase-js";
-import { Brain, Crown, Sparkles, UsersRound, Zap } from "lucide-react";
-import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { RoomResponse, RoomDetailsResponse, QuizType } from "@intelliq/api";
-import { useDebouncedCallback } from "use-debounce";
-import { SupportedLanguages, useQuiz } from "@/contexts/quiz-context";
-import { languages, QuizData } from "../../contexts/quiz-creation-context";
+} from '@/components/ui/alert-dialog';
+import { Slider } from '@/components/ui/slider';
+import { useToast } from '@/components/ui/use-toast';
+import { Player, useMultiplayer } from '@/contexts/multiplayer-context';
+import { useAuth } from '@/contexts/user-context';
+import { createClient } from '@/lib/supabase/supabase-client-side';
+import { createApiClient } from '@/utils/api-client';
+import NumberFlow, { continuous } from '@number-flow/react';
+import { RealtimeChannel } from '@supabase/supabase-js';
+import { Brain, Crown, Sparkles, UsersRound, Zap } from 'lucide-react';
+import Image from 'next/image';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { RoomResponse, RoomDetailsResponse, QuizType } from '@intelliq/api';
+import { useDebouncedCallback } from 'use-debounce';
+import { SupportedLanguages, useQuiz } from '@/contexts/quiz-context';
+import { languages, QuizData } from '../../contexts/quiz-creation-context';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Switch } from '@/components/ui/switch';
+import { HelpCircle } from 'lucide-react';
+
 interface PresenceData {
   currentUser: {
     id: string;
@@ -53,6 +62,7 @@ interface PresenceData {
   maxPlayers: number;
   presence_ref: string;
 }
+
 export default function Lobby() {
   const { currentUser } = useAuth();
   const {
@@ -72,6 +82,8 @@ export default function Lobby() {
     setTopic,
     language,
     setLanguage,
+    showCorrectAnswers,
+    setShowCorrectAnswers,
   } = useMultiplayer();
   const { isLoading, fetchQuestions, fetchingFinished, dispatch, currentQuiz } =
     useQuiz();
@@ -235,6 +247,9 @@ export default function Lobby() {
           case "language":
             setLanguage(value as SupportedLanguages);
             break;
+          case 'showCorrectAnswers':
+            setShowCorrectAnswers(value);
+            break;
         }
       })
       .on("broadcast", { event: "quiz-start" }, ({ payload }) => {
@@ -298,8 +313,8 @@ export default function Lobby() {
   };
 
   const updateGameSettings = async (
-    type: "numQuestions" | "timeLimit" | "topic" | "language",
-    value: number | string | boolean
+    type: 'numQuestions' | 'timeLimit' | 'topic' | 'language' | 'showAnswers',
+    value: number | string | boolean,
   ) => {
     if (!channel || !isCreator) return;
 
@@ -313,7 +328,8 @@ export default function Lobby() {
         type === "timeLimit" ||
         type === "numQuestions" ||
         type === "language" ||
-        type === "topic"
+        type === "topic" ||
+        type === "showAnswers"
       ) {
         await client.api.v1.rooms[":roomCode"]["settings"].$patch({
           param: {
@@ -339,9 +355,8 @@ export default function Lobby() {
   // debounce the updateGameSettings function to prevent multiple API requests
   const debouncedUpdateSettings = useDebouncedCallback(
     (
-
-      type: "numQuestions" | "timeLimit" | "topic" | "language",
-      value: number | string | SupportedLanguages
+      type: 'numQuestions' | 'timeLimit' | 'topic' | 'language' | 'showAnswers',
+      value: number | string | SupportedLanguages | boolean
     ) => {
       updateGameSettings(type, value);
     },
@@ -609,15 +624,45 @@ export default function Lobby() {
                       <span className="text-sm text-gray-400">60s</span>
                     </div>
                   </div>
-
-                  <div className="space-y-4">
-                    <div className="flex">
-                      <Label
-                        htmlFor="quizLanguage"
-                        className="flex items-center space-x-2"
-                      >
+                  <div className='space-y-4'>
+                    <div className='flex items-center justify-between'>
+                      <Label htmlFor='showCorrectAnswers' className='flex items-center space-x-2'>
+                        <span>Show Correct Answers</span>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <HelpCircle size={16} className='text-gray-500' />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Display correct answers between questions</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </Label>
+                      <Switch
+                        disabled={!isCreator}
+                        id='showCorrectAnswers'
+                        checked={showCorrectAnswers}
+                        onCheckedChange={async (checked) => {
+                          setShowCorrectAnswers(checked);
+                          debouncedUpdateSettings('showAnswers', checked);
+                          
+                          // Broadcast the change to all players
+                          if (channel && isCreator) {
+                            await channel.send({
+                              type: 'broadcast',
+                              event: 'settings-update',
+                              payload: { type: 'showCorrectAnswers', value: checked },
+                            });
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className='space-y-4'>
+                    <div className='flex'>
+                      <Label htmlFor='quizLanguage' className='flex items-center space-x-2'>
                         <span>Language</span>
-
                         <Select
                           disabled={!isCreator}
                           onValueChange={(value: SupportedLanguages) => {

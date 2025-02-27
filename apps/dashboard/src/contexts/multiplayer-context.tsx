@@ -44,6 +44,8 @@ type MultiContextType = {
   setTopic: (topic: string) => void;
   language: string;
   setLanguage: (language: SupportedLanguages) => void;
+  showCorrectAnswers: boolean;
+  setShowCorrectAnswers: (value: boolean) => void;
 };
 type GameState = {
   status: 'idle' | 'started' | 'finished';
@@ -63,6 +65,7 @@ export const MultiplayerProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [timeLimit, setTimeLimit] = useState<number>(25);
   const [topic, setTopic] = useState<string>('');
   const [language, setLanguage] = useState<SupportedLanguages>(SupportedLanguages.English);
+  const [showCorrectAnswers, setShowCorrectAnswers] = useState<boolean>(true);
 
   return (
     <MultiplayerContext.Provider
@@ -83,6 +86,8 @@ export const MultiplayerProvider: React.FC<{ children: ReactNode }> = ({ childre
         setTopic,
         language,
         setLanguage,
+        showCorrectAnswers,
+        setShowCorrectAnswers,
       }}
     >
       {children}
