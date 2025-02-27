@@ -51,7 +51,8 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
     zValidator("json", quizSubmissionMultiplayerRequestSchema),
     zValidator("param", z.object({ roomId: z.string().uuid() })),
     async (c) => {
-      const validatedData = c.req.valid("json");
+      const { quizTitle, quizTopics, language, questions } =
+        c.req.valid("json");
       const { roomId } = c.req.valid("param");
 
       const supabase = getSupabase(c);
@@ -66,8 +67,6 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           const room = (await tx.query.rooms.findFirst({
             where: (rooms) => eq(rooms.id, roomId),
           }))!;
-
-          const { quizTitle, quizTopics, language, questions } = validatedData;
 
           const [createdQuiz] = await tx
             .insert(quizzes)
@@ -181,7 +180,6 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
 
         let correctCount = 0;
 
-        // Process each answer
         const ans = { questionId, userAnswer, timeTaken }; // answers is now a single object
         const correctAnswer = questionMap.get(ans.questionId);
 
@@ -195,7 +193,6 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
         if (isCorrect) correctCount++;
 
         // Calculate points based on time taken
-        // We'll use a slightly modified version of the formula:
         // ⌊ ( 1 - (( responseTime / questionTimer ) / 2.2 )) * pointsPossible ⌉
 
         // Get the room to access the timeLimit
@@ -215,7 +212,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
         // Define constants
         const QUESTION_TIMER_MS = room.timeLimit * 1000; // Convert seconds to milliseconds
         const MAX_POINTS = 1000;
-        const DIVISOR = 2.2; // Slightly modified from the original formula
+        const DIVISOR = 2.2;
 
         // Calculate points only if the answer is correct
         let timeBasedPoints = 0;
@@ -289,29 +286,69 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
         const currentScore = latestSubmission?.userScore || 0;
         const newScore = currentScore + (isCorrect ? timeBasedPoints : 0);
 
-        // Insert the new submission with the updated score
-        const [submission] = await tx
-          .insert(multiplayerQuizSubmissions)
-          .values({
-            userId: user!.id,
-            quizId: quiz.id,
-            roomId: roomId,
-            userScore: newScore,
-            correctAnswersCount: finalCorrectCount,
-          })
-          .returning({
-            id: multiplayerQuizSubmissions.id,
-            userId: multiplayerQuizSubmissions.userId,
-            quizId: multiplayerQuizSubmissions.quizId,
-            roomId: multiplayerQuizSubmissions.roomId,
-            userScore: multiplayerQuizSubmissions.userScore,
-            correctAnswersCount: multiplayerQuizSubmissions.correctAnswersCount,
-            createdAt: multiplayerQuizSubmissions.createdAt,
+        // Check if a submission already exists
+        const existingSubmission =
+          await tx.query.multiplayerQuizSubmissions.findFirst({
+            where: (submissions) =>
+              eq(submissions.userId, user!.id) &&
+              eq(submissions.quizId, quiz.id) &&
+              eq(submissions.roomId, roomId),
+            columns: {
+              id: true,
+            },
           });
+
+        let finalSubmission;
+
+        if (existingSubmission) {
+          // Update existing submission
+          const [updatedSubmission] = await tx
+            .update(multiplayerQuizSubmissions)
+            .set({
+              userScore: newScore,
+              correctAnswersCount: finalCorrectCount,
+            })
+            .where(eq(multiplayerQuizSubmissions.id, existingSubmission.id))
+            .returning({
+              id: multiplayerQuizSubmissions.id,
+              userId: multiplayerQuizSubmissions.userId,
+              quizId: multiplayerQuizSubmissions.quizId,
+              roomId: multiplayerQuizSubmissions.roomId,
+              userScore: multiplayerQuizSubmissions.userScore,
+              correctAnswersCount:
+                multiplayerQuizSubmissions.correctAnswersCount,
+              createdAt: multiplayerQuizSubmissions.createdAt,
+            });
+
+          finalSubmission = updatedSubmission;
+        } else {
+          // Insert new submission
+          const [newSubmission] = await tx
+            .insert(multiplayerQuizSubmissions)
+            .values({
+              userId: user!.id,
+              quizId: quiz.id,
+              roomId: roomId,
+              userScore: newScore,
+              correctAnswersCount: finalCorrectCount,
+            })
+            .returning({
+              id: multiplayerQuizSubmissions.id,
+              userId: multiplayerQuizSubmissions.userId,
+              quizId: multiplayerQuizSubmissions.quizId,
+              roomId: multiplayerQuizSubmissions.roomId,
+              userScore: multiplayerQuizSubmissions.userScore,
+              correctAnswersCount:
+                multiplayerQuizSubmissions.correctAnswersCount,
+              createdAt: multiplayerQuizSubmissions.createdAt,
+            });
+
+          finalSubmission = newSubmission;
+        }
 
         return {
           success: true,
-          submission,
+          submission: finalSubmission,
           calculatedScore: isCorrect ? timeBasedPoints : 0,
           totalQuestions: quiz.questionsCount,
         };
