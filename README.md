@@ -2,7 +2,9 @@
 
 [App](https://app.intelliq.dev)
 
-[Landing Page](https://main.d35vbuyg2g068i.amplifyapp.com/)
+[API Documentation](https://docs.intelliq.dev/)
+
+[Landing Page](https://beta.intelliq.dev)
 
 [Presentation Page](https://presentation.intelliq.dev)
 

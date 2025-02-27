@@ -14,6 +14,7 @@ import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { eq } from "drizzle-orm";
 import { rooms } from "../../../drizzle/schema";
 import { z } from "zod";
+import { HTTPException } from "hono/http-exception";
 
 const app = new Hono<{ Bindings: CloudflareEnv }>()
   .get(
@@ -49,11 +50,12 @@ const app = new Hono<{ Bindings: CloudflareEnv }>()
       const { roomCode } = c.req.valid("param");
 
       const db = await createDb(c);
+
       const { maxPlayers } = (await db.query.rooms.findFirst({
-        where: (rooms) => eq(rooms.code, roomCode),
+        where: eq(rooms.code, roomCode),
       }))!;
 
-      return c.json({ max_players: maxPlayers });
+      return c.json({ maxPlayers: maxPlayers });
     }
   )
   .get(
@@ -135,7 +137,9 @@ const app = new Hono<{ Bindings: CloudflareEnv }>()
         });
 
       if (!updatedSettings[0]) {
-        return c.json({ error: "Failed to update room settings" }, 400);
+        throw new HTTPException(400, {
+          message: "Failed to update room settings",
+        });
       }
 
       return c.json(updatedSettings[0]);

@@ -1,11 +1,17 @@
-import { Hono } from 'hono';
-import quizzes from './quizzes.routes';
-import quizSubmissions from './quiz-submissions.routes';
-import rooms from './rooms.routes';
+import { Hono } from "hono";
+import quizzes from "./quizzes.routes";
+import multiplayerQuizSubmissionsRoutes from "./quiz-submissions-multiplayer.routes";
+import singleplayerQuizSubmissionsRoutes from "./quiz-submissions-singleplayer.routes";
+import rooms from "./rooms.routes";
+import historyRoutes from "./history.routes";
+import shareRoutes from "./share.routes";
 
 const v1 = new Hono<{ Bindings: CloudflareEnv }>()
-  .route('/quizzes', quizzes)
-  .route('/quiz-submissions', quizSubmissions)
-  .route('/rooms', rooms)
+  .route("/quizzes", quizzes)
+  .route("/quiz-submissions/multiplayer", multiplayerQuizSubmissionsRoutes)
+  .route("/quiz-submissions/singleplayer", singleplayerQuizSubmissionsRoutes)
+  .route("/rooms", rooms)
+  .route("/history", historyRoutes)
+  .route("/share", shareRoutes);
 
 export default v1;

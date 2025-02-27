@@ -119,3 +119,78 @@ export const quizSubmissionRequestSchema = z.object({
   score: z.number(),
   answers: z.array(quizSubmissionAnswerSchema),
 });
+
+export const quizQuestionResponseSchema = z.object({
+  id: z.string().uuid(),
+  questionTitle: z.string(),
+  text: z.string(),
+  options: z.array(z.string()),
+});
+
+export const quizQuestionsResponseSchema = z.object({
+  quizId: z.string().uuid(),
+  quizTitle: z.string(),
+  questions: z.array(quizQuestionResponseSchema),
+});
+
+// Schema for single player quiz submission question
+const singlePlayerQuizSubmissionQuestionSchema = z.object({
+  text: z.string(),
+  correctAnswer: z.string(),
+  userAnswer: z.string(),
+  options: z.array(z.string()),
+});
+
+// Schema for single player quiz submission request
+export const singlePlayerQuizSubmissionRequestSchema = z.object({
+  quizTitle: z.string(),
+  description: z.string(),
+  topic: z.array(z.string()),
+  tags: z.array(z.string()),
+  passingScore: z.number(),
+  language: z.string(),
+  userScore: z.number(),
+  questions: z.array(singlePlayerQuizSubmissionQuestionSchema),
+  timeTaken: z.number(),
+});
+
+// Schema for single player quiz submission response question
+const singlePlayerQuizSubmissionResponseQuestionSchema = z.object({
+  text: z.string(),
+  correctAnswer: z.string(),
+  userAnswer: z.string(),
+});
+
+// Schema for single player quiz submission response
+export const singlePlayerQuizSubmissionResponseSchema = z.object({
+  quizId: z.string().uuid(),
+  quizTitle: z.string(),
+  quizScore: z.number(),
+  totalTime: z.number(),
+  correctAnswersCount: z.number(),
+  totalQuestions: z.number(),
+  questions: z.array(singlePlayerQuizSubmissionResponseQuestionSchema),
+});
+
+// Schema for filtered quiz question response
+const filteredQuizQuestionSchema = z.object({
+  text: z.string(),
+  correctAnswer: z.string(),
+  userAnswer: z.string(),
+});
+
+// Schema for filtered quiz response
+export const filteredQuizResponseSchema = z.object({
+  quizId: z.string().uuid(),
+  quizTitle: z.string(),
+  quizScore: z.number(),
+  totalTime: z.string(),
+  correctAnswersCount: z.number(),
+  totalQuestions: z.number(),
+  questions: z.array(filteredQuizQuestionSchema),
+});
+
+// Query parameter schema for filtering
+export const filterQuerySchema = z.object({
+  filter: z.enum(["all", "correct", "incorrect"]).default("all"),
+});

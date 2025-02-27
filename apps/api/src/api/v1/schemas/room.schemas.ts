@@ -5,7 +5,7 @@ export const roomSchema = z.object({
 });
 
 export const roomResponseSchema = z.object({
-  max_players: z.number(),
+  maxPlayers: z.number(),
 });
 
 export const roomDetailsResponseSchema = z.object({

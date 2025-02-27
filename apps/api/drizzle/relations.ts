@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { quizzes, multiplayerQuizSubmissions, rooms, users, questions, userResponses, userUsageData, documents, bookmarks } from "./schema";
+import { quizzes, multiplayerQuizSubmissions, rooms, users, userUsageData, questions, userResponses, documents, bookmarks, sharedQuizzes } from "./schema";
 
 export const multiplayerQuizSubmissionsRelations = relations(multiplayerQuizSubmissions, ({one}) => ({
 	quiz: one(quizzes, {
@@ -33,26 +33,36 @@ export const quizzesRelations = relations(quizzes, ({one, many}) => ({
 		fields: [quizzes.userId],
 		references: [users.id]
 	}),
+	sharedQuizzes: many(sharedQuizzes),
 }));
 
 export const roomsRelations = relations(rooms, ({one, many}) => ({
 	multiplayerQuizSubmissions: many(multiplayerQuizSubmissions),
 	userResponses: many(userResponses),
-	quizzes: many(quizzes),
 	user: one(users, {
 		fields: [rooms.hostId],
 		references: [users.id]
 	}),
+	quizzes: many(quizzes),
+	sharedQuizzes: many(sharedQuizzes),
 }));
 
 export const usersRelations = relations(users, ({many}) => ({
 	multiplayerQuizSubmissions: many(multiplayerQuizSubmissions),
-	userResponses: many(userResponses),
 	userUsageData: many(userUsageData),
+	userResponses: many(userResponses),
 	documents: many(documents),
 	bookmarks: many(bookmarks),
-	quizzes: many(quizzes),
 	rooms: many(rooms),
+	quizzes: many(quizzes),
+	sharedQuizzes: many(sharedQuizzes),
+}));
+
+export const userUsageDataRelations = relations(userUsageData, ({one}) => ({
+	user: one(users, {
+		fields: [userUsageData.userId],
+		references: [users.id]
+	}),
 }));
 
 export const userResponsesRelations = relations(userResponses, ({one}) => ({
@@ -82,13 +92,6 @@ export const questionsRelations = relations(questions, ({one, many}) => ({
 	}),
 }));
 
-export const userUsageDataRelations = relations(userUsageData, ({one}) => ({
-	user: one(users, {
-		fields: [userUsageData.userId],
-		references: [users.id]
-	}),
-}));
-
 export const documentsRelations = relations(documents, ({one, many}) => ({
 	user: one(users, {
 		fields: [documents.userId],
@@ -104,6 +107,21 @@ export const bookmarksRelations = relations(bookmarks, ({one}) => ({
 	}),
 	user: one(users, {
 		fields: [bookmarks.userId],
+		references: [users.id]
+	}),
+}));
+
+export const sharedQuizzesRelations = relations(sharedQuizzes, ({one}) => ({
+	quiz: one(quizzes, {
+		fields: [sharedQuizzes.quizId],
+		references: [quizzes.id]
+	}),
+	room: one(rooms, {
+		fields: [sharedQuizzes.roomId],
+		references: [rooms.id]
+	}),
+	user: one(users, {
+		fields: [sharedQuizzes.userId],
 		references: [users.id]
 	}),
 }));

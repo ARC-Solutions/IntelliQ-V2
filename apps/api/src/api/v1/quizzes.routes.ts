@@ -1,19 +1,20 @@
+import { RedisStore } from "@hono-rate-limiter/redis";
+import { Redis } from "@upstash/redis/cloudflare";
 import { Hono } from "hono";
-import { generateQuiz } from "./services/quiz-generator.service";
+import { describeRoute } from "hono-openapi";
+import { resolver, validator as zValidator } from "hono-openapi/zod";
+import { rateLimiter } from "hono-rate-limiter";
+import { z } from "zod";
+import {
+  userUsageData
+} from "../../../drizzle/schema";
+import { createDb } from "../../db/index";
+import { getSupabase } from "./middleware/auth.middleware";
 import {
   quizGenerationRequestSchema,
   quizResponseSchema,
 } from "./schemas/quiz.schemas";
-import { quizType } from "./schemas/common.schemas";
-import { createDb } from "../../db/index";
-import { userUsageData } from "../../../drizzle/schema";
-import { getSupabase } from "./middleware/auth.middleware";
-import { validator as zValidator, resolver } from "hono-openapi/zod";
-import { describeRoute } from "hono-openapi";
-import { z } from "zod";
-import { RedisStore } from "@hono-rate-limiter/redis";
-import { rateLimiter } from "hono-rate-limiter";
-import { Redis } from "@upstash/redis/cloudflare";
+import { generateQuiz } from "./services/quiz-generator.service";
 
 const generate = new Hono<{ Bindings: CloudflareEnv }>()
   .use((c, next) =>
@@ -37,6 +38,7 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
       tags: ["Quizzes"],
       summary: "Generate a quiz",
       description: "Generate a quiz based on the given topic and description",
+      validateResponse: true,
       responses: {
         200: {
           description: "Quiz generated successfully",

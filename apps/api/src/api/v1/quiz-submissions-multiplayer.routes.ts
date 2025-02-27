@@ -8,20 +8,25 @@ import {
   questions as questionsTable,
   quizzes,
   userResponses,
-  rooms
 } from "../../../drizzle/schema";
 import { createDb } from "../../db/index";
 import { getSupabase } from "./middleware/auth.middleware";
 import { quizType } from "./schemas/common.schemas";
 import {
   quizLeaderboardResponseSchema,
+  quizQuestionsResponseSchema,
   quizSubmissionMultiplayerRequestSchema,
   quizSubmissionMultiplayerResponseSchema,
   quizSubmissionMultiplayerSubmitResponseSchema,
-  quizSubmissionRequestSchema
+  quizSubmissionRequestSchema,
 } from "./schemas/quiz.schemas";
+import {
+  MEDIUM_CACHE,
+  createCacheMiddleware,
+} from "./middleware/cache.middleware";
+import { HTTPException } from "hono/http-exception";
 
-const quizSubmissions = new Hono<{ Bindings: CloudflareEnv }>()
+const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
   .post(
     "/:roomId/quiz",
     describeRoute({
@@ -29,6 +34,7 @@ const quizSubmissions = new Hono<{ Bindings: CloudflareEnv }>()
       summary: "Submit a quiz",
       description:
         "This route is called once by the host user. It creates one quiz and one set of questions for the entire lobby.",
+      validateResponse: true,
       responses: {
         201: {
           description: "Quiz submitted successfully",
@@ -118,6 +124,7 @@ const quizSubmissions = new Hono<{ Bindings: CloudflareEnv }>()
       tags: ["Quiz Submissions Multiplayer"],
       summary: "Submit quiz answers for a multiplayer room",
       description: "Submit quiz answers for a multiplayer room",
+      validateResponse: true,
       responses: {
         201: {
           description: "Quiz submission successful",
@@ -143,7 +150,6 @@ const quizSubmissions = new Hono<{ Bindings: CloudflareEnv }>()
       const db = await createDb(c);
 
       const result = await db.transaction(async (tx) => {
-        // First get the quiz associated with this room
         const quiz = await tx.query.quizzes.findFirst({
           where: eq(quizzes.roomId, roomId),
           columns: {
@@ -152,7 +158,9 @@ const quizSubmissions = new Hono<{ Bindings: CloudflareEnv }>()
         });
 
         if (!quiz) {
-          throw new Error("No quiz found for this room");
+          throw new HTTPException(404, {
+            message: "No quiz found for this room",
+          });
         }
 
         // Verify all questions exist and belong to this quiz
@@ -175,7 +183,9 @@ const quizSubmissions = new Hono<{ Bindings: CloudflareEnv }>()
           const correctAnswer = questionMap.get(ans.questionId);
 
           if (!correctAnswer) {
-            throw new Error(`Invalid question ID: ${ans.questionId}`);
+            throw new HTTPException(400, {
+              message: `Invalid question ID: ${ans.questionId}`,
+            });
           }
 
           const isCorrect = ans.userAnswer === correctAnswer;
@@ -214,10 +224,12 @@ const quizSubmissions = new Hono<{ Bindings: CloudflareEnv }>()
   )
   .get(
     "/:roomId/leaderboard",
+    createCacheMiddleware("quiz-leaderboard", MEDIUM_CACHE),
     describeRoute({
       tags: ["Quiz Submissions Multiplayer"],
       summary: "Get the leaderboard for a multiplayer room",
       description: "Get the leaderboard for a multiplayer room",
+      validateResponse: true,
       responses: {
         200: {
           description: "Leaderboard retrieved successfully",
@@ -262,5 +274,82 @@ const quizSubmissions = new Hono<{ Bindings: CloudflareEnv }>()
 
       return c.json({ leaderboard: result });
     }
+  )
+  .get(
+    "/:roomId/questions",
+    createCacheMiddleware("quiz-questions", MEDIUM_CACHE),
+    describeRoute({
+      tags: ["Quiz Submissions Multiplayer"],
+      summary: "Get the questions for a multiplayer room",
+      description: "Get the questions for a multiplayer room",
+      validateResponse: true,
+      responses: {
+        200: {
+          description: "Questions retrieved successfully",
+          content: {
+            "application/json": {
+              schema: resolver(quizQuestionsResponseSchema),
+            },
+          },
+        },
+      },
+    }),
+    zValidator("param", z.object({ roomId: z.string().uuid() })),
+    async (c) => {
+      const { roomId } = c.req.valid("param");
+
+      const db = await createDb(c);
+
+      try {
+        const result = await db.transaction(async (tx) => {
+          // get the quiz for this room
+          const quiz = await tx.query.quizzes.findFirst({
+            where: eq(quizzes.roomId, roomId),
+            columns: {
+              id: true,
+              title: true,
+            },
+          });
+
+          if (!quiz) {
+            throw new HTTPException(404, {
+              message: "No quiz found for this room",
+            });
+          }
+
+          // get all questions for this quiz
+          const questions = await tx.query.questions.findMany({
+            where: eq(questionsTable.quizId, quiz.id),
+            columns: {
+              id: true,
+              text: true,
+              options: true,
+            },
+          });
+
+          return {
+            quizId: quiz.id,
+            quizTitle: quiz.title,
+            questions: questions.map((q) => ({
+              id: q.id,
+              questionTitle: quiz.title,
+              text: q.text,
+              options: q.options,
+            })),
+          };
+        });
+
+        return c.json(result);
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message === "No quiz found for this room"
+        ) {
+          return c.json({ error: error.message }, 404);
+        }
+        console.error(error);
+        return c.json({ error: "Internal server error" }, 500);
+      }
+    }
   );
-export default quizSubmissions;
+export default multiplayerQuizSubmissionsRoutes;
