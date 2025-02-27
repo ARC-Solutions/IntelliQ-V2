@@ -83,7 +83,7 @@ export function SupportForm() {
 
   return (
     <div
-      className="flex flex-col items-center justify-center pb-10 scroll-mt-20"
+      className="flex flex-col items-center justify-center pb-10 scroll-mt-20 ml-5 mr-5"
       id="testimonials"
     >
       <h1 className="text-[20px] md:text-[50px] font-medium mb-10">

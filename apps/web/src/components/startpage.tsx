@@ -20,10 +20,10 @@ export default function StartPage() {
           'inset-x-0 inset-y-[-40%] h-[90%] skew-y-12 -z-10',
         )}
       />
-      <div className='mt-[300px]'>
+      <div className='mt-[75px]'>
         <Testimonials />
       </div>
-      <SupportForm />
+      <SupportForm/>
     </div>
   );
 }

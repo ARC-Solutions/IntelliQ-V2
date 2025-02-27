@@ -36,7 +36,7 @@ const navigation = [
 export function Footer() {
   const { resolvedTheme } = useTheme();
   return (
-    <>
+    <div className="ml-5 mr-5">
       <footer className="border-t-[1px] border-border px-4 md:px-6 pt-10 md:pt-16 overflow-hidden md:max-h-[820px]">
         <div className="container mx-auto w-full">
           <div className="flex justify-between items-center border-border border-b-[1px] pb-10 md:pb-16 mb-12">
@@ -85,6 +85,6 @@ export function Footer() {
       <div className="container mt-8 h-[200px] mx-auto w-full">
         <Wordmark className="flex w-full" />
       </div>
-    </>
+    </div>
   );
 }
