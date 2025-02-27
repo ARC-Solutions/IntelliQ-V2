@@ -20,7 +20,6 @@ import {
   quizSubmissionMultiplayerRequestSchema,
   quizSubmissionMultiplayerResponseSchema,
   quizSubmissionMultiplayerSubmitResponseSchema,
-  quizSubmissionRequestSchema,
 } from "./schemas/quiz.schemas";
 import {
   MEDIUM_CACHE,
