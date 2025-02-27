@@ -92,11 +92,12 @@ export const quizSubmissionMultiplayerSubmitResponseSchema = z.object({
     userId: z.string().uuid(),
     quizId: z.string().uuid(),
     roomId: z.string().uuid(),
-    // userScore: z.number(),
+    userScore: z.number(),
     correctAnswersCount: z.number(),
     createdAt: z.string(),
   }),
   // correctAnswers: z.number(),
+  calculatedScore: z.number(),
   totalQuestions: z.number(),
 });
 
