@@ -28,10 +28,10 @@ sequenceDiagram
     P->>S: GET /quiz-submissions/{roomId}/questions
     S->>P: Return questions (no answers)
 
-    %% Answer submission
+    %% Answer submission (one at a time)
     P->>S: POST /quiz-submissions/{roomId}/submissions
-    S->>DB: Store submissions
-    S->>P: Return submission confirmation
+    S->>DB: Validate answer & update score
+    S->>P: Return submission result
 
     %% Leaderboard updates
     P->>S: GET /quiz-submissions/{roomId}/leaderboard
@@ -75,33 +75,37 @@ sequenceDiagram
    - Questions with options (no correct answers)
    - Question IDs for submission
 
-4. **Submit Answers**
+4. **Submit Answers** (One at a time)
 
    ```http
    POST /api/v1/quiz-submissions/{roomId}/submissions
    ```
 
-   Players submit their answers to the quiz:
+   Players submit answers one at a time, with the time taken to answer:
 
    ```json
    {
-     "score": 85,
-     "answers": [
-       {
-         "questionId": "question-uuid",
-         "userAnswer": "selected answer",
-         "correctAnswer": "correct answer"
-       }
-     ]
+     "questionId": "question-uuid",
+     "userAnswer": "selected answer",
+     "timeTaken": 3500
    }
    ```
 
+   The server:
+
+   - Validates if the answer is correct
+   - Calculates points based on time taken using the formula:
+     `points = Math.round((1 - (timeTaken / timeLimit) / 2.2) * 1000)`
+   - Adds bonus points for fast answers (under 10% of time limit)
+   - Updates the user's total score
+   - Returns the calculated score and submission details
+
 5. **View Leaderboard**
-   `http
-     GET /api/v1/quiz-submissions/{roomId}/leaderboard
-     `
-   Retrieve the current leaderboard for the quiz room, showing all players' scores.
-</Steps>
+   ```http
+   GET /api/v1/quiz-submissions/{roomId}/leaderboard
+   ```
+   Retrieve the current leaderboard for the quiz room, showing all players' scores and correct answers.
+   </Steps>
 
 ## Response Examples
 
@@ -142,18 +146,35 @@ sequenceDiagram
 }
 ```
 
+```json Submit Answer Response
+{
+  "success": true,
+  "submission": {
+    "id": "5e2b18d9-f9b2-4a72-9e44-8c31f7a2b98c",
+    "userId": "dabaa1d5-2d3f-47c9-8a64-8a79d30f3b7d",
+    "quizId": "557e75e4-d80e-4463-a282-f449190d4d1e",
+    "roomId": "0cc667ab-46f9-4f9a-a04d-4034f1d22230",
+    "userScore": 850,
+    "correctAnswersCount": 1,
+    "createdAt": "2025-02-27T11:01:52.911594+00"
+  },
+  "calculatedScore": 850,
+  "totalQuestions": 4
+}
+```
+
 ```json Leaderboard Response
 {
   "leaderboard": [
     {
       "userName": "Player 1",
-      "score": 85,
-      "correctAnswers": 0
+      "score": 2750,
+      "correctAnswers": 3
     },
     {
       "userName": "Player 2",
-      "score": 75,
-      "correctAnswers": 0
+      "score": 2100,
+      "correctAnswers": 2
     }
   ]
 }
@@ -161,11 +182,22 @@ sequenceDiagram
 
 </CodeGroup>
 
+## Scoring Mechanics
+
+The time-based scoring system rewards both accuracy and speed:
+
+1. **Base Formula**: `points = Math.round((1 - (timeTaken / timeLimit) / 2.2) * 1000)`
+2. **Fast Answer Bonus**: +50 points for answers under 10% of the time limit
+3. **Minimum Points**: All correct answers earn at least 100 points
+4. **Incorrect Answers**: 0 points
+
+Each user's total score accumulates as they answer questions, and their submission record is updated rather than creating multiple records.
+
 ## Error Handling
 
 The API will return appropriate error codes and messages if:
 
 - The quiz generation parameters are invalid
 - The room ID doesn't exist
-- The submission format is incorrect
+- The question ID is invalid or doesn't belong to the quiz
 - The user is not authorized to access the room
