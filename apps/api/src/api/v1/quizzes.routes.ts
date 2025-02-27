@@ -5,9 +5,7 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { rateLimiter } from "hono-rate-limiter";
 import { z } from "zod";
-import {
-  userUsageData
-} from "../../../drizzle/schema";
+import { userUsageData } from "../../../drizzle/schema";
 import { createDb } from "../../db/index";
 import { getSupabase } from "./middleware/auth.middleware";
 import {
@@ -15,6 +13,10 @@ import {
   quizResponseSchema,
 } from "./schemas/quiz.schemas";
 import { generateQuiz } from "./services/quiz-generator.service";
+import {
+  TranslateClient,
+  TranslateTextCommand,
+} from "@aws-sdk/client-translate";
 
 const generate = new Hono<{ Bindings: CloudflareEnv }>()
   .use((c, next) =>
@@ -82,6 +84,74 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
         validatedData.quizTags,
         validatedData.language
       );
+
+      // Translate quiz content if language is not English
+      if (validatedData.language && validatedData.language !== "en") {
+        const translateClient = new TranslateClient({
+          region: "eu-north-1",
+          credentials: {
+            accessKeyId: c.env.AWS_ACCESS_KEY_ID!,
+            secretAccessKey: c.env.AWS_SECRET_ACCESS_KEY!,
+          },
+        });
+
+        // Translate quiz title
+        const titleCommand = new TranslateTextCommand({
+          SourceLanguageCode: "en",
+          TargetLanguageCode: validatedData.language,
+          Text: quiz.quizTitle,
+        });
+        const titleResponse = await translateClient.send(titleCommand);
+        quiz.quizTitle = titleResponse.TranslatedText || quiz.quizTitle;
+
+        // Translate each question
+        for (const question of quiz.questions) {
+          // Translate question title
+          const questionTitleCommand = new TranslateTextCommand({
+            SourceLanguageCode: "en",
+            TargetLanguageCode: validatedData.language,
+            Text: question.questionTitle,
+          });
+          const questionTitleResponse = await translateClient.send(
+            questionTitleCommand
+          );
+          question.questionTitle =
+            questionTitleResponse.TranslatedText || question.questionTitle;
+
+          // Translate question text
+          const textCommand = new TranslateTextCommand({
+            SourceLanguageCode: "en",
+            TargetLanguageCode: validatedData.language,
+            Text: question.text,
+          });
+          const textResponse = await translateClient.send(textCommand);
+          question.text = textResponse.TranslatedText || question.text;
+
+          // Translate options
+          const optionsText = question.options.join("\n");
+          const optionsCommand = new TranslateTextCommand({
+            SourceLanguageCode: "en",
+            TargetLanguageCode: validatedData.language,
+            Text: optionsText,
+          });
+          const optionsResponse = await translateClient.send(optionsCommand);
+          if (optionsResponse.TranslatedText) {
+            question.options = optionsResponse.TranslatedText.split("\n");
+          }
+
+          // Translate correct answer
+          const correctAnswerCommand = new TranslateTextCommand({
+            SourceLanguageCode: "en",
+            TargetLanguageCode: validatedData.language,
+            Text: question.correctAnswer,
+          });
+          const correctAnswerResponse = await translateClient.send(
+            correctAnswerCommand
+          );
+          question.correctAnswer =
+            correctAnswerResponse.TranslatedText || question.correctAnswer;
+        }
+      }
 
       const supabase = getSupabase(c);
       const {

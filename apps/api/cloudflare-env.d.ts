@@ -2,6 +2,7 @@
 
 interface CloudflareEnv {
 	IntelliQ_CACHE_VERSION: KVNamespace;
+	ENVIRONMENT: "development";
 	id: "e4ba004cd93a4e25853e135da77c9509";
 	DATABASE_URL: string;
 	GPT_MODEL: string;
@@ -10,4 +11,6 @@ interface CloudflareEnv {
 	SUPABASE_URL: string;
 	UPSTASH_REDIS_REST_TOKEN: string;
 	UPSTASH_REDIS_REST_URL: string;
+	AWS_ACCESS_KEY_ID: string;
+	AWS_SECRET_ACCESS_KEY: string;
 }

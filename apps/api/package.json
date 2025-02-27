@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.0.20",
+    "@aws-sdk/client-translate": "^3.750.0",
     "@hono-rate-limiter/redis": "^0.1.4",
     "@hono/zod-validator": "^0.4.2",
     "@supabase/ssr": "^0.5.2",
