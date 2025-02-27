@@ -23,7 +23,7 @@ export default function StartPage() {
       <div className='mt-[75px]'>
         <Testimonials />
       </div>
-      <SupportForm />
+      <SupportForm/>
     </div>
   );
 }
