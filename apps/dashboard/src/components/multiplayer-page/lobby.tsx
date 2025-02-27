@@ -339,6 +339,7 @@ export default function Lobby() {
   // debounce the updateGameSettings function to prevent multiple API requests
   const debouncedUpdateSettings = useDebouncedCallback(
     (
+
       type: "numQuestions" | "timeLimit" | "topic" | "language",
       value: number | string | SupportedLanguages
     ) => {
