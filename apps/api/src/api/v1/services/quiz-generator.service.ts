@@ -23,7 +23,6 @@ export async function generateQuiz(
   c: { env: { GPT_MODEL: string; OPENAI_API_KEY: string } },
   quizTopic: string,
   numberOfQuestions: number,
-  language: string,
   quizTags?: string[],
   quizDescription?: string
 ): Promise<QuizGenerationResult> {
@@ -39,14 +38,13 @@ export async function generateQuiz(
         structuredOutputs: true,
       }),
       schemaName: "quizzes",
-      schemaDescription: `A quiz in ${language} language.`,
+      schemaDescription: 'A quiz.',
       schema: quizSchema,
       prompt: generateQuizPrompt(
         quizTopic,
         quizDescription ?? "",
         numberOfQuestions,
         quizTags,
-        language
       ),
       maxTokens: 1024,
     });
