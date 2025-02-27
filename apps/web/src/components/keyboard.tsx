@@ -43,7 +43,7 @@ export function Keyboard() {
           />
         ) : (
           <Spline
-            scene="/hero/intelliq_keyboard.splinecode"
+            scene="/hero/intelliq_keyboard_geist.splinecode"
             style={{
               width: "1725px",
               height: "872px",
