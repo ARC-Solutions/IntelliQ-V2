@@ -133,21 +133,23 @@ export default function LobbyScreen() {
           </div>
 
           {/* Right Side - Create Private Lobby */}
-          <div className='space-y-6 text-center'>
-            <h1 className='text-3xl text-white'>Create a Lobby</h1>
-            <div className='flex justify-center'>
-              <Plus className='w-12 h-12 text-purple-300' />
+          <div className="flex flex-col items-center justify-between space-y-6 text-center h-full">
+            <h1 className="text-3xl">Create a Lobby</h1>
+            <div className="flex-grow flex items-center justify-center">
+              <Plus className="w-16 h-16 text-purple-300" />
             </div>
             <Button
               onClick={createLobby}
-              className='w-full max-w-xs bg-purple-300 text-black hover:bg-purple-400'
+              className="w-full max-w-xs bg-purple-300 text-black hover:bg-purple-400"
             >
               Create
             </Button>
-            <p className='text-gray-400 text-sm'>Create a lobby and invite your friends</p>
+            <p className="text-gray-400 text-sm">
+              Create a lobby and invite your friends
+            </p>
           </div>
         </div>
-
+          
         {/* Back Link */}
         <div className='mt-16'>
           <Link href='/' className='text-purple-300 hover:text-purple-400 text-sm'>
