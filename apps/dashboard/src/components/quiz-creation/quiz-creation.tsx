@@ -231,7 +231,7 @@ export default function QuizCreator() {
                         }}
                         value={field.value}
                       >
-                        <SelectTrigger className="w-full bg-black border-gray-800">
+                        <SelectTrigger className="w-full border-gray-800">
                           <SelectValue placeholder="Select Language" />
                         </SelectTrigger>
                         <SelectContent>
