@@ -313,7 +313,7 @@ export default function Lobby() {
   };
 
   const updateGameSettings = async (
-    type: 'numQuestions' | 'timeLimit' | 'topic' | 'language' | 'showCorrectAnswers',
+    type: 'numQuestions' | 'timeLimit' | 'topic' | 'language' | 'showAnswers',
     value: number | string | boolean,
   ) => {
     if (!channel || !isCreator) return;
@@ -329,7 +329,7 @@ export default function Lobby() {
         type === "numQuestions" ||
         type === "language" ||
         type === "topic" ||
-        type === "showCorrectAnswers"
+        type === "showAnswers"
       ) {
         await client.api.v1.rooms[":roomCode"]["settings"].$patch({
           param: {
@@ -355,7 +355,7 @@ export default function Lobby() {
   // debounce the updateGameSettings function to prevent multiple API requests
   const debouncedUpdateSettings = useDebouncedCallback(
     (
-      type: 'numQuestions' | 'timeLimit' | 'topic' | 'language' | 'showCorrectAnswers',
+      type: 'numQuestions' | 'timeLimit' | 'topic' | 'language' | 'showAnswers',
       value: number | string | SupportedLanguages | boolean
     ) => {
       updateGameSettings(type, value);
@@ -645,7 +645,7 @@ export default function Lobby() {
                         checked={showCorrectAnswers}
                         onCheckedChange={async (checked) => {
                           setShowCorrectAnswers(checked);
-                          debouncedUpdateSettings('showCorrectAnswers', checked);
+                          debouncedUpdateSettings('showAnswers', checked);
                           
                           // Broadcast the change to all players
                           if (channel && isCreator) {
