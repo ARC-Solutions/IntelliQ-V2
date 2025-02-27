@@ -301,7 +301,7 @@ export default function Lobby() {
   };
 
   const updateGameSettings = async (
-    type: 'numQuestions' | 'timeLimit' | 'topic' | 'language' | 'showCorrectAnswers',
+    type: "numQuestions" | "timeLimit" | "topic" | "language" | "showCorrectAnswers",
     value: number | string | boolean,
   ) => {
     if (!channel || !isCreator) return;
