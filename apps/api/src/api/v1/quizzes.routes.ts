@@ -74,18 +74,25 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
     }),
     zValidator("query", quizGenerationRequestSchema),
     async (c) => {
-      const validatedData = c.req.valid("query");
+      const {
+        quizTopic,
+        numberOfQuestions,
+        quizTags,
+        quizDescription,
+        language,
+        quizType,
+      } = c.req.valid("query");
 
       const { quiz, metrics } = await generateQuiz(
         c,
-        validatedData.quizTopic,
-        validatedData.numberOfQuestions,
-        validatedData.quizTags,
-        validatedData.quizDescription!,
+        quizTopic,
+        numberOfQuestions,
+        quizTags,
+        quizDescription!
       );
 
-      // Translate quiz content if language is not English
-      if (validatedData.language && validatedData.language !== "en") {
+      // translate quiz content if language is not English
+      if (language && language !== "en") {
         const translateClient = new TranslateClient({
           region: "eu-north-1",
           credentials: {
@@ -94,21 +101,21 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
           },
         });
 
-        // Translate quiz title
+        // translate quiz title
         const titleCommand = new TranslateTextCommand({
           SourceLanguageCode: "en",
-          TargetLanguageCode: validatedData.language,
+          TargetLanguageCode: language,
           Text: quiz.quizTitle,
         });
         const titleResponse = await translateClient.send(titleCommand);
         quiz.quizTitle = titleResponse.TranslatedText || quiz.quizTitle;
 
-        // Translate each question
+        // translate each question
         for (const question of quiz.questions) {
-          // Translate question title
+          // translate question title
           const questionTitleCommand = new TranslateTextCommand({
             SourceLanguageCode: "en",
-            TargetLanguageCode: validatedData.language,
+            TargetLanguageCode: language,
             Text: question.questionTitle,
           });
           const questionTitleResponse = await translateClient.send(
@@ -117,20 +124,20 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
           question.questionTitle =
             questionTitleResponse.TranslatedText || question.questionTitle;
 
-          // Translate question text
+          // translate question text
           const textCommand = new TranslateTextCommand({
             SourceLanguageCode: "en",
-            TargetLanguageCode: validatedData.language,
+            TargetLanguageCode: language,
             Text: question.text,
           });
           const textResponse = await translateClient.send(textCommand);
           question.text = textResponse.TranslatedText || question.text;
 
-          // Translate options
+          // translate options
           const optionsText = question.options.join("\n");
           const optionsCommand = new TranslateTextCommand({
             SourceLanguageCode: "en",
-            TargetLanguageCode: validatedData.language,
+            TargetLanguageCode: language,
             Text: optionsText,
           });
           const optionsResponse = await translateClient.send(optionsCommand);
@@ -138,10 +145,10 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
             question.options = optionsResponse.TranslatedText.split("\n");
           }
 
-          // Translate correct answer
+          // translate correct answer
           const correctAnswerCommand = new TranslateTextCommand({
             SourceLanguageCode: "en",
-            TargetLanguageCode: validatedData.language,
+            TargetLanguageCode: language,
             Text: question.correctAnswer,
           });
           const correctAnswerResponse = await translateClient.send(
@@ -164,11 +171,11 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
         completionTokens: metrics.usage.completionTokens,
         totalTokens: metrics.usage.totalTokens,
         usedModel: c.env.GPT_MODEL,
-        countQuestions: validatedData.numberOfQuestions,
+        countQuestions: numberOfQuestions,
         responseTimeTaken: metrics.durationInSeconds,
-        prompt: validatedData.quizTopic,
-        language: validatedData.language,
-        quizType: validatedData.quizType,
+        prompt: quizTopic,
+        language: language,
+        quizType: quizType,
       });
 
       return c.json({ quiz: quiz } as const);
