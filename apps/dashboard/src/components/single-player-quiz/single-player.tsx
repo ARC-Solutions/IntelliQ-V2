@@ -163,7 +163,7 @@ const Quiz = () => {
           quiz={currentQuiz.quiz}
           questionNumber={questionNumber}
           userAnswer={selectedAnswer}
-          correctAnswer={currentQuiz.quiz[questionNumber].correctAnswer.slice(
+          correctAnswer={currentQuiz.quiz[questionNumber].correctAnswer!.slice(
             3
           )}
         />
@@ -184,7 +184,7 @@ const Quiz = () => {
                   payload: {
                     question: currentQuiz.quiz[questionNumber].text,
                     correctAnswer:
-                      currentQuiz.quiz[questionNumber].correctAnswer.slice(3),
+                      currentQuiz.quiz[questionNumber].correctAnswer!.slice(3),
                     userAnswer: selectedAnswer,
                   },
                 });
@@ -206,7 +206,7 @@ const Quiz = () => {
                 payload: {
                   question: currentQuiz.quiz[questionNumber].text,
                   correctAnswer:
-                    currentQuiz.quiz[questionNumber].correctAnswer.slice(3),
+                    currentQuiz.quiz[questionNumber].correctAnswer!.slice(3),
                   userAnswer: selectedAnswer,
                 },
               });

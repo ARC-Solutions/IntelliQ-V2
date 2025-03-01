@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { supportedLanguages } from "./common.schemas";
 
 export const roomSchema = z.object({
   roomCode: z.string().min(4, "Room code is required"),
@@ -21,6 +22,9 @@ export const roomDetailsResponseSchema = z.object({
   // Strings
   code: z.string(),
   topic: z.string().nullable(),
+
+  // Enums
+  language: supportedLanguages,
 
   // Dates or strings
   // If `createdAt` is just a string in the response, use z.string()
