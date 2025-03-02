@@ -96,7 +96,9 @@ export const quizSubmissionMultiplayerSubmitResponseSchema = z.object({
     correctAnswersCount: z.number(),
     createdAt: z.string(),
   }),
-  correctAnswers: z.number(),
+  // correctAnswers: z.number(),
+  calculatedScore: z.number(),
+  totalQuestions: z.number(),
 });
 
 // Schema for GET /:roomId/leaderboard response
@@ -113,11 +115,11 @@ export const quizLeaderboardResponseSchema = z.object({
 export const quizSubmissionAnswerSchema = z.object({
   questionId: z.string().uuid(),
   userAnswer: z.string(),
+  timeTaken: z.number().optional(),
 });
 
 export const quizSubmissionRequestSchema = z.object({
-  score: z.number(),
-  answers: z.array(quizSubmissionAnswerSchema),
+  answers: quizSubmissionAnswerSchema,
 });
 
 export const quizQuestionResponseSchema = z.object({

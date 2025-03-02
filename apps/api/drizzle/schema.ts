@@ -1,4 +1,4 @@
-import { pgTable, foreignKey, uuid, smallint, timestamp, integer, text, real, pgPolicy, boolean, bigint, jsonb, vector, unique, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, foreignKey, uuid, smallint, timestamp, pgPolicy, text, boolean, integer, real, bigint, jsonb, vector, unique, pgEnum } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const quizType = pgEnum("quiz_type", ['singleplayer', 'multiplayer', 'document', 'random'])
@@ -30,6 +30,41 @@ export const multiplayerQuizSubmissions = pgTable("multiplayer_quiz_submissions"
 		}).onUpdate("cascade").onDelete("cascade"),
 ]);
 
+export const userResponses = pgTable("user_responses", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	userId: uuid("user_id").notNull(),
+	quizId: uuid("quiz_id").notNull(),
+	questionId: uuid("question_id").notNull(),
+	roomId: uuid("room_id"),
+	answer: text().notNull(),
+	isCorrect: boolean("is_correct").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	timeTaken: smallint("time_taken"),
+}, (table) => [
+	foreignKey({
+			columns: [table.questionId],
+			foreignColumns: [questions.id],
+			name: "user_responses_question_id_fkey"
+		}).onUpdate("cascade").onDelete("cascade"),
+	foreignKey({
+			columns: [table.quizId],
+			foreignColumns: [quizzes.id],
+			name: "user_responses_quiz_id_fkey"
+		}).onUpdate("cascade").onDelete("cascade"),
+	foreignKey({
+			columns: [table.roomId],
+			foreignColumns: [rooms.id],
+			name: "user_responses_room_id_fkey"
+		}).onUpdate("cascade").onDelete("cascade"),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "user_responses_user_id_fkey"
+		}).onUpdate("cascade").onDelete("cascade"),
+	pgPolicy("Users can insert their own responses", { as: "permissive", for: "insert", to: ["authenticated"], withCheck: sql`(( SELECT auth.uid() AS uid) = user_id)`  }),
+	pgPolicy("Users can view their own responses", { as: "permissive", for: "select", to: ["authenticated"] }),
+]);
+
 export const userUsageData = pgTable("user_usage_data", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	userId: uuid("user_id").notNull(),
@@ -59,40 +94,6 @@ export const users = pgTable("users", {
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
 	pgPolicy("Users can update own profile", { as: "permissive", for: "update", to: ["authenticated"], using: sql`(( SELECT auth.uid() AS uid) = id)` }),
-]);
-
-export const userResponses = pgTable("user_responses", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	userId: uuid("user_id").notNull(),
-	quizId: uuid("quiz_id").notNull(),
-	questionId: uuid("question_id").notNull(),
-	roomId: uuid("room_id"),
-	answer: text().notNull(),
-	isCorrect: boolean("is_correct").notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.questionId],
-			foreignColumns: [questions.id],
-			name: "user_responses_question_id_fkey"
-		}).onUpdate("cascade").onDelete("cascade"),
-	foreignKey({
-			columns: [table.quizId],
-			foreignColumns: [quizzes.id],
-			name: "user_responses_quiz_id_fkey"
-		}).onUpdate("cascade").onDelete("cascade"),
-	foreignKey({
-			columns: [table.roomId],
-			foreignColumns: [rooms.id],
-			name: "user_responses_room_id_fkey"
-		}).onUpdate("cascade").onDelete("cascade"),
-	foreignKey({
-			columns: [table.userId],
-			foreignColumns: [users.id],
-			name: "user_responses_user_id_fkey"
-		}).onUpdate("cascade").onDelete("cascade"),
-	pgPolicy("Users can insert their own responses", { as: "permissive", for: "insert", to: ["authenticated"], withCheck: sql`(( SELECT auth.uid() AS uid) = user_id)`  }),
-	pgPolicy("Users can view their own responses", { as: "permissive", for: "select", to: ["authenticated"] }),
 ]);
 
 export const documents = pgTable("documents", {
