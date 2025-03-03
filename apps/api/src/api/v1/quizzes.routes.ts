@@ -88,7 +88,7 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
         quizTopic,
         numberOfQuestions,
         quizTags,
-        quizDescription!
+        quizDescription!,
       );
 
       // translate quiz content if language is not English

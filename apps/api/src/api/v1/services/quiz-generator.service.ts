@@ -3,6 +3,7 @@ import { generateObject } from "ai";
 import { quizSchema } from "../schemas/quiz.schemas";
 import { generateQuizPrompt } from "./prompts";
 import { z } from "zod";
+import { OPTION_PREFIXES } from "../schemas/quiz.schemas";
 
 // Use the quiz schema to infer the type
 type Quiz = z.infer<typeof quizSchema>;
@@ -37,22 +38,47 @@ export async function generateQuiz(
       model: openai(GPT_MODEL, {
         structuredOutputs: true,
       }),
-      schemaName: "quizzes",
-      schemaDescription: 'A quiz.',
+      schemaName: "quiz",
+      schemaDescription: `A quiz with multiple-choice questions. Each question must have exactly 4 options.`,
       schema: quizSchema,
-      prompt: generateQuizPrompt(
+      prompt: `${generateQuizPrompt(
         quizTopic,
         quizDescription ?? "",
         numberOfQuestions,
-        quizTags,
-      ),
+        quizTags
+      )}
+      
+      IMPORTANT: For each question's options array, you MUST:
+      1. Include exactly 4 options
+      2. Use these exact prefixes in order: ${JSON.stringify(OPTION_PREFIXES)}
+      3. Format each option as: prefix + " " + option text
+      
+      Example format:
+      "options": [
+        "a) First option text",
+        "b) Second option text",
+        "c) Third option text",
+        "d) Fourth option text"
+      ]`,
       maxTokens: 1024,
     });
+
+    // Additional validation to ensure the format is correct
+    const validatedQuiz = quizSchema.parse(generatedQuiz.object);
+
+    // Validate option prefixes
+    for (const question of validatedQuiz.questions) {
+      if (
+        !question.options.every((opt, i) => opt.startsWith(OPTION_PREFIXES[i]))
+      ) {
+        throw new Error("Invalid option format");
+      }
+    }
 
     const durationInSeconds = (performance.now() - startTime) / 1000;
 
     return {
-      quiz: generatedQuiz.object,
+      quiz: validatedQuiz,
       metrics: {
         durationInSeconds,
         usage: generatedQuiz.usage,

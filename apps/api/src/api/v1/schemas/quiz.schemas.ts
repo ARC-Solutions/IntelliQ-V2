@@ -1,13 +1,21 @@
 import { z } from "zod";
 import { supportedLanguages } from "./common.schemas";
 
+export const OPTION_PREFIXES = ["a) ", "b) ", "c) ", "d) "] as const;
+
 export const quizSchema = z.object({
   quizTitle: z.string(),
   questions: z.array(
     z.object({
       questionTitle: z.string(),
       text: z.string(),
-      options: z.array(z.string()),
+      options: z
+        .array(z.string())
+        .describe(
+          "An array of 4 quiz options. Each option MUST use the exact prefix format: " +
+            JSON.stringify(OPTION_PREFIXES) +
+            " followed by the option text."
+        ),
       correctAnswer: z.string(),
     })
   ),
