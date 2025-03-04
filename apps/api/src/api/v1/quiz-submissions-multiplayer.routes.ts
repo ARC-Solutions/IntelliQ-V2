@@ -1,4 +1,4 @@
-import { count, desc, eq } from "drizzle-orm";
+import { count, desc, eq, sql, and } from "drizzle-orm";
 import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
@@ -119,7 +119,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
     }
   )
   .post(
-    "/:roomId/submissions",
+    "/:roomCode/submissions",
     describeRoute({
       tags: ["Quiz Submissions Multiplayer"],
       summary: "Submit quiz answers for a multiplayer room",
@@ -136,10 +136,10 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
         },
       },
     }),
-    zValidator("param", z.object({ roomId: z.string().uuid() })),
+    zValidator("param", z.object({ roomCode: z.string() })),
     zValidator("json", quizSubmissionAnswerSchema),
     async (c) => {
-      const { roomId } = c.req.valid("param");
+      const { roomCode } = c.req.valid("param");
       const { questionId, userAnswer, timeTaken } = c.req.valid("json");
 
       const supabase = getSupabase(c);
@@ -149,209 +149,172 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
 
       const db = await createDb(c);
 
-      const result = await db.transaction(async (tx) => {
-        const quiz = await tx.query.quizzes.findFirst({
-          where: eq(quizzes.roomId, roomId),
-          columns: {
-            id: true,
-            questionsCount: true,
-          },
-        });
-
-        if (!quiz) {
-          throw new HTTPException(404, {
-            message: "No quiz found for this room",
-          });
-        }
-
-        // Verify all questions exist and belong to this quiz
-        const questions = await tx.query.questions.findMany({
-          where: eq(questionsTable.quizId, quiz.id),
-          columns: {
-            id: true,
-            correctAnswer: true,
-          },
-        });
-
-        const questionMap = new Map(
-          questions.map((q) => [q.id, q.correctAnswer])
-        );
-
-        let correctCount = 0;
-
-        const ans = { questionId, userAnswer, timeTaken }; // answers is now a single object
-        const correctAnswer = questionMap.get(ans.questionId);
-
-        if (!correctAnswer) {
-          throw new HTTPException(400, {
-            message: `Invalid question ID: ${ans.questionId}`,
-          });
-        }
-
-        const isCorrect = ans.userAnswer === correctAnswer;
-        if (isCorrect) correctCount++;
-
-        // Calculate points based on time taken
-        // ⌊ ( 1 - (( responseTime / questionTimer ) / 2.2 )) * pointsPossible ⌉
-
-        // Get the room to access the timeLimit
-        const room = await tx.query.rooms.findFirst({
-          where: eq(rooms.id, roomId),
-          columns: {
-            timeLimit: true,
-          },
-        });
-
-        if (!room) {
-          throw new HTTPException(404, {
-            message: "Room not found",
-          });
-        }
-
-        // Define constants
-        const QUESTION_TIMER_MS = room.timeLimit * 1000; // Convert seconds to milliseconds
-        const MAX_POINTS = 1000;
-        const DIVISOR = 2.2;
-
-        // Calculate points only if the answer is correct
-        let timeBasedPoints = 0;
-        if (isCorrect && ans.timeTaken !== undefined) {
-          // Convert timeTaken from milliseconds and ensure it doesn't exceed the timer
-          const responseTimeRatio = Math.min(
-            ans.timeTaken / QUESTION_TIMER_MS,
-            1
-          );
-
-          // Apply modified formula
-          timeBasedPoints = Math.round(
-            (1 - responseTimeRatio / DIVISOR) * MAX_POINTS
-          );
-
-          // Add a small bonus for very fast answers (under 10% of the time limit)
-          if (ans.timeTaken < QUESTION_TIMER_MS * 0.1) {
-            timeBasedPoints += 50;
-          }
-
-          // Ensure minimum points for correct answers
-          timeBasedPoints = Math.max(timeBasedPoints, 100);
-        }
-
-        // Store the user's response
-        await tx.insert(userResponses).values({
-          userId: user!.id,
-          quizId: quiz.id,
-          questionId: ans.questionId,
-          roomId: roomId,
-          answer: ans.userAnswer,
-          isCorrect: isCorrect,
-          timeTaken: ans.timeTaken, // Store the time taken
-        });
-
-        // Get the count of correct answers for this user in this quiz
-        const correctAnswersResult = await tx
-          .select({
-            count: count(),
-          })
-          .from(userResponses)
-          .where(
-            eq(userResponses.userId, user!.id) &&
-              eq(userResponses.quizId, quiz.id) &&
-              eq(userResponses.isCorrect, true)
-          );
-
-        // Extract the count from the result
-        const correctAnswersCount = correctAnswersResult[0]?.count || 0;
-
-        // Ensure the count doesn't exceed the total questions
-        const finalCorrectCount = Math.min(
-          correctAnswersCount,
-          quiz.questionsCount
-        );
-
-        // Get the latest submission for this user in this quiz/room to get the current score
-        const latestSubmission =
-          await tx.query.multiplayerQuizSubmissions.findFirst({
-            where: (submissions) =>
-              eq(submissions.userId, user!.id) &&
-              eq(submissions.quizId, quiz.id) &&
-              eq(submissions.roomId, roomId),
-            orderBy: (submissions) => desc(submissions.createdAt),
-            columns: {
-              userScore: true,
-            },
-          });
-
-        // Calculate the new score by adding to the existing score (if any)
-        const currentScore = latestSubmission?.userScore || 0;
-        const newScore = currentScore + (isCorrect ? timeBasedPoints : 0);
-
-        // Check if a submission already exists
-        const existingSubmission =
-          await tx.query.multiplayerQuizSubmissions.findFirst({
-            where: (submissions) =>
-              eq(submissions.userId, user!.id) &&
-              eq(submissions.quizId, quiz.id) &&
-              eq(submissions.roomId, roomId),
+      const result = await db.transaction(
+        async (tx) => {
+          const currentRoom = await tx.query.rooms.findFirst({
+            where: eq(rooms.code, roomCode),
             columns: {
               id: true,
             },
           });
 
-        let finalSubmission;
-
-        if (existingSubmission) {
-          // Update existing submission
-          const [updatedSubmission] = await tx
-            .update(multiplayerQuizSubmissions)
-            .set({
-              userScore: newScore,
-              correctAnswersCount: finalCorrectCount,
-            })
-            .where(eq(multiplayerQuizSubmissions.id, existingSubmission.id))
-            .returning({
-              id: multiplayerQuizSubmissions.id,
-              userId: multiplayerQuizSubmissions.userId,
-              quizId: multiplayerQuizSubmissions.quizId,
-              roomId: multiplayerQuizSubmissions.roomId,
-              userScore: multiplayerQuizSubmissions.userScore,
-              correctAnswersCount:
-                multiplayerQuizSubmissions.correctAnswersCount,
-              createdAt: multiplayerQuizSubmissions.createdAt,
+          if (!currentRoom) {
+            throw new HTTPException(404, {
+              message: "Room not found",
             });
+          }
 
-          finalSubmission = updatedSubmission;
-        } else {
-          // Insert new submission
-          const [newSubmission] = await tx
-            .insert(multiplayerQuizSubmissions)
-            .values({
-              userId: user!.id,
-              quizId: quiz.id,
-              roomId: roomId,
-              userScore: newScore,
-              correctAnswersCount: finalCorrectCount,
-            })
-            .returning({
-              id: multiplayerQuizSubmissions.id,
-              userId: multiplayerQuizSubmissions.userId,
-              quizId: multiplayerQuizSubmissions.quizId,
-              roomId: multiplayerQuizSubmissions.roomId,
-              userScore: multiplayerQuizSubmissions.userScore,
-              correctAnswersCount:
-                multiplayerQuizSubmissions.correctAnswersCount,
-              createdAt: multiplayerQuizSubmissions.createdAt,
+          const quiz = await tx.query.quizzes.findFirst({
+            where: eq(quizzes.roomId, currentRoom!.id),
+            columns: {
+              id: true,
+              questionsCount: true,
+            },
+          });
+
+          if (!quiz) {
+            throw new HTTPException(404, {
+              message: "No quiz found for this room",
             });
+          }
 
-          finalSubmission = newSubmission;
+          // Verify all questions exist and belong to this quiz
+          const questions = await tx.query.questions.findMany({
+            where: eq(questionsTable.quizId, quiz.id),
+            columns: {
+              id: true,
+              correctAnswer: true,
+            },
+          });
+
+          const questionMap = new Map(
+            questions.map((q) => [q.id, q.correctAnswer])
+          );
+
+          let correctCount = 0;
+
+          const ans = { questionId, userAnswer, timeTaken }; // answers is now a single object
+          const correctAnswer = questionMap.get(ans.questionId);
+
+          if (!correctAnswer) {
+            throw new HTTPException(400, {
+              message: `Invalid question ID: ${ans.questionId}`,
+            });
+          }
+
+          const isCorrect = ans.userAnswer === correctAnswer;
+          if (isCorrect) correctCount++;
+
+          // Calculate points based on time taken
+          // ⌊ ( 1 - (( responseTime / questionTimer ) / 2.2 )) * pointsPossible ⌉
+
+          // Get the room to access the timeLimit
+          const room = await tx.query.rooms.findFirst({
+            where: eq(rooms.id, currentRoom!.id),
+            columns: {
+              timeLimit: true,
+            },
+          });
+
+          if (!room) {
+            throw new HTTPException(404, {
+              message: "Room not found",
+            });
+          }
+
+          // Define constants
+          const QUESTION_TIMER_MS = room.timeLimit * 1000; // Convert seconds to milliseconds
+          const MAX_POINTS = 1000;
+          const DIVISOR = 2.2;
+
+          // Calculate points only if the answer is correct
+          let timeBasedPoints = 0;
+          if (isCorrect && ans.timeTaken !== undefined) {
+            // Convert timeTaken from milliseconds and ensure it doesn't exceed the timer
+            const responseTimeRatio = Math.min(
+              ans.timeTaken / QUESTION_TIMER_MS,
+              1
+            );
+
+            // Apply modified formula
+            timeBasedPoints = Math.round(
+              (1 - responseTimeRatio / DIVISOR) * MAX_POINTS
+            );
+
+            // Add a small bonus for very fast answers (under 10% of the time limit)
+            if (ans.timeTaken < QUESTION_TIMER_MS * 0.1) {
+              timeBasedPoints += 50;
+            }
+
+            // Ensure minimum points for correct answers
+            timeBasedPoints = Math.max(timeBasedPoints, 100);
+          }
+
+          const allSubmissions = await tx
+            .select()
+            .from(multiplayerQuizSubmissions)
+            .where(
+              and(
+                eq(multiplayerQuizSubmissions.roomId, currentRoom!.id),
+                eq(multiplayerQuizSubmissions.quizId, quiz.id)
+              )
+            );
+
+          // Now manually find the user's submission in JavaScript
+          const existingSubmission = allSubmissions.find(
+            (sub) => sub.userId === user!.id
+          );
+
+          let finalSubmission;
+
+          if (existingSubmission) {
+            // Calculate the new values explicitly
+            const currentCount = existingSubmission.correctAnswersCount || 0;
+            const currentScore = existingSubmission.userScore || 0;
+
+            // Only increment if the answer is correct
+            const newCorrectCount = isCorrect ? currentCount + 1 : currentCount;
+            const newScore = currentScore + (isCorrect ? timeBasedPoints : 0);
+
+            // Update with explicit ID values
+            const [updatedSubmission] = await tx
+              .update(multiplayerQuizSubmissions)
+              .set({
+                userScore: newScore,
+                correctAnswersCount: newCorrectCount,
+              })
+              .where(eq(multiplayerQuizSubmissions.id, existingSubmission.id))
+              .returning();
+
+            finalSubmission = updatedSubmission;
+          } else {
+            // For new submissions
+            const [newSubmission] = await tx
+              .insert(multiplayerQuizSubmissions)
+              .values({
+                userId: user!.id,
+                quizId: quiz.id,
+                roomId: currentRoom!.id,
+                userScore: isCorrect ? timeBasedPoints : 0,
+                correctAnswersCount: isCorrect ? 1 : 0,
+              })
+              .returning();
+
+            finalSubmission = newSubmission;
+          }
+
+          return {
+            success: true,
+            submission: finalSubmission,
+            calculatedScore: isCorrect ? timeBasedPoints : 0,
+            totalQuestions: quiz.questionsCount,
+            correctAnswer: correctAnswer,
+          };
+        },
+        {
+          isolationLevel: "read committed",
         }
-
-        return {
-          success: true,
-          submission: finalSubmission,
-          calculatedScore: isCorrect ? timeBasedPoints : 0,
-          totalQuestions: quiz.questionsCount,
-        };
-      });
+      );
 
       return c.json(result, 201);
     }

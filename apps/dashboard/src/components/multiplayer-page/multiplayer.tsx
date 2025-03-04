@@ -1,4 +1,5 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -15,6 +16,8 @@ import Summarizing from "../../../public/IntelliQ summarizing.json";
 import QAndA from "../single-player-quiz/q-and-a";
 import { createApiClient } from "@/utils/api-client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { motion } from "framer-motion";
+import QAndASkeleton from "../single-player-quiz/q-and-a-skeleton";
 
 const Quiz = () => {
   const {
@@ -206,34 +209,39 @@ const Quiz = () => {
     roomChannel
       .on("presence", { event: "sync" }, () => {
         const newState = roomChannel.presenceState();
-        console.log("newState", newState);
+
         const playersList = Object.values(newState)
           .flat()
           .map((player) => {
             const data = player as any;
-            console.log("Player data:", data);
-
-            if (!data.presenceData || !data.presenceData.currentUser) {
-              console.warn("Missing expected player data structure", data);
-              return {
-                id: data.id || "unknown",
-                email: "",
-                userName: data.user_name || "Unknown Player",
-                score: 0,
-                selectedAnswer: null,
-                isCreator: false,
-              } as Player;
+            if (!data.presenceData?.currentUser) {
+              console.warn(
+                "Received player data without presenceData.currentUser:",
+                data
+              );
+              return null;
             }
-
             return {
               id: data.presenceData.currentUser.id,
               email: data.presenceData.currentUser.email,
               userName: data.presenceData.currentUser.name,
               score: data.presenceData.currentUser.score,
               selectedAnswer: data.presenceData.currentUser.selectedAnswer,
-              isCreator: data.presenceData.currentUser.isCreator,
+              // Don't use the isCreator from presence data - we'll determine this below
+              isCreator: false, // Default to false for all players initially
             } as Player;
-          });
+          })
+          .filter(Boolean);
+
+        // Sort players consistently - this ensures stable creator assignment
+        const sortedPlayers = [...playersList].sort((a, b) =>
+          a!.id.localeCompare(b!.id)
+        );
+
+        // If we have players, the first one is the creator
+        if (sortedPlayers.length > 0) {
+          sortedPlayers[0]!.isCreator = true;
+        }
 
         // First player in the list is the leader
         console.log("players", playersList);
@@ -319,35 +327,51 @@ const Quiz = () => {
             <span id="time">Time left: {timer} seconds</span>
           </Button>
           {showCorrectAnswer && (
-            <Card className="flex items-center rounded-lg border-b-[0.5px] border-white border-opacity-20 text-2xl font-bold">
-              {isSubmitting ? (
-                <>
-                  <div className="mx-2 flex items-center">
-                    <CircleCheck className="text-2xl text-gray-300 sm:text-3xl" />
-                    <Skeleton className="ml-1 h-8 w-8" />
-                  </div>
-                  <div className="mx-2 flex items-center">
-                    <Skeleton className="mr-1 h-8 w-8" />
-                    <CircleX className="text-2xl text-gray-300 sm:text-3xl" />
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="mx-2 flex items-center text-green-500">
-                    <CircleCheck className="text-2xl sm:text-3xl" />
-                    <span className="ml-1 text-2xl sm:text-3xl">
-                      {correctAnswersCount}
-                    </span>
-                  </div>
-                  <div className="mx-2 flex items-center text-red-500">
-                    <span className="mr-1 text-2xl sm:text-3xl">
-                      {wrongAnswersCount}
-                    </span>
-                    <CircleX className="text-2xl sm:text-3xl" />
-                  </div>
-                </>
-              )}
-            </Card>
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 200, damping: 20 }}
+            >
+              <Card className="flex items-center rounded-lg border-b-[0.5px] border-white border-opacity-20 text-2xl font-bold">
+                {isSubmitting ? (
+                  <motion.div
+                    className="flex"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="mx-2 flex items-center">
+                      <CircleCheck className="text-2xl text-gray-300 sm:text-3xl" />
+                      <Skeleton className="ml-1 h-8 w-8" />
+                    </div>
+                    <div className="mx-2 flex items-center">
+                      <Skeleton className="mr-1 h-8 w-8" />
+                      <CircleX className="text-2xl text-gray-300 sm:text-3xl" />
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    className="flex"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="mx-2 flex items-center text-green-500">
+                      <CircleCheck className="text-2xl sm:text-3xl" />
+                      <span className="ml-1 text-2xl sm:text-3xl">
+                        {correctAnswersCount}
+                      </span>
+                    </div>
+                    <div className="mx-2 flex items-center text-red-500">
+                      <span className="mr-1 text-2xl sm:text-3xl">
+                        {wrongAnswersCount}
+                      </span>
+                      <CircleX className="text-2xl sm:text-3xl" />
+                    </div>
+                  </motion.div>
+                )}
+              </Card>
+            </motion.div>
           )}
         </div>
         <CardDescription className="my-3 flex items-start text-sm sm:text-base">
@@ -362,13 +386,19 @@ const Quiz = () => {
         {isSubmitting ? (
           <QAndASkeleton />
         ) : (
-          <QAndA
-            quiz={currentQuiz.quiz}
-            questionNumber={questionNumber}
-            userAnswer={selectedAnswer}
-            correctAnswer={currentCorrectAnswer}
-            onAnswerSelected={handleAnswerSelected}
-          />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 200, damping: 20 }}
+          >
+            <QAndA
+              quiz={currentQuiz.quiz}
+              questionNumber={questionNumber}
+              userAnswer={selectedAnswer}
+              correctAnswer={currentCorrectAnswer}
+              onAnswerSelected={handleAnswerSelected}
+            />
+          </motion.div>
         )}
         {showCorrectAnswer && isCreator && (
           <Button
@@ -388,7 +418,6 @@ const Quiz = () => {
               }
 
               // Update local state for the creator
-
               setQuestionNumber(newQuestionNumber);
 
               // Check if the quiz should finish
@@ -404,39 +433,5 @@ const Quiz = () => {
     </div>
   );
 };
-
-function QAndASkeleton() {
-  return (
-    <section>
-      {/* Question Title Skeleton */}
-      <h1 className="w-full items-center rounded-md bg-primary p-6 text-center">
-        <Skeleton className="mx-auto h-8 w-3/4" />
-      </h1>
-
-      <div className="mt-4 w-auto">
-        {/* Your Answer skeleton */}
-        <div className="my-3 w-full">
-          <Skeleton className="flex h-[56px] w-full items-center justify-start rounded-lg p-4">
-            <div className="flex items-center space-x-2">
-              <Skeleton className="h-4 w-[100px]" /> {/* "Your Answer:" text */}
-              <Skeleton className="h-4 w-[120px]" /> {/* Answer content */}
-            </div>
-          </Skeleton>
-        </div>
-
-        {/* Correct Answer skeleton */}
-        <div className="my-3 w-full">
-          <Skeleton className="flex h-[56px] w-full items-center justify-start rounded-lg p-4">
-            <div className="flex items-center space-x-2">
-              <Skeleton className="h-4 w-[120px]" />{" "}
-              {/* "Correct Answer:" text */}
-              <Skeleton className="h-4 w-[120px]" /> {/* Answer content */}
-            </div>
-          </Skeleton>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 export default Quiz;

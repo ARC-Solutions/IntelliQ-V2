@@ -1,26 +1,26 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useReducer } from 'react';
-import { toast } from 'react-toastify';
-import { useSupabase } from './supabase-context';
-import { quizReducer } from '@/utils/reducers/quiz-reducer';
-import { UserAnswer } from '@/contexts/quiz-logic-context';
-import { QuizData } from './quiz-creation-context';
-import { createApiClient } from '@/utils/api-client';
+import React, { createContext, useContext, useReducer, useState } from "react";
+import { toast } from "react-toastify";
+import { useSupabase } from "./supabase-context";
+import { quizReducer } from "@/utils/reducers/quiz-reducer";
+import { UserAnswer } from "@/contexts/quiz-logic-context";
+import { QuizData } from "./quiz-creation-context";
+import { createApiClient } from "@/utils/api-client";
 
 type Props = {
   children: React.ReactNode;
 };
 export enum SupportedLanguages {
-  English = 'en',
-  German = 'de',
-  French = 'fr',
-  Spanish = 'es',
-  Italian = 'it',
-  Romanian = 'ro',
-  Serbian = 'sr',
-  Tagalog = 'tl',
-  Polish = 'pl',
+  English = "en",
+  German = "de",
+  French = "fr",
+  Spanish = "es",
+  Italian = "it",
+  Romanian = "ro",
+  Serbian = "sr",
+  Tagalog = "tl",
+  Polish = "pl",
 }
 export interface Quiz {
   correctAnswer?: string;
@@ -62,15 +62,15 @@ export interface QuizHistories {
   created_at: string;
 }
 export type QuizAction =
-  | { type: 'FETCH_QUIZ_REQUEST' }
-  | { type: 'FETCH_QUIZ_ERROR' }
-  | { type: 'RESET_QUIZ' }
-  | { type: 'RESET_ALL' }
-  | { type: 'RESET_SUMMARY_QUIZ' }
-  | { type: 'FETCH_QUIZ_SUCCESS'; payload: CurrentQuiz }
-  | { type: 'SUBMIT_QUIZ_SUCESS'; payload: QuizHistory }
-  | { type: 'STORE_QUIZZES'; payload: QuizHistories[] }
-  | { type: 'FETCH_MORE_QUIZZES'; payload: QuizHistories[] };
+  | { type: "FETCH_QUIZ_REQUEST" }
+  | { type: "FETCH_QUIZ_ERROR" }
+  | { type: "RESET_QUIZ" }
+  | { type: "RESET_ALL" }
+  | { type: "RESET_SUMMARY_QUIZ" }
+  | { type: "FETCH_QUIZ_SUCCESS"; payload: CurrentQuiz }
+  | { type: "SUBMIT_QUIZ_SUCESS"; payload: QuizHistory }
+  | { type: "STORE_QUIZZES"; payload: QuizHistories[] }
+  | { type: "FETCH_MORE_QUIZZES"; payload: QuizHistories[] };
 
 export interface QuizContextValues extends QuizContextValue {
   dispatch: React.Dispatch<QuizAction>;
@@ -78,6 +78,8 @@ export interface QuizContextValues extends QuizContextValue {
   submitQuiz: (userAnswer: UserAnswer[], timeTaken: number) => void;
   fetchSingleQuiz: (quizID: string, roomId: string) => void;
   getMultiplayerQuizForPlayers: (roomId: string, quiz: CurrentQuiz) => void;
+  isMultiplayerMode: boolean;
+  setIsMultiplayerMode: (mode: boolean) => void;
 }
 const initialState: QuizContextValue = {
   isLoading: false,
@@ -179,9 +181,11 @@ const QuizContext = createContext<QuizContextValues | null>(null);
 export const QuizProvider = ({ children }: Props) => {
   const [state, dispatch] = useReducer(quizReducer, initialState);
   const { supabase } = useSupabase();
+  const [isMultiplayerMode, setIsMultiplayerMode] = useState(false);
+
   const fetchQuestions = async (userQuizData: QuizData, roomId?: string) => {
     try {
-      console.log('generating...');
+      console.log("generating...");
 
       const {
         topic: interests,
@@ -191,10 +195,10 @@ export const QuizProvider = ({ children }: Props) => {
       } = userQuizData;
 
       const client = createApiClient();
-      dispatch({ type: 'FETCH_QUIZ_REQUEST' });
+      dispatch({ type: "FETCH_QUIZ_REQUEST" });
 
       const query =
-        quizType === 'multiplayer'
+        quizType === "multiplayer"
           ? {
               quizTopic: interests,
               numberOfQuestions: numberOfQuestions.toString(),
@@ -239,15 +243,20 @@ export const QuizProvider = ({ children }: Props) => {
         showCorrectAnswers: userQuizData.showCorrectAnswers,
       };
 
-      if (quizType === 'multiplayer' && roomId) {
-        const multiplayerQuiz = await submitMultiplayerQuiz(roomId, quiz, interests, language);
-        if (multiplayerQuiz && 'questions' in multiplayerQuiz) {
+      if (quizType === "multiplayer" && roomId) {
+        const multiplayerQuiz = await submitMultiplayerQuiz(
+          roomId,
+          quiz,
+          interests,
+          language
+        );
+        if (multiplayerQuiz && "questions" in multiplayerQuiz) {
           quiz.quiz = multiplayerQuiz.questions as Quiz[];
         }
       }
-      dispatch({ type: 'FETCH_QUIZ_SUCCESS', payload: quiz });
+      dispatch({ type: "FETCH_QUIZ_SUCCESS", payload: quiz });
     } catch (error: any) {
-      dispatch({ type: 'FETCH_QUIZ_ERROR' });
+      dispatch({ type: "FETCH_QUIZ_ERROR" });
       toast.error(error);
     }
   };
@@ -262,7 +271,9 @@ export const QuizProvider = ({ children }: Props) => {
       const quizTitle = state.currentQuiz?.topic;
       const questions = userAnswer.map((ans, i) => {
         const { correctAnswer, question, userAnswer } = ans;
-        const options = state.currentQuiz?.quiz[i].options.map((opt) => opt.slice(3));
+        const options = state.currentQuiz?.quiz[i].options.map((opt) =>
+          opt.slice(3)
+        );
         return { text: question, correctAnswer, userAnswer, options };
       });
 
@@ -273,16 +284,16 @@ export const QuizProvider = ({ children }: Props) => {
       };
       const URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/submit-quiz`;
       const response = await fetch(URL, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({ rawQuestions }),
       });
       const data = (await response.json()) as QuizHistory;
 
-      dispatch({ type: 'SUBMIT_QUIZ_SUCESS', payload: data });
+      dispatch({ type: "SUBMIT_QUIZ_SUCESS", payload: data });
     } catch (error: any) {
       toast(error.message);
       console.log(error);
@@ -298,41 +309,44 @@ export const QuizProvider = ({ children }: Props) => {
       const accessToken = session?.access_token;
       const URL = `${process.env.NEXT_PUBLIC_BASE_URL}/quizzes/${quizID}`;
       const response = await fetch(URL, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
       });
 
       const data = (await response.json()) as QuizHistory;
 
-      dispatch({ type: 'SUBMIT_QUIZ_SUCESS', payload: data });
+      dispatch({ type: "SUBMIT_QUIZ_SUCESS", payload: data });
     } catch (error: any) {
       toast(error.message);
       console.log(error);
     }
   };
 
-  const getMultiplayerQuizForPlayers = async (roomId: string, quiz: CurrentQuiz) => {
+  const getMultiplayerQuizForPlayers = async (
+    roomId: string,
+    quiz: CurrentQuiz
+  ) => {
     try {
       const client = createApiClient();
 
-      const response = await client.api.v1['quiz-submissions'].multiplayer[
-        ':roomId'
+      const response = await client.api.v1["quiz-submissions"].multiplayer[
+        ":roomId"
       ].questions.$get({
         param: { roomId },
       });
       const data = await response.json();
 
-      if ('error' in data) {
+      if ("error" in data) {
         throw new Error(data.error);
       }
 
       const currentQuiz = { ...quiz, quiz: data.questions } as CurrentQuiz;
-      console.log('player', currentQuiz);
+      console.log("player", currentQuiz);
 
-      dispatch({ type: 'FETCH_QUIZ_SUCCESS', payload: currentQuiz });
+      dispatch({ type: "FETCH_QUIZ_SUCCESS", payload: currentQuiz });
     } catch (error: any) {
       toast(error.message);
       console.log(error);
@@ -343,23 +357,30 @@ export const QuizProvider = ({ children }: Props) => {
     roomId: string,
     currentQuiz: CurrentQuiz,
     quizTopics: string,
-    language: SupportedLanguages,
+    language: SupportedLanguages
   ) => {
     try {
       const client = createApiClient();
       const { quiz: questions, topic: quizTitle } = currentQuiz;
       const formattedQuestions = questions.map((q) => ({
         ...q,
-        correctAnswer: q.correctAnswer || '', // Provide default empty string
+        correctAnswer: q.correctAnswer || "", // Provide default empty string
       }));
 
-      const response = await client.api.v1['quiz-submissions'].multiplayer[':roomId'].quiz.$post({
+      const response = await client.api.v1["quiz-submissions"].multiplayer[
+        ":roomId"
+      ].quiz.$post({
         param: { roomId },
-        json: { language, questions: formattedQuestions, quizTitle, quizTopics: [quizTopics] },
+        json: {
+          language,
+          questions: formattedQuestions,
+          quizTitle,
+          quizTopics: [quizTopics],
+        },
       });
 
       const data = await response.json();
-      console.log('succesfull', data);
+      console.log("succesfull", data);
 
       return data;
     } catch (error: any) {
@@ -377,6 +398,8 @@ export const QuizProvider = ({ children }: Props) => {
         submitQuiz,
         fetchSingleQuiz,
         getMultiplayerQuizForPlayers,
+        isMultiplayerMode,
+        setIsMultiplayerMode,
       }}
     >
       {children}
@@ -387,7 +410,7 @@ export const QuizProvider = ({ children }: Props) => {
 export const useQuiz = (): QuizContextValues => {
   const quizContext = useContext(QuizContext);
   if (quizContext === undefined) {
-    throw new Error('useQuiz must be used within an QuizProvider');
+    throw new Error("useQuiz must be used within an QuizProvider");
   }
   return quizContext as QuizContextValues;
 };

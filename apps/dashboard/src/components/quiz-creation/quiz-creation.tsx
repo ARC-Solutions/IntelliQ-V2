@@ -54,7 +54,8 @@ export default function QuizCreator() {
     setTagsValue,
     setQuizLanguageValue,
   } = useQuizCreation();
-  const { isLoading, fetchingFinished, currentQuiz } = useQuiz();
+  const { isLoading, fetchingFinished, currentQuiz, isMultiplayerMode } =
+    useQuiz();
 
   // UI nuqs
   const [activeTab, setActiveTab] = useQueryState("activeTab", {
@@ -65,6 +66,10 @@ export default function QuizCreator() {
   const [newTag, setNewTag] = useState("");
 
   if (fetchingFinished && currentQuiz) {
+    if (isMultiplayerMode) {
+      // Don't redirect if in multiplayer mode
+      return null;
+    }
     redirect("/single-player/quiz/play");
   }
   if (isLoading) {

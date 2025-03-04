@@ -173,7 +173,7 @@ const app = new Hono<{ Bindings: CloudflareEnv }>()
     }),
     zValidator("json", createRoomSchema),
     async (c) => {
-      const { code, hostId, maxPlayers, numQuestions, timeLimit } =
+      const { code, hostId, maxPlayers, numQuestions, timeLimit, language } =
         c.req.valid("json");
 
       const db = await createDb(c);
@@ -185,6 +185,7 @@ const app = new Hono<{ Bindings: CloudflareEnv }>()
           maxPlayers,
           numQuestions,
           timeLimit,
+          language,
         })
         .returning({
           id: rooms.id,
