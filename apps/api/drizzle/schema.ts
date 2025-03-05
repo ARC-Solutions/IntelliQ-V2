@@ -1,4 +1,4 @@
-import { pgTable, foreignKey, uuid, smallint, timestamp, pgPolicy, text, boolean, integer, real, bigint, jsonb, vector, unique, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, foreignKey, unique, uuid, smallint, timestamp, pgPolicy, text, boolean, integer, real, bigint, jsonb, vector, pgEnum } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const quizType = pgEnum("quiz_type", ['singleplayer', 'multiplayer', 'document', 'random'])
@@ -28,6 +28,7 @@ export const multiplayerQuizSubmissions = pgTable("multiplayer_quiz_submissions"
 			foreignColumns: [users.id],
 			name: "multiplayer_quiz_submissions_user_id_fkey"
 		}).onUpdate("cascade").onDelete("cascade"),
+	unique("unique_user_quiz_room").on(table.userId, table.quizId, table.roomId),
 ]);
 
 export const userResponses = pgTable("user_responses", {
@@ -163,7 +164,7 @@ export const rooms = pgTable("rooms", {
 	code: text().notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	endedAt: timestamp("ended_at", { withTimezone: true, mode: 'string' }),
-	timeLimit: smallint("time_limit").notNull(),
+	timeLimit: integer("time_limit").notNull(),
 	topic: text(),
 	language: text(),
 }, (table) => [

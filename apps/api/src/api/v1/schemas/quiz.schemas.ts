@@ -104,7 +104,7 @@ export const quizSubmissionMultiplayerSubmitResponseSchema = z.object({
     correctAnswersCount: z.number(),
     createdAt: z.string(),
   }),
-  // correctAnswers: z.number(),
+  correctAnswer: z.string(),
   calculatedScore: z.number(),
   totalQuestions: z.number(),
 });
