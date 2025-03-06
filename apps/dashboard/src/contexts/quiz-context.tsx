@@ -47,6 +47,7 @@ export interface QuizHistory {
   totalTime: number;
   correctAnswersCount: number;
   totalQuestions: number;
+  passingScore: number;
   questions: HistoryQuestions[];
 }
 export interface QuizContextValue {

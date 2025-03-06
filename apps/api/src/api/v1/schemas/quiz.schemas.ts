@@ -170,6 +170,7 @@ export const singlePlayerQuizSubmissionResponseSchema = z.object({
   correctAnswersCount: z.number(),
   totalQuestions: z.number(),
   questions: z.array(singlePlayerQuizSubmissionResponseQuestionSchema),
+  passingScore: z.number(),
 });
 
 // Schema for filtered quiz question response

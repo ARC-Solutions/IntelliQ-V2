@@ -33,10 +33,10 @@ const Summary = () => {
 
   // This will be modified once i work with the new database
   let descriptionText = '';
-  if (correctPercentage >= 70) {
+  if (correctPercentage >= summaryQuiz.passingScore) {
     descriptionText =
       '👏 Excellent work! Your understanding of the topic is impressive. Keep it up! 👏';
-  } else if (correctPercentage > 50) {
+  } else if (correctPercentage > summaryQuiz.passingScore / 2) {
     descriptionText = '👍 Great job! Keep up the good work. 👍';
   } else {
     descriptionText = '😊 Nice try! Keep practicing to improve your score. 😊';
@@ -96,7 +96,7 @@ const Summary = () => {
                 value={(100 / totalQuestions) * correctAnswersCount}
               />
               <h4 className='text-lg text-primary font-semibold'>
-                {(100 / totalQuestions) * correctAnswersCount > 70 ? 'YOU PASSED!' : 'YOU FAILED!'}
+                {(100 / totalQuestions) * correctAnswersCount >= summaryQuiz.passingScore ? 'YOU PASSED!' : 'YOU FAILED!'}
               </h4>
             </>
           )}

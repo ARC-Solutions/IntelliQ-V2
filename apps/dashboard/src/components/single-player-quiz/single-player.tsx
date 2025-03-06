@@ -164,7 +164,7 @@ const Quiz = () => {
           quiz={currentQuiz.quiz}
           questionNumber={questionNumber}
           userAnswer={selectedAnswer}
-          correctAnswer={currentQuiz.quiz[questionNumber].correctAnswer.slice(3)}
+          correctAnswer={currentQuiz.quiz[questionNumber].correctAnswer}
         />
 
         <Button
@@ -182,7 +182,7 @@ const Quiz = () => {
                   type: 'VALIDATE_ANSWER',
                   payload: {
                     question: currentQuiz.quiz[questionNumber].text,
-                    correctAnswer: currentQuiz.quiz[questionNumber].correctAnswer.slice(3),
+                    correctAnswer: currentQuiz.quiz[questionNumber].correctAnswer,
                     userAnswer: selectedAnswer,
                   },
                 });
@@ -203,7 +203,7 @@ const Quiz = () => {
                 type: 'VALIDATE_ANSWER',
                 payload: {
                   question: currentQuiz.quiz[questionNumber].text,
-                  correctAnswer: currentQuiz.quiz[questionNumber].correctAnswer.slice(3),
+                  correctAnswer: currentQuiz.quiz[questionNumber].correctAnswer,
                   userAnswer: selectedAnswer,
                 },
               });
