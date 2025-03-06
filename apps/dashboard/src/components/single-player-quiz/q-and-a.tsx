@@ -1,4 +1,5 @@
 "use client";
+
 import React from "react";
 import { Quiz } from "@/contexts/quiz-context";
 import Answer from "@/components/single-player-quiz/answer";

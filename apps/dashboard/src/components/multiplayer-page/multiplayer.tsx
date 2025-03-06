@@ -18,6 +18,7 @@ import { createApiClient } from "@/utils/api-client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import QAndASkeleton from "../single-player-quiz/q-and-a-skeleton";
+import NumberFlow from "@number-flow/react";
 
 const Quiz = () => {
   const {
@@ -322,10 +323,27 @@ const Quiz = () => {
       </header>
       <section className="w-full rounded-lg p-6 text-center shadow-none">
         <div className="mb-4 flex items-center justify-between">
-          <Button className="inline-flex items-center rounded p-2 pr-3 text-sm font-medium text-black sm:text-xl">
-            <Timer className="mr-2 text-base sm:text-2xl" />{" "}
-            <span id="time">Time left: {timer} seconds</span>
-          </Button>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2 }}
+            className="inline-flex items-center rounded p-2 pr-3 text-sm font-medium text-black sm:text-xl bg-primary"
+            layout
+          >
+            <Timer className="mr-2 text-base sm:text-2xl" />
+            <span id="time" className="flex items-center gap-2">
+              <NumberFlow
+                value={timer}
+                prefix="Time left: "
+                suffix=" seconds"
+                transformTiming={{
+                  duration: 500,
+                  easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+                }}
+                opacityTiming={{ duration: 400, easing: "ease-out" }}
+              />
+            </span>
+          </motion.div>
           {showCorrectAnswer && (
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
