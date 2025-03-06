@@ -401,23 +401,31 @@ const Quiz = () => {
           className="w-full mb-4 outline outline-1 outline-slate-600"
         />
 
-        {isSubmitting ? (
-          <QAndASkeleton />
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: "spring", stiffness: 200, damping: 20 }}
-          >
-            <QAndA
-              quiz={currentQuiz.quiz}
-              questionNumber={questionNumber}
-              userAnswer={selectedAnswer}
-              correctAnswer={currentCorrectAnswer}
-              onAnswerSelected={handleAnswerSelected}
-            />
-          </motion.div>
-        )}
+        <motion.div
+          layout
+          layoutId="quiz-content"
+          transition={{
+            layout: { type: "spring", bounce: 0.2, duration: 0.6 },
+          }}
+        >
+          {isSubmitting ? (
+            <QAndASkeleton />
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: "spring", stiffness: 200, damping: 20 }}
+            >
+              <QAndA
+                quiz={currentQuiz.quiz}
+                questionNumber={questionNumber}
+                userAnswer={selectedAnswer}
+                correctAnswer={currentCorrectAnswer}
+                onAnswerSelected={handleAnswerSelected}
+              />
+            </motion.div>
+          )}
+        </motion.div>
         {showCorrectAnswer && isCreator && (
           <Button
             disabled={quizFinished}

@@ -3,9 +3,13 @@ import { motion } from "framer-motion";
 
 function QAndASkeleton() {
   return (
-    <section>
+    <motion.section
+      layout
+      transition={{ layout: { type: "spring", bounce: 0.2 } }}
+    >
       {/* Question Title Skeleton */}
       <motion.h1
+        layout
         className="w-full items-center rounded-md bg-primary p-6 text-center"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -20,6 +24,7 @@ function QAndASkeleton() {
       <div className="mt-4 w-auto">
         {/* Your Answer skeleton */}
         <motion.div
+          layout
           className="mt-8 w-full"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -35,6 +40,7 @@ function QAndASkeleton() {
 
         {/* Correct Answer skeleton */}
         <motion.div
+          layout
           className="mt-8 w-full mb-4"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -48,7 +54,7 @@ function QAndASkeleton() {
           </Skeleton>
         </motion.div>
       </div>
-    </section>
+    </motion.section>
   );
 }
 
