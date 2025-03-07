@@ -12,5 +12,9 @@ GPT_MODEL="gpt-4o-mini"
 binding = "HYPERDRIVE"
 id = "e4ba004cd93a4e25853e135da77c9509"
 
+[[kv_namespaces]]
+binding = "IntelliQ_CACHE_VERSION" 
+id = "85aa26007afe4718a04bfb3540048726"
+
 [observability.logs]
 enabled = false

@@ -14,8 +14,9 @@ import { useEffect, useRef, useState } from 'react';
 import Summarizing from '../../../public/IntelliQ summarizing.json';
 import Answer_Waiting from '../../../public/answer_wait_animation-light.json';
 import QAndA from '../single-player-quiz/q-and-a';
+
 const Quiz = () => {
-  const { isLoading, currentQuiz, submitQuiz, summaryQuiz, dispatch: dispatchQuiz } = useQuiz();
+  const { isLoading, currentQuiz, summaryQuiz, dispatch: dispatchQuiz } = useQuiz();
   const {
     questionNumber,
     setQuestionNumber,
@@ -196,14 +197,14 @@ const Quiz = () => {
     );
   }
 
-  if (selectedAnswer !== null && timer > 0) { //load the waiting animation after the user selects an answer
+  if (selectedAnswer !== null && timer > 0) {
+    //load the waiting animation after the user selects an answer
     return (
       <div className='absolute left-1/2 top-1/2 flex w-[40] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[30vw]'>
         <Lottie animationData={Answer_Waiting} />
       </div>
     );
   }
-
 
   return (
     <div className='mx-auto flex w-[400] flex-col items-center justify-center p-4 text-white sm:w-[800px] '>
@@ -262,7 +263,7 @@ const Quiz = () => {
 
               // Update local state for the creator
 
-              setQuestionNumber(newQuestionNumber);   
+              setQuestionNumber(newQuestionNumber);
               // Check if the quiz should finish
               if (newQuestionNumber >= currentQuiz.quiz.length) {
                 setQuizFinished(true);

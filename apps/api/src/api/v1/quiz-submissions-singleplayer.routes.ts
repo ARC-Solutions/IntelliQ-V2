@@ -222,6 +222,7 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
           totalTime: createdQuiz.totalTimeTaken,
           correctAnswersCount,
           totalQuestions: createdQuiz.questionsCount,
+          passingScore: createdQuiz.passingScore,
           questions: questions.map((question) => ({
             text: question.text,
             correctAnswer: question.correctAnswer,
