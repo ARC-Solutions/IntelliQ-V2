@@ -67,6 +67,10 @@
       "pages": ["multiplayer-flow"]
     },
     {
+      "group": "Quiz Sharing",
+      "pages": ["sharing-flow"]
+    },
+    {
       "group": "Essentials",
       "pages": [
         "essentials/markdown",
