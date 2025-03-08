@@ -23,6 +23,7 @@ import {
 } from "./middleware/cache.middleware";
 import { incrementUserCacheVersion } from "../../utils/kv-user-version";
 import prettyMilliseconds from "pretty-ms";
+import { HTTPException } from "hono/http-exception";
 
 const singleplayerQuizSubmissionsRoutes = new Hono<{
   Bindings: CloudflareEnv;
@@ -89,7 +90,9 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
       });
 
       if (!quiz) {
-        return c.json({ error: "Quiz not found" }, 404);
+        throw new HTTPException(404, {
+          message: "Quiz not found",
+        });
       }
 
       const formattedQuestions = quiz.questions
@@ -219,6 +222,7 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
           totalTime: createdQuiz.totalTimeTaken,
           correctAnswersCount,
           totalQuestions: createdQuiz.questionsCount,
+          passingScore: createdQuiz.passingScore,
           questions: questions.map((question) => ({
             text: question.text,
             correctAnswer: question.correctAnswer,
