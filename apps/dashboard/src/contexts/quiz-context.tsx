@@ -84,7 +84,7 @@ export interface QuizContextValues extends QuizContextValue {
   dispatch: React.Dispatch<QuizAction>;
   fetchQuestions: (userQuizData: QuizData, roomId?: string) => void;
   submitQuiz: (userAnswer: UserAnswer[], timeTaken: number) => void;
-  fetchSingleQuiz: (quizID: string, roomId: string) => void;
+  fetchSingleQuiz: (quizID: string) => void;
   getMultiplayerQuizForPlayers: (roomId: string, quiz: CurrentQuiz) => void;
   isMultiplayerMode: boolean;
   setIsMultiplayerMode: (mode: boolean) => void;
