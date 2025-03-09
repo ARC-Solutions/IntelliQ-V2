@@ -26,6 +26,7 @@ import {
   createCacheMiddleware,
 } from "./middleware/cache.middleware";
 import { HTTPException } from "hono/http-exception";
+import { queueTagAnalysis } from "./services/queue-tag-analysis";
 
 const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
   .post(
@@ -106,6 +107,8 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
             });
           }
 
+          await queueTagAnalysis(c, createdQuiz.id, quizType.Enum.multiplayer);
+
           return {
             quizId: createdQuiz.id,
             questions: createdQuestions,
@@ -116,7 +119,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
         console.error(error);
         return c.json({ error: `Internal server error ${error}` }, 500);
       }
-    }
+    },
   )
   .post(
     "/:roomId/submissions",
@@ -174,7 +177,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
         });
 
         const questionMap = new Map(
-          questions.map((q) => [q.id, q.correctAnswer])
+          questions.map((q) => [q.id, q.correctAnswer]),
         );
 
         let correctCount = 0;
@@ -219,12 +222,12 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           // Convert timeTaken from milliseconds and ensure it doesn't exceed the timer
           const responseTimeRatio = Math.min(
             ans.timeTaken / QUESTION_TIMER_MS,
-            1
+            1,
           );
 
           // Apply modified formula
           timeBasedPoints = Math.round(
-            (1 - responseTimeRatio / DIVISOR) * MAX_POINTS
+            (1 - responseTimeRatio / DIVISOR) * MAX_POINTS,
           );
 
           // Add a small bonus for very fast answers (under 10% of the time limit)
@@ -256,7 +259,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           .where(
             eq(userResponses.userId, user!.id) &&
               eq(userResponses.quizId, quiz.id) &&
-              eq(userResponses.isCorrect, true)
+              eq(userResponses.isCorrect, true),
           );
 
         // Extract the count from the result
@@ -265,7 +268,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
         // Ensure the count doesn't exceed the total questions
         const finalCorrectCount = Math.min(
           correctAnswersCount,
-          quiz.questionsCount
+          quiz.questionsCount,
         );
 
         // Get the latest submission for this user in this quiz/room to get the current score
@@ -354,7 +357,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
       });
 
       return c.json(result, 201);
-    }
+    },
   )
   .get(
     "/:roomId/leaderboard",
@@ -407,7 +410,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
       }));
 
       return c.json({ leaderboard: result });
-    }
+    },
   )
   .get(
     "/:roomId/questions",
@@ -484,6 +487,6 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
         console.error(error);
         return c.json({ error: "Internal server error" }, 500);
       }
-    }
+    },
   );
 export default multiplayerQuizSubmissionsRoutes;

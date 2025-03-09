@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { supportedLanguages } from "./common.schemas";
+import type { quizType } from "./common.schemas";
 
 export const quizSchema = z.object({
   quizTitle: z.string(),
@@ -9,7 +10,7 @@ export const quizSchema = z.object({
       text: z.string(),
       options: z.array(z.string()),
       correctAnswer: z.string(),
-    })
+    }),
   ),
 });
 
@@ -25,7 +26,7 @@ export const quizGenerationRequestSchema = z.object({
     .preprocess(
       (val) =>
         typeof val === "string" ? val.split(",").map((tag) => tag.trim()) : val,
-      z.array(z.string())
+      z.array(z.string()),
     )
     .optional(),
   language: supportedLanguages.default(supportedLanguages.Enum.en),
@@ -46,7 +47,7 @@ export const quizSubmissionMultiplayerRequestSchema = z.object({
       text: z.string(),
       options: z.array(z.string()),
       correctAnswer: z.string(),
-    })
+    }),
   ),
 });
 
@@ -59,7 +60,7 @@ export const quizSubmissionMultiplayerResponseSchema = z.object({
       text: z.string(),
       options: z.array(z.string()),
       correctAnswer: z.string(),
-    })
+    }),
   ),
 });
 
@@ -108,7 +109,7 @@ export const quizLeaderboardResponseSchema = z.object({
       userName: z.string(),
       score: z.number(),
       correctAnswers: z.number(),
-    })
+    }),
   ),
 });
 
@@ -197,3 +198,24 @@ export const filteredQuizResponseSchema = z.object({
 export const filterQuerySchema = z.object({
   filter: z.enum(["all", "correct", "incorrect"]).default("all"),
 });
+
+export type Quiz = {
+  id: string;
+  title: string;
+  topic: string[];
+  description: string | null;
+  tags: string[] | null;
+  type: "singleplayer" | "multiplayer" | "document" | "random";
+  language: string;
+  userId: string;
+  roomId: string | null;
+  questionsCount: number;
+  questions: { text: string }[];
+  room?: {
+    multiplayerQuizSubmissions: {
+      user: {
+        id: string;
+      };
+    }[];
+  };
+};

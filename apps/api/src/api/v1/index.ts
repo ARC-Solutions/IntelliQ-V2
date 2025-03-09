@@ -5,6 +5,7 @@ import singleplayerQuizSubmissionsRoutes from "./quiz-submissions-singleplayer.r
 import rooms from "./rooms.routes";
 import historyRoutes from "./history.routes";
 import shareRoutes from "./share.routes";
+import admin from "./admin";
 
 const v1 = new Hono<{ Bindings: CloudflareEnv }>()
   .route("/quizzes", quizzes)
@@ -12,6 +13,7 @@ const v1 = new Hono<{ Bindings: CloudflareEnv }>()
   .route("/quiz-submissions/singleplayer", singleplayerQuizSubmissionsRoutes)
   .route("/rooms", rooms)
   .route("/history", historyRoutes)
-  .route("/share", shareRoutes);
+  .route("/share", shareRoutes)
+  .route("/admin", admin);
 
 export default v1;
