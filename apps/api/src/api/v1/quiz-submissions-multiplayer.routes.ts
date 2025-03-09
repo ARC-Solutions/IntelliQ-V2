@@ -1,18 +1,18 @@
-import { count, desc, eq } from "drizzle-orm";
-import { Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator as zValidator } from "hono-openapi/zod";
-import { z } from "zod";
+import { count, desc, eq } from 'drizzle-orm';
+import { Hono } from 'hono';
+import { describeRoute } from 'hono-openapi';
+import { resolver, validator as zValidator } from 'hono-openapi/zod';
+import { z } from 'zod';
 import {
   multiplayerQuizSubmissions,
   questions as questionsTable,
   quizzes,
   userResponses,
   rooms,
-} from "../../../drizzle/schema";
-import { createDb } from "../../db/index";
-import { getSupabase } from "./middleware/auth.middleware";
-import { quizType } from "./schemas/common.schemas";
+} from '../../../drizzle/schema';
+import { createDb } from '../../db/index';
+import { getSupabase } from './middleware/auth.middleware';
+import { quizType } from './schemas/common.schemas';
 import {
   quizLeaderboardResponseSchema,
   quizQuestionsResponseSchema,
@@ -20,39 +20,35 @@ import {
   quizSubmissionMultiplayerRequestSchema,
   quizSubmissionMultiplayerResponseSchema,
   quizSubmissionMultiplayerSubmitResponseSchema,
-} from "./schemas/quiz.schemas";
-import {
-  MEDIUM_CACHE,
-  createCacheMiddleware,
-} from "./middleware/cache.middleware";
-import { HTTPException } from "hono/http-exception";
+} from './schemas/quiz.schemas';
+import { MEDIUM_CACHE, createCacheMiddleware } from './middleware/cache.middleware';
+import { HTTPException } from 'hono/http-exception';
 
 const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
   .post(
-    "/:roomId/quiz",
+    '/:roomId/quiz',
     describeRoute({
-      tags: ["Quiz Submissions Multiplayer"],
-      summary: "Submit a quiz",
+      tags: ['Quiz Submissions Multiplayer'],
+      summary: 'Submit a quiz',
       description:
-        "This route is called once by the host user. It creates one quiz and one set of questions for the entire lobby.",
+        'This route is called once by the host user. It creates one quiz and one set of questions for the entire lobby.',
       validateResponse: true,
       responses: {
         201: {
-          description: "Quiz submitted successfully",
+          description: 'Quiz submitted successfully',
           content: {
-            "application/json": {
+            'application/json': {
               schema: resolver(quizSubmissionMultiplayerResponseSchema),
             },
           },
         },
       },
     }),
-    zValidator("json", quizSubmissionMultiplayerRequestSchema),
-    zValidator("param", z.object({ roomId: z.string().uuid() })),
+    zValidator('json', quizSubmissionMultiplayerRequestSchema),
+    zValidator('param', z.object({ roomId: z.string().uuid() })),
     async (c) => {
-      const { quizTitle, quizTopics, language, questions } =
-        c.req.valid("json");
-      const { roomId } = c.req.valid("param");
+      const { quizTitle, quizTopics, language, questions } = c.req.valid('json');
+      const { roomId } = c.req.valid('param');
 
       const supabase = getSupabase(c);
       const {
@@ -116,31 +112,31 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
         console.error(error);
         return c.json({ error: `Internal server error ${error}` }, 500);
       }
-    }
+    },
   )
   .post(
-    "/:roomId/submissions",
+    '/:roomId/submissions',
     describeRoute({
-      tags: ["Quiz Submissions Multiplayer"],
-      summary: "Submit quiz answers for a multiplayer room",
-      description: "Submit quiz answers for a multiplayer room",
+      tags: ['Quiz Submissions Multiplayer'],
+      summary: 'Submit quiz answers for a multiplayer room',
+      description: 'Submit quiz answers for a multiplayer room',
       validateResponse: true,
       responses: {
         201: {
-          description: "Quiz submission successful",
+          description: 'Quiz submission successful',
           content: {
-            "application/json": {
+            'application/json': {
               schema: resolver(quizSubmissionMultiplayerSubmitResponseSchema),
             },
           },
         },
       },
     }),
-    zValidator("param", z.object({ roomId: z.string().uuid() })),
-    zValidator("json", quizSubmissionAnswerSchema),
+    zValidator('param', z.object({ roomId: z.string().uuid() })),
+    zValidator('json', quizSubmissionAnswerSchema),
     async (c) => {
-      const { roomId } = c.req.valid("param");
-      const { questionId, userAnswer, timeTaken } = c.req.valid("json");
+      const { roomId } = c.req.valid('param');
+      const { questionId, userAnswer, timeTaken } = c.req.valid('json');
 
       const supabase = getSupabase(c);
       const {
@@ -160,7 +156,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
 
         if (!quiz) {
           throw new HTTPException(404, {
-            message: "No quiz found for this room",
+            message: 'No quiz found for this room',
           });
         }
 
@@ -173,9 +169,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           },
         });
 
-        const questionMap = new Map(
-          questions.map((q) => [q.id, q.correctAnswer])
-        );
+        const questionMap = new Map(questions.map((q) => [q.id, q.correctAnswer]));
 
         let correctCount = 0;
 
@@ -204,7 +198,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
 
         if (!room) {
           throw new HTTPException(404, {
-            message: "Room not found",
+            message: 'Room not found',
           });
         }
 
@@ -217,15 +211,10 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
         let timeBasedPoints = 0;
         if (isCorrect && ans.timeTaken !== undefined) {
           // Convert timeTaken from milliseconds and ensure it doesn't exceed the timer
-          const responseTimeRatio = Math.min(
-            ans.timeTaken / QUESTION_TIMER_MS,
-            1
-          );
+          const responseTimeRatio = Math.min(ans.timeTaken / QUESTION_TIMER_MS, 1);
 
           // Apply modified formula
-          timeBasedPoints = Math.round(
-            (1 - responseTimeRatio / DIVISOR) * MAX_POINTS
-          );
+          timeBasedPoints = Math.round((1 - responseTimeRatio / DIVISOR) * MAX_POINTS);
 
           // Add a small bonus for very fast answers (under 10% of the time limit)
           if (ans.timeTaken < QUESTION_TIMER_MS * 0.1) {
@@ -256,46 +245,41 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           .where(
             eq(userResponses.userId, user!.id) &&
               eq(userResponses.quizId, quiz.id) &&
-              eq(userResponses.isCorrect, true)
+              eq(userResponses.isCorrect, true),
           );
 
         // Extract the count from the result
         const correctAnswersCount = correctAnswersResult[0]?.count || 0;
 
         // Ensure the count doesn't exceed the total questions
-        const finalCorrectCount = Math.min(
-          correctAnswersCount,
-          quiz.questionsCount
-        );
+        const finalCorrectCount = Math.min(correctAnswersCount, quiz.questionsCount);
 
         // Get the latest submission for this user in this quiz/room to get the current score
-        const latestSubmission =
-          await tx.query.multiplayerQuizSubmissions.findFirst({
-            where: (submissions) =>
-              eq(submissions.userId, user!.id) &&
-              eq(submissions.quizId, quiz.id) &&
-              eq(submissions.roomId, roomId),
-            orderBy: (submissions) => desc(submissions.createdAt),
-            columns: {
-              userScore: true,
-            },
-          });
+        const latestSubmission = await tx.query.multiplayerQuizSubmissions.findFirst({
+          where: (submissions) =>
+            eq(submissions.userId, user!.id) &&
+            eq(submissions.quizId, quiz.id) &&
+            eq(submissions.roomId, roomId),
+          orderBy: (submissions) => desc(submissions.createdAt),
+          columns: {
+            userScore: true,
+          },
+        });
 
         // Calculate the new score by adding to the existing score (if any)
         const currentScore = latestSubmission?.userScore || 0;
         const newScore = currentScore + (isCorrect ? timeBasedPoints : 0);
 
         // Check if a submission already exists
-        const existingSubmission =
-          await tx.query.multiplayerQuizSubmissions.findFirst({
-            where: (submissions) =>
-              eq(submissions.userId, user!.id) &&
-              eq(submissions.quizId, quiz.id) &&
-              eq(submissions.roomId, roomId),
-            columns: {
-              id: true,
-            },
-          });
+        const existingSubmission = await tx.query.multiplayerQuizSubmissions.findFirst({
+          where: (submissions) =>
+            eq(submissions.userId, user!.id) &&
+            eq(submissions.quizId, quiz.id) &&
+            eq(submissions.roomId, roomId),
+          columns: {
+            id: true,
+          },
+        });
 
         let finalSubmission;
 
@@ -314,8 +298,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
               quizId: multiplayerQuizSubmissions.quizId,
               roomId: multiplayerQuizSubmissions.roomId,
               userScore: multiplayerQuizSubmissions.userScore,
-              correctAnswersCount:
-                multiplayerQuizSubmissions.correctAnswersCount,
+              correctAnswersCount: multiplayerQuizSubmissions.correctAnswersCount,
               createdAt: multiplayerQuizSubmissions.createdAt,
             });
 
@@ -337,8 +320,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
               quizId: multiplayerQuizSubmissions.quizId,
               roomId: multiplayerQuizSubmissions.roomId,
               userScore: multiplayerQuizSubmissions.userScore,
-              correctAnswersCount:
-                multiplayerQuizSubmissions.correctAnswersCount,
+              correctAnswersCount: multiplayerQuizSubmissions.correctAnswersCount,
               createdAt: multiplayerQuizSubmissions.createdAt,
             });
 
@@ -354,30 +336,30 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
       });
 
       return c.json(result, 201);
-    }
+    },
   )
   .get(
-    "/:roomId/leaderboard",
-    createCacheMiddleware("quiz-leaderboard", MEDIUM_CACHE),
+    '/:roomId/leaderboard',
+    createCacheMiddleware('quiz-leaderboard', MEDIUM_CACHE),
     describeRoute({
-      tags: ["Quiz Submissions Multiplayer"],
-      summary: "Get the leaderboard for a multiplayer room",
-      description: "Get the leaderboard for a multiplayer room",
+      tags: ['Quiz Submissions Multiplayer'],
+      summary: 'Get the leaderboard for a multiplayer room',
+      description: 'Get the leaderboard for a multiplayer room',
       validateResponse: true,
       responses: {
         200: {
-          description: "Leaderboard retrieved successfully",
+          description: 'Leaderboard retrieved successfully',
           content: {
-            "application/json": {
+            'application/json': {
               schema: resolver(quizLeaderboardResponseSchema),
             },
           },
         },
       },
     }),
-    zValidator("param", z.object({ roomId: z.string().uuid() })),
+    zValidator('param', z.object({ roomId: z.string().uuid() })),
     async (c) => {
-      const { roomId } = c.req.valid("param");
+      const { roomId } = c.req.valid('param');
 
       const supabase = getSupabase(c);
       const {
@@ -394,43 +376,86 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
             columns: {
               name: true,
             },
+            with: {
+              userResponses: {
+                columns: {
+                  answer: true,
+                  timeTaken: true,
+                  questionId: true,
+                },
+              },
+            },
+          },
+          quiz: {
+            columns: {
+              questionsCount: true,
+            },
+            with: {
+              questions: {
+                columns: {
+                  correctAnswer: true,
+                  text: true,
+                  id: true,
+                },
+              },
+            },
           },
         },
         orderBy: desc(multiplayerQuizSubmissions.userScore),
       });
 
       // shape it for the client
-      const result = submissions.map((sub) => ({
-        userName: sub.user.name,
-        score: sub.userScore,
-        correctAnswers: sub.correctAnswersCount,
-      }));
+      const result = submissions.map((sub) => {
+        const totalTimeTaken = sub.user.userResponses.reduce(
+          (acc, res) => acc + (res.timeTaken ?? 0),
+          0,
+        );
+        const avgTimeTaken = Number(
+          (totalTimeTaken / (sub.user.userResponses.length || 1)).toFixed(2),
+        );
+
+        return {
+          userName: sub.user.name,
+          score: sub.userScore,
+          correctAnswers: sub.correctAnswersCount,
+          avgTimeTaken,
+          totalQuestions: sub.quiz.questionsCount,
+          questions: sub.quiz.questions.map((question) => ({
+            text: question.text,
+            correctAnswer: question.correctAnswer,
+            userAnswer:
+              sub.user.userResponses.find((res) => res.questionId === question.id)?.answer || '',
+            timeTaken:
+              sub.user.userResponses.find((res) => res.questionId === question.id)?.timeTaken || 0,
+          })),
+        };
+      });
 
       return c.json({ leaderboard: result });
-    }
+    },
   )
   .get(
-    "/:roomId/questions",
-    createCacheMiddleware("quiz-questions", MEDIUM_CACHE),
+    '/:roomId/questions',
+    createCacheMiddleware('quiz-questions', MEDIUM_CACHE),
     describeRoute({
-      tags: ["Quiz Submissions Multiplayer"],
-      summary: "Get the questions for a multiplayer room",
-      description: "Get the questions for a multiplayer room",
+      tags: ['Quiz Submissions Multiplayer'],
+      summary: 'Get the questions for a multiplayer room',
+      description: 'Get the questions for a multiplayer room',
       validateResponse: true,
       responses: {
         200: {
-          description: "Questions retrieved successfully",
+          description: 'Questions retrieved successfully',
           content: {
-            "application/json": {
+            'application/json': {
               schema: resolver(quizQuestionsResponseSchema),
             },
           },
         },
       },
     }),
-    zValidator("param", z.object({ roomId: z.string().uuid() })),
+    zValidator('param', z.object({ roomId: z.string().uuid() })),
     async (c) => {
-      const { roomId } = c.req.valid("param");
+      const { roomId } = c.req.valid('param');
 
       const db = await createDb(c);
 
@@ -447,7 +472,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
 
           if (!quiz) {
             throw new HTTPException(404, {
-              message: "No quiz found for this room",
+              message: 'No quiz found for this room',
             });
           }
 
@@ -475,15 +500,12 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
 
         return c.json(result);
       } catch (error) {
-        if (
-          error instanceof Error &&
-          error.message === "No quiz found for this room"
-        ) {
+        if (error instanceof Error && error.message === 'No quiz found for this room') {
           return c.json({ error: error.message }, 404);
         }
         console.error(error);
-        return c.json({ error: "Internal server error" }, 500);
+        return c.json({ error: 'Internal server error' }, 500);
       }
-    }
+    },
   );
 export default multiplayerQuizSubmissionsRoutes;
