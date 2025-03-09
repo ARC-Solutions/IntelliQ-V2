@@ -20,9 +20,13 @@ import {
   quizSubmissionMultiplayerRequestSchema,
   quizSubmissionMultiplayerResponseSchema,
   quizSubmissionMultiplayerSubmitResponseSchema,
-} from './schemas/quiz.schemas';
-import { MEDIUM_CACHE, createCacheMiddleware } from './middleware/cache.middleware';
-import { HTTPException } from 'hono/http-exception';
+} from "./schemas/quiz.schemas";
+import {
+  MEDIUM_CACHE,
+  createCacheMiddleware,
+} from "./middleware/cache.middleware";
+import { HTTPException } from "hono/http-exception";
+import { queueTagAnalysis } from "./services/queue-tag-analysis";
 
 const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
   .post(
@@ -102,6 +106,8 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
             });
           }
 
+          await queueTagAnalysis(c, createdQuiz.id, quizType.Enum.multiplayer);
+
           return {
             quizId: createdQuiz.id,
             questions: createdQuestions,
@@ -169,7 +175,9 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           },
         });
 
-        const questionMap = new Map(questions.map((q) => [q.id, q.correctAnswer]));
+        const questionMap = new Map(
+          questions.map((q) => [q.id, q.correctAnswer]),
+        );
 
         let correctCount = 0;
 
@@ -211,10 +219,15 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
         let timeBasedPoints = 0;
         if (isCorrect && ans.timeTaken !== undefined) {
           // Convert timeTaken from milliseconds and ensure it doesn't exceed the timer
-          const responseTimeRatio = Math.min(ans.timeTaken / QUESTION_TIMER_MS, 1);
+          const responseTimeRatio = Math.min(
+            ans.timeTaken / QUESTION_TIMER_MS,
+            1,
+          );
 
           // Apply modified formula
-          timeBasedPoints = Math.round((1 - responseTimeRatio / DIVISOR) * MAX_POINTS);
+          timeBasedPoints = Math.round(
+            (1 - responseTimeRatio / DIVISOR) * MAX_POINTS,
+          );
 
           // Add a small bonus for very fast answers (under 10% of the time limit)
           if (ans.timeTaken < QUESTION_TIMER_MS * 0.1) {
@@ -252,7 +265,10 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
         const correctAnswersCount = correctAnswersResult[0]?.count || 0;
 
         // Ensure the count doesn't exceed the total questions
-        const finalCorrectCount = Math.min(correctAnswersCount, quiz.questionsCount);
+        const finalCorrectCount = Math.min(
+          correctAnswersCount,
+          quiz.questionsCount,
+        );
 
         // Get the latest submission for this user in this quiz/room to get the current score
         const latestSubmission = await tx.query.multiplayerQuizSubmissions.findFirst({
