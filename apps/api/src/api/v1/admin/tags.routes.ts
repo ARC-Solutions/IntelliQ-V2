@@ -3,6 +3,7 @@ import { generateObject } from "ai";
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
+import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { bearerAuth } from "hono/bearer-auth";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
@@ -12,8 +13,8 @@ import { incrementUserCacheVersion } from "../../../utils/kv-user-version";
 import { quizType } from "../schemas/common.schemas";
 import type { Quiz } from "../schemas/quiz.schemas";
 import {
-    analyzeQuizPromptMultiplayer,
-    analyzeQuizPromptSingleplayer,
+  analyzeQuizPromptMultiplayer,
+  analyzeQuizPromptSingleplayer,
 } from "../services/prompts";
 import { updateUserTagStats } from "../services/update-user-tag-stats";
 
@@ -24,10 +25,33 @@ const adminTagsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
     tags: ["Admin"],
     summary: "Analyze tags",
     description: "Analyze tags",
+    validateResponse: true,
+    responses: {
+      200: {
+        description: "Tags analyzed successfully",
+        content: {
+          "application/json": {
+            schema: z.object({
+              success: z.boolean(),
+              quizId: z.string().uuid(),
+              tags: z.array(z.string()),
+              categories: z.array(z.string()),
+            }),
+          },
+        },
+      },
+    },
   }),
+  zValidator(
+    "json",
+    z.object({
+      quizId: z.string().uuid(),
+      type: quizType,
+    }),
+  ),
   async (c) => {
     const db = await createDb(c);
-    const { quizId, type } = await c.req.json();
+    const { quizId, type } = c.req.valid("json");
 
     const quiz = await db.query.quizzes.findFirst({
       where: eq(quizzes.id, quizId),
