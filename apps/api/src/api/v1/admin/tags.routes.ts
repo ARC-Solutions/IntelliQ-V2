@@ -1,21 +1,21 @@
-import { createDb } from "../../../db";
-import { quizzes } from "../../../../drizzle/schema";
+import { createOpenAI } from "@ai-sdk/openai";
+import { generateObject } from "ai";
+import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
-import { eq } from "drizzle-orm";
-import { quizType } from "../schemas/common.schemas";
-import { HTTPException } from "hono/http-exception";
-import { generateObject } from "ai";
-import { createOpenAI, openai } from "@ai-sdk/openai";
-import { z } from "zod";
-import {
-  analyzeQuizPromptMultiplayer,
-  analyzeQuizPromptSingleplayer,
-} from "../services/prompts";
-import type { Quiz } from "../schemas/quiz.schemas";
-import { incrementUserCacheVersion } from "@/utils/kv-user-version";
-import { updateUserTagStats } from "../services/update-user-tag-stats";
 import { bearerAuth } from "hono/bearer-auth";
+import { HTTPException } from "hono/http-exception";
+import { z } from "zod";
+import { quizzes } from "../../../../drizzle/schema";
+import { createDb } from "../../../db";
+import { incrementUserCacheVersion } from "../../../utils/kv-user-version";
+import { quizType } from "../schemas/common.schemas";
+import type { Quiz } from "../schemas/quiz.schemas";
+import {
+    analyzeQuizPromptMultiplayer,
+    analyzeQuizPromptSingleplayer,
+} from "../services/prompts";
+import { updateUserTagStats } from "../services/update-user-tag-stats";
 
 const adminTagsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
   "/analyze",
