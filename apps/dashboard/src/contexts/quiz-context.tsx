@@ -95,6 +95,14 @@ const initialState: QuizContextValue = {
   fetchingFinished: false,
   currentQuiz: null,
   leaderboard: null,
+  // leaderboard: [
+  //   {correctAnswers: 5, score: 890, userName: 'noppin'},
+  //   {correctAnswers: 4, score: 780, userName: 'splatmark'},
+  //   {correctAnswers: 3, score: 680, userName: 'niuku'},
+  //   {correctAnswers: 3, score: 670, userName: 'maraciuca'},
+  //   {correctAnswers: 2, score: 530, userName: 'john doe'},
+  //   {correctAnswers: 2, score: 400, userName: 'hehe'},
+  // ],
   // currentQuiz: {
   //   topic: 'C#',
   //   showCorrectAnswers: true,

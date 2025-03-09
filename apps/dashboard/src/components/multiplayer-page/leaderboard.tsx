@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect } from 'react';
 import { useState } from 'react';
-import { Trophy } from 'lucide-react';
+import { Trophy, Clock } from 'lucide-react';
 import { Leaderboard, useQuiz } from '@/contexts/quiz-context';
 import { useRouter } from 'next/navigation';
 
@@ -68,17 +68,8 @@ const QuizLeaderboard = () => {
     <div className='flex flex-col items-center min-h-screen bg-black text-purple-200 p-6'>
       <h1 className='text-4xl font-bold mb-2 text-purple-300'>Quiz Leaderboard</h1>
       <div className='flex items-center gap-1 mb-8 text-sm opacity-70'>
-        <svg
-          xmlns='http://www.w3.org/2000/svg'
-          viewBox='0 0 24 24'
-          fill='none'
-          stroke='currentColor'
-          className='w-4 h-4'
-        >
-          <circle cx='12' cy='12' r='10' />
-          <path d='M12 8v4l3 3' />
-        </svg>
-        <p>Click on a player to see their detailed results</p>
+        <Clock className='w-5 h-5' />
+        <p>Click on a player to see their detailed results (Coming Soon...)</p>
       </div>
 
       <div className='w-full max-w-3xl'>
@@ -97,8 +88,8 @@ const QuizLeaderboard = () => {
               >
                 <Trophy className={`w-10 h-10 ${getTrophyColor(i + 1)}`} />
                 <div className='text-center mt-auto'>
-                  <p className='text-xl font-semibold'>{player.userName}</p>
-                  <p className='text-2xl font-bold'>{player.score}</p>
+                  <p className='text-lg font-semibold'>{player.userName}</p>
+                  <p className='text-xl font-bold'>{player.score}</p>
                 </div>
               </div>
               <div className='w-full h-1 bg-gradient-to-r from-transparent via-gray-700 to-transparent'></div>
