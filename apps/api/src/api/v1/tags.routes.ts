@@ -6,7 +6,7 @@ import { getSupabase } from "./middleware/auth.middleware";
 import { userAnalysis } from "../../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { createCacheMiddleware } from "./middleware/cache.middleware";
-
+import { resolver } from "hono-openapi/zod";
 const userAnalysisRoutes = new Hono<{ Bindings: CloudflareEnv }>()
   .get(
     "/top-tags",
@@ -22,14 +22,16 @@ const userAnalysisRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           description: "User's tag analysis",
           content: {
             "application/json": {
-              schema: z.object({
-                tags: z.array(
-                  z.object({
-                    tag: z.string(),
-                    count: z.number(),
-                  }),
-                ),
-              }),
+              schema: resolver(
+                z.object({
+                  tags: z.array(
+                    z.object({
+                      tag: z.string(),
+                      count: z.number(),
+                    }),
+                  ),
+                }),
+              ),
             },
           },
         },
@@ -82,14 +84,16 @@ const userAnalysisRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           description: "User's top categories",
           content: {
             "application/json": {
-              schema: z.object({
-                categories: z.array(
-                  z.object({
-                    category: z.string(),
-                    count: z.number(),
-                  }),
-                ),
-              }),
+              schema: resolver(
+                z.object({
+                  categories: z.array(
+                    z.object({
+                      category: z.string(),
+                      count: z.number(),
+                    }),
+                  ),
+                }),
+              ),
             },
           },
         },

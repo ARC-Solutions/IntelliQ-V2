@@ -31,12 +31,13 @@ const adminTagsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
         description: "Tags analyzed successfully",
         content: {
           "application/json": {
-            schema: z.object({
-              success: z.boolean(),
-              quizId: z.string().uuid(),
-              tags: z.array(z.string()),
-              categories: z.array(z.string()),
-            }),
+            schema: resolver(z.object({
+                success: z.boolean(),
+                quizId: z.string().uuid(),
+                tags: z.array(z.string()),
+                categories: z.array(z.string()),
+              }),
+            ),
           },
         },
       },
