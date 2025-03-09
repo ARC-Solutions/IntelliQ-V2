@@ -112,6 +112,7 @@ export const quizLeaderboardResponseSchema = z.object({
   leaderboard: z.array(
     z.object({
       userName: z.string(),
+      userId: z.string().uuid(),
       score: z.number(),
       correctAnswers: z.number(),
       avgTimeTaken: z.number(),
