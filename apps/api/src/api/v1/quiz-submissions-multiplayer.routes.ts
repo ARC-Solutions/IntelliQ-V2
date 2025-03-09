@@ -391,6 +391,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           user: {
             columns: {
               name: true,
+              id: true,
             },
             with: {
               userResponses: {
@@ -432,6 +433,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
 
         return {
           userName: sub.user.name,
+          userId: sub.user.id,
           score: sub.userScore,
           correctAnswers: sub.correctAnswersCount,
           avgTimeTaken,
