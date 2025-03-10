@@ -29,7 +29,6 @@ export const roomDetailsResponseSchema = z.object({
 
   // endedAt can be null
   endedAt: z.string().nullable(),
-  language: z.string(),
 });
 
 export const updateRoomSettingsSchema = z.object({
@@ -50,7 +49,6 @@ export const createRoomSchema = z.object({
   maxPlayers: roomDetailsResponseSchema.shape.maxPlayers,
   numQuestions: roomDetailsResponseSchema.shape.numQuestions,
   timeLimit: roomDetailsResponseSchema.shape.timeLimit,
-  language: roomDetailsResponseSchema.shape.language,
 });
 
 export const createRoomResponseSchema = z.object({
