@@ -6,10 +6,10 @@ export const quizSchema = z.object({
   quizTitle: z.string(),
   questions: z.array(
     z.object({
-      questionTitle: z.string(),
-      text: z.string(),
-      options: z.array(z.string()),
-      correctAnswer: z.string(),
+      questionTitle: z.string().describe("A brief title for the question"),
+      text: z.string().describe("The actual question text"),
+      options: z.array(z.string()).describe("Four possible answers labeled a), b), c), and d)"),
+      correctAnswer: z.string().describe("The correct answer text"),
     }),
   ),
 });

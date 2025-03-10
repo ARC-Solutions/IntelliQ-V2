@@ -2,7 +2,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { quizSchema } from "../schemas/quiz.schemas";
 import { generateQuizPrompt } from "./prompts";
-import type { z } from "zod";
+import { z } from "zod";
 
 // Use the quiz schema to infer the type
 type Quiz = z.infer<typeof quizSchema>;
@@ -38,7 +38,7 @@ export async function generateQuiz(
         structuredOutputs: true,
       }),
       schemaName: "quizzes",
-      schemaDescription: 'A quiz.',
+      schemaDescription: 'A quiz with multiple choice questions.',
       schema: quizSchema,
       prompt: generateQuizPrompt(
         quizTopic,
@@ -47,6 +47,12 @@ export async function generateQuiz(
         quizTags,
       ),
       maxTokens: 1024,
+      presencePenalty: 0.5,
+      system: `You are creating a quiz with multiple choice questions. 
+        Each question MUST have exactly 4 options - no more, no less.
+        The correct answer must exactly match one of the options.
+        Include letters a), b), c), d) in the options or answers.
+        Important: Always provide exactly 4 options for each question.`
     });
 
     const durationInSeconds = (performance.now() - startTime) / 1000;
