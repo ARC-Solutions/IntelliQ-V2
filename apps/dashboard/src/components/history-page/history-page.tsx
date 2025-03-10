@@ -38,7 +38,7 @@ export default function HistoryPage({
       redirect(url);
     }
     if (summaryQuiz) {
-      redirect(`/single-player/summary/${summaryQuiz.quiz_id}`);
+      redirect(`/single-player/summary/${summaryQuiz.quizId}`);
     }
   }, [currentQuiz, summaryQuiz]);
   return (

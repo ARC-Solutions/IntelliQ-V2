@@ -42,13 +42,14 @@ interface CurrentQuiz {
 }
 
 export interface QuizHistory {
-  quiz_id: string;
-  rawQuestions: {
-    timeTaken: number;
-    quiz_title: string;
-    correctAnswersCount: number;
-    questions: HistoryQuestions[];
-  };
+  quizId: string;
+  quizTitle: string;
+  quizScore: number;
+  totalTime: number;
+  correctAnswersCount: number;
+  totalQuestions: number;
+  passingScore: number;
+  questions: HistoryQuestions[];
 }
 
 export interface MultiplayerLeaderboardQuestions {
@@ -679,15 +680,21 @@ export const QuizProvider = ({ children }: Props) => {
       toast.error(error);
     }
   };
-  const submitQuiz = async (userAnswer: UserAnswer[], timeTaken: number) => {
+  const submitSinglePlayerQuiz = async (
+    userAnswer: UserAnswer[],
+    timeTaken: number,
+    currentQuiz: CurrentQuiz,
+    userScore: number,
+    description: string,
+    language: SupportedLanguages,
+    topic: string,
+    passingScore: number,
+    tags: string[],
+  ) => {
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      const client = createApiClient();
 
-      const accessToken = session?.access_token;
-
-      const quizTitle = state.currentQuiz?.topic;
+      const quizTitle = currentQuiz.topic;
       const questions = userAnswer.map((ans, i) => {
         const { correctAnswer, question, userAnswer } = ans;
         const options = state.currentQuiz?.quiz[i].options.map((opt) => opt.slice(3));
@@ -706,9 +713,9 @@ export const QuizProvider = ({ children }: Props) => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({ rawQuestions }),
       });
       const data = (await response.json()) as QuizHistory;
+      console.log(data);
 
       dispatch({ type: 'SUBMIT_QUIZ_SUCESS', payload: data });
     } catch (error: any) {
@@ -824,7 +831,7 @@ export const QuizProvider = ({ children }: Props) => {
         ...state,
         dispatch,
         fetchQuestions,
-        submitQuiz,
+        submitSinglePlayerQuiz,
         fetchSingleQuiz,
         getMultiplayerQuizForPlayers,
         isMultiplayerMode,

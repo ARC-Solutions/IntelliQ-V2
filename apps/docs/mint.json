@@ -71,6 +71,10 @@
       "pages": ["sharing-flow"]
     },
     {
+      "group": "Tag Analysis",
+      "pages": ["tag-analysis-flow"]
+    },
+    {
       "group": "Essentials",
       "pages": [
         "essentials/markdown",
