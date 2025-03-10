@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { supportedLanguages } from "./common.schemas";
 
 export const roomSchema = z.object({
   roomCode: z.string().min(4, "Room code is required"),
@@ -49,6 +50,7 @@ export const createRoomSchema = z.object({
   maxPlayers: roomDetailsResponseSchema.shape.maxPlayers,
   numQuestions: roomDetailsResponseSchema.shape.numQuestions,
   timeLimit: roomDetailsResponseSchema.shape.timeLimit,
+  language: supportedLanguages,
 });
 
 export const createRoomResponseSchema = z.object({
