@@ -45,7 +45,7 @@ const Quiz = () => {
     isMultiplayer,
     setIsMultiplayer,
   } = useQuizLogic();
-  const { players, setPlayers, isCreator, setIsCreator, channel, setChannel, timeLimit, roomId } =
+  const { players, setPlayers, isCreator, setIsCreator, channel, setChannel, timeLimit } =
     useMultiplayer();
 
   const { currentUser } = useAuth();
@@ -101,7 +101,7 @@ const Quiz = () => {
     if (quizFinished) {
       setTimeout(() => {
         // submitQuiz(userAnswer, totalTimeInSeconds);
-        getLeaderboard(roomId);
+        getLeaderboard(roomCode);
 
         // router.push(`/multiplayer/${roomCode}`);
       }, 1000);
