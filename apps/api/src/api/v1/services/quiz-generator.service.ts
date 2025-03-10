@@ -68,32 +68,31 @@ export async function generateQuiz(
           );
         }
 
-        // Find the correct answer index before shuffling
-        const correctAnswerIndex = question.options.findIndex(
-          (opt) => opt === question.correctAnswer,
-        );
+        // Create pairs of options and letters
+        const optionPairs = question.options.map((opt, idx) => ({
+          option: opt,
+          letter: ["a", "b", "c", "d"][idx],
+          isCorrect: opt === question.correctAnswer,
+        }));
 
-        if (correctAnswerIndex === -1) {
+        // Shuffle the pairs together
+        // uses Lodash (using a version of the Fisher-Yates shuffle)
+        const shuffledPairs = shuffle(optionPairs);
+
+        // Find the correct answer pair
+        const correctPair = shuffledPairs.find((pair) => pair.isCorrect);
+        if (!correctPair) {
           throw new Error(
             `Correct answer "${question.correctAnswer}" not found in options for question "${question.questionTitle}"`,
           );
         }
 
-        // Shuffle both letters and options using lodash
-        const letters = shuffle(["a", "b", "c", "d"]);
-        const shuffledOptions = shuffle(question.options);
-
-        // Find new position of correct answer
-        const newCorrectAnswerIndex = shuffledOptions.findIndex(
-          (opt) => opt === question.correctAnswer,
-        );
-
         return {
           ...question,
-          options: shuffledOptions.map(
-            (option, index) => `${letters[index]}) ${option}`,
+          options: shuffledPairs.map(
+            (pair) => `${pair.letter}) ${pair.option}`,
           ),
-          correctAnswer: `${letters[newCorrectAnswerIndex]}) ${question.correctAnswer}`,
+          correctAnswer: `${correctPair.letter}) ${question.correctAnswer}`,
         };
       }),
     };
