@@ -20,7 +20,7 @@ const QuizDataSchema = z.object({
   description: z.string().max(1000).optional(),
   passingScore: z.number().min(5).max(100),
   showCorrectAnswers: z.boolean(),
-  tags: z.array(z.string()).optional(),
+  tags: z.array(z.string()).min(1, { message: 'At least one tag is required' }),
   questions: z.array(QuestionSchema),
   number: z.union([z.number(), z.string().min(1, { message: 'Number is required' })]),
   quizLanguage: z.nativeEnum(SupportedLanguages, {

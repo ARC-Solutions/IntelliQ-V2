@@ -13,6 +13,7 @@ import { ChevronRight, CircleCheck, CircleX, Timer } from 'lucide-react';
 import { redirect, useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, Suspense } from 'react';
 import Summarizing from '../../../public/IntelliQ summarizing.json';
+import Answer_Waiting from '../../../public/answer_wait_animation-light.json';
 import QAndA from '../single-player-quiz/q-and-a';
 import { createApiClient } from '@/utils/api-client';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -297,6 +298,15 @@ const Quiz = () => {
     );
   }
 
+  if (selectedAnswer !== null && timer > 0) {
+    //load the waiting animation after the user selects an answer
+    return (
+      <div className='absolute left-1/2 top-1/2 flex w-[40] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[30vw]'>
+        <Lottie animationData={Answer_Waiting} />
+      </div>
+    );
+  }
+
   return (
     <div className='mx-auto flex w-[400] flex-col items-center justify-center p-4 text-white sm:w-[800px] '>
       <header className='mb-4 text-center text-2xl font-bold sm:text-4xl'>
@@ -421,7 +431,6 @@ const Quiz = () => {
 
               // Update local state for the creator
               setQuestionNumber(newQuestionNumber);
-
               // Check if the quiz should finish
               if (newQuestionNumber >= currentQuiz.quiz.length) {
                 setQuizFinished(true);

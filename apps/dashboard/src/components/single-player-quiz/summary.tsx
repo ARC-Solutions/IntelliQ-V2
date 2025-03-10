@@ -26,24 +26,24 @@ const Summary = () => {
     redirect('/');
   }
 
-  const correctAnswersCount = summaryQuiz.rawQuestions.correctAnswersCount;
-  const totalQuestions = summaryQuiz.rawQuestions.questions.length;
+  const correctAnswersCount = summaryQuiz.correctAnswersCount;
+  const totalQuestions = summaryQuiz.totalQuestions;
   const correctPercentage = (correctAnswersCount / totalQuestions) * 100;
-  const timeTaken = summaryQuiz.rawQuestions.timeTaken;
+  const timeTaken = summaryQuiz.totalTime;
 
   // This will be modified once i work with the new database
   let descriptionText = '';
-  if (correctPercentage >= 70) {
+  if (correctPercentage >= summaryQuiz.passingScore) {
     descriptionText =
       '👏 Excellent work! Your understanding of the topic is impressive. Keep it up! 👏';
-  } else if (correctPercentage > 50) {
+  } else if (correctPercentage > summaryQuiz.passingScore / 2) {
     descriptionText = '👍 Great job! Keep up the good work. 👍';
   } else {
     descriptionText = '😊 Nice try! Keep practicing to improve your score. 😊';
   }
 
   // Filter questions
-  const allQuestions = summaryQuiz.rawQuestions.questions;
+  const allQuestions = summaryQuiz.questions;
   const correctQuestions = allQuestions.filter((q) => q.userAnswer === q.correctAnswer);
   const incorrectQuestions = allQuestions.filter((q) => q.userAnswer !== q.correctAnswer);
 
@@ -51,9 +51,7 @@ const Summary = () => {
     <div className='mx-auto flex w-full flex-col px-6 py-3 text-white sm:w-10/12'>
       <header className='mb-14 flex w-full flex-col items-center justify-center'>
         <Image src='/logo-dark.svg' alt='IntelliQ' width={250} height={250} />
-        <h1 className='text-2xl font-bold sm:text-4xl text-primary'>
-          {summaryQuiz.rawQuestions.quiz_title}
-        </h1>
+        <h1 className='text-2xl font-bold sm:text-4xl text-primary'>{summaryQuiz.quizTitle}</h1>
       </header>
 
       <Card className='w-full border-b-[0.5px] border-white border-opacity-[.15] p-4'>
@@ -98,7 +96,7 @@ const Summary = () => {
                 value={(100 / totalQuestions) * correctAnswersCount}
               />
               <h4 className='text-lg text-primary font-semibold'>
-                {(100 / totalQuestions) * correctAnswersCount > 70 ? 'YOU PASSED!' : 'YOU FAILED!'}
+                {(100 / totalQuestions) * correctAnswersCount >= summaryQuiz.passingScore ? 'YOU PASSED!' : 'YOU FAILED!'}
               </h4>
             </>
           )}
