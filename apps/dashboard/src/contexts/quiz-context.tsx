@@ -51,10 +51,21 @@ export interface QuizHistory {
   };
 }
 
+export interface MultiplayerLeaderboardQuestions {
+  text: string;
+  correctAnswer: string;
+  userAnswer: string;
+  timeTaken: number;
+}
+
 export interface Leaderboard {
   userName: string;
+  userId: string;
   score: number;
   correctAnswers: number;
+  avgTimeTaken: number;
+  totalQuestions: number;
+  questions: MultiplayerLeaderboardQuestions[];
 }
 export interface QuizContextValue {
   isLoading: boolean;
@@ -94,15 +105,409 @@ const initialState: QuizContextValue = {
   isLoading: false,
   fetchingFinished: false,
   currentQuiz: null,
-  leaderboard: null,
-  // leaderboard: [
-  //   {correctAnswers: 5, score: 890, userName: 'noppin'},
-  //   {correctAnswers: 4, score: 780, userName: 'splatmark'},
-  //   {correctAnswers: 3, score: 680, userName: 'niuku'},
-  //   {correctAnswers: 3, score: 670, userName: 'maraciuca'},
-  //   {correctAnswers: 2, score: 530, userName: 'john doe'},
-  //   {correctAnswers: 2, score: 400, userName: 'hehe'},
-  // ],
+  // leaderboard: null,
+  leaderboard: [
+    {
+      userName: 'John Doe',
+      userId: '16098146-8406-42b3-8c86-2b3119963494',
+      score: 3248,
+      correctAnswers: 4,
+      avgTimeTaken: 9056.25,
+      totalQuestions: 5,
+      questions: [
+        {
+          text: 'In which year was the first Formula 1 World Championship held?',
+          correctAnswer: 'b) 1950',
+          userAnswer: 'b) 1950',
+          timeTaken: 9990,
+        },
+        {
+          text: 'Which driver holds the record for the most World Championships in Formula 1?',
+          correctAnswer: 'b) Lewis Hamilton',
+          userAnswer: 'b) Lewis Hamilton',
+          timeTaken: 7737,
+        },
+        {
+          text: "Which of the following circuits is known as 'The Temple of Speed'?",
+          correctAnswer: 'a) Monza',
+          userAnswer: 'a) Monza',
+          timeTaken: 7672,
+        },
+        {
+          text: "Which team has won the most Constructors' Championships in Formula 1 history?",
+          correctAnswer: 'a) Ferrari',
+          userAnswer: 'b) McLaren',
+          timeTaken: 5144,
+        },
+        {
+          text: 'What is the fastest recorded lap in Formula 1 history (as of 2023)?',
+          correctAnswer: 'c) 1:12.908',
+          userAnswer: 'c) 1:12.908',
+          timeTaken: 7686,
+        },
+      ],
+    },
+    {
+      userName: 'Nippon Lama',
+      userId: '02607b81-16b0-4831-ba8a-16cdab27ceba',
+      score: 2687,
+      correctAnswers: 3,
+      avgTimeTaken: 4709.55,
+      totalQuestions: 5,
+      questions: [
+        {
+          text: 'In which year was the first Formula 1 World Championship held?',
+          correctAnswer: 'b) 1950',
+          userAnswer: 'a) 1946',
+          timeTaken: 8833,
+        },
+        {
+          text: 'Which driver holds the record for the most World Championships in Formula 1?',
+          correctAnswer: 'b) Lewis Hamilton',
+          userAnswer: 'b) Lewis Hamilton',
+          timeTaken: 5596,
+        },
+        {
+          text: "Which of the following circuits is known as 'The Temple of Speed'?",
+          correctAnswer: 'a) Monza',
+          userAnswer: 'a) Monza',
+          timeTaken: 4710,
+        },
+        {
+          text: "Which team has won the most Constructors' Championships in Formula 1 history?",
+          correctAnswer: 'a) Ferrari',
+          userAnswer: 'a) Ferrari',
+          timeTaken: 3467,
+        },
+        {
+          text: 'What is the fastest recorded lap in Formula 1 history (as of 2023)?',
+          correctAnswer: 'c) 1:12.908',
+          userAnswer: 'a) 1:14.260',
+          timeTaken: 4147,
+        },
+      ],
+    },
+    {
+      userName: 'arc admin',
+      userId: '0a63b60e-3c17-42b8-9924-8c337a43de1f',
+      score: 2467,
+      correctAnswers: 3,
+      avgTimeTaken: 7907.67,
+      totalQuestions: 5,
+      questions: [
+        {
+          text: 'In which year was the first Formula 1 World Championship held?',
+          correctAnswer: 'b) 1950',
+          userAnswer: 'b) 1950',
+          timeTaken: 10468,
+        },
+        {
+          text: 'Which driver holds the record for the most World Championships in Formula 1?',
+          correctAnswer: 'b) Lewis Hamilton',
+          userAnswer: 'b) Lewis Hamilton',
+          timeTaken: 6748,
+        },
+        {
+          text: "Which of the following circuits is known as 'The Temple of Speed'?",
+          correctAnswer: 'a) Monza',
+          userAnswer: 'a) Monza',
+          timeTaken: 6259,
+        },
+        {
+          text: "Which team has won the most Constructors' Championships in Formula 1 history?",
+          correctAnswer: 'a) Ferrari',
+          userAnswer: 'b) McLaren',
+          timeTaken: 4328,
+        },
+        {
+          text: 'What is the fastest recorded lap in Formula 1 history (as of 2023)?',
+          correctAnswer: 'c) 1:12.908',
+          userAnswer: 'b) 1:13.553',
+          timeTaken: 6122,
+        },
+      ],
+    },
+    {
+      userName: 'arc admin',
+      userId: '0a63b60e-3c17-42b8-9924-8c337a43de1f',
+      score: 2467,
+      correctAnswers: 3,
+      avgTimeTaken: 7907.67,
+      totalQuestions: 5,
+      questions: [
+        {
+          text: 'In which year was the first Formula 1 World Championship held?',
+          correctAnswer: 'b) 1950',
+          userAnswer: 'b) 1950',
+          timeTaken: 10468,
+        },
+        {
+          text: 'Which driver holds the record for the most World Championships in Formula 1?',
+          correctAnswer: 'b) Lewis Hamilton',
+          userAnswer: 'b) Lewis Hamilton',
+          timeTaken: 6748,
+        },
+        {
+          text: "Which of the following circuits is known as 'The Temple of Speed'?",
+          correctAnswer: 'a) Monza',
+          userAnswer: 'a) Monza',
+          timeTaken: 6259,
+        },
+        {
+          text: "Which team has won the most Constructors' Championships in Formula 1 history?",
+          correctAnswer: 'a) Ferrari',
+          userAnswer: 'b) McLaren',
+          timeTaken: 4328,
+        },
+        {
+          text: 'What is the fastest recorded lap in Formula 1 history (as of 2023)?',
+          correctAnswer: 'c) 1:12.908',
+          userAnswer: 'b) 1:13.553',
+          timeTaken: 6122,
+        },
+      ],
+    },
+    {
+      userName: 'arc admin',
+      userId: '0a63b60e-3c17-42b8-9924-8c337a43de1f',
+      score: 2467,
+      correctAnswers: 3,
+      avgTimeTaken: 7907.67,
+      totalQuestions: 5,
+      questions: [
+        {
+          text: 'In which year was the first Formula 1 World Championship held?',
+          correctAnswer: 'b) 1950',
+          userAnswer: 'b) 1950',
+          timeTaken: 10468,
+        },
+        {
+          text: 'Which driver holds the record for the most World Championships in Formula 1?',
+          correctAnswer: 'b) Lewis Hamilton',
+          userAnswer: 'b) Lewis Hamilton',
+          timeTaken: 6748,
+        },
+        {
+          text: "Which of the following circuits is known as 'The Temple of Speed'?",
+          correctAnswer: 'a) Monza',
+          userAnswer: 'a) Monza',
+          timeTaken: 6259,
+        },
+        {
+          text: "Which team has won the most Constructors' Championships in Formula 1 history?",
+          correctAnswer: 'a) Ferrari',
+          userAnswer: 'b) McLaren',
+          timeTaken: 4328,
+        },
+        {
+          text: 'What is the fastest recorded lap in Formula 1 history (as of 2023)?',
+          correctAnswer: 'c) 1:12.908',
+          userAnswer: 'b) 1:13.553',
+          timeTaken: 6122,
+        },
+      ],
+    },
+    {
+      userName: 'arc admin',
+      userId: '0a63b60e-3c17-42b8-9924-8c337a43de1f',
+      score: 2467,
+      correctAnswers: 3,
+      avgTimeTaken: 7907.67,
+      totalQuestions: 5,
+      questions: [
+        {
+          text: 'In which year was the first Formula 1 World Championship held?',
+          correctAnswer: 'b) 1950',
+          userAnswer: 'b) 1950',
+          timeTaken: 10468,
+        },
+        {
+          text: 'Which driver holds the record for the most World Championships in Formula 1?',
+          correctAnswer: 'b) Lewis Hamilton',
+          userAnswer: 'b) Lewis Hamilton',
+          timeTaken: 6748,
+        },
+        {
+          text: "Which of the following circuits is known as 'The Temple of Speed'?",
+          correctAnswer: 'a) Monza',
+          userAnswer: 'a) Monza',
+          timeTaken: 6259,
+        },
+        {
+          text: "Which team has won the most Constructors' Championships in Formula 1 history?",
+          correctAnswer: 'a) Ferrari',
+          userAnswer: 'b) McLaren',
+          timeTaken: 4328,
+        },
+        {
+          text: 'What is the fastest recorded lap in Formula 1 history (as of 2023)?',
+          correctAnswer: 'c) 1:12.908',
+          userAnswer: 'b) 1:13.553',
+          timeTaken: 6122,
+        },
+      ],
+    },
+    {
+      userName: 'arc admin',
+      userId: '0a63b60e-3c17-42b8-9924-8c337a43de1f',
+      score: 2467,
+      correctAnswers: 3,
+      avgTimeTaken: 7907.67,
+      totalQuestions: 5,
+      questions: [
+        {
+          text: 'In which year was the first Formula 1 World Championship held?',
+          correctAnswer: 'b) 1950',
+          userAnswer: 'b) 1950',
+          timeTaken: 10468,
+        },
+        {
+          text: 'Which driver holds the record for the most World Championships in Formula 1?',
+          correctAnswer: 'b) Lewis Hamilton',
+          userAnswer: 'b) Lewis Hamilton',
+          timeTaken: 6748,
+        },
+        {
+          text: "Which of the following circuits is known as 'The Temple of Speed'?",
+          correctAnswer: 'a) Monza',
+          userAnswer: 'a) Monza',
+          timeTaken: 6259,
+        },
+        {
+          text: "Which team has won the most Constructors' Championships in Formula 1 history?",
+          correctAnswer: 'a) Ferrari',
+          userAnswer: 'b) McLaren',
+          timeTaken: 4328,
+        },
+        {
+          text: 'What is the fastest recorded lap in Formula 1 history (as of 2023)?',
+          correctAnswer: 'c) 1:12.908',
+          userAnswer: 'b) 1:13.553',
+          timeTaken: 6122,
+        },
+      ],
+    },
+    {
+      userName: 'arc admin',
+      userId: '0a63b60e-3c17-42b8-9924-8c337a43de1f',
+      score: 2467,
+      correctAnswers: 3,
+      avgTimeTaken: 7907.67,
+      totalQuestions: 5,
+      questions: [
+        {
+          text: 'In which year was the first Formula 1 World Championship held?',
+          correctAnswer: 'b) 1950',
+          userAnswer: 'b) 1950',
+          timeTaken: 10468,
+        },
+        {
+          text: 'Which driver holds the record for the most World Championships in Formula 1?',
+          correctAnswer: 'b) Lewis Hamilton',
+          userAnswer: 'b) Lewis Hamilton',
+          timeTaken: 6748,
+        },
+        {
+          text: "Which of the following circuits is known as 'The Temple of Speed'?",
+          correctAnswer: 'a) Monza',
+          userAnswer: 'a) Monza',
+          timeTaken: 6259,
+        },
+        {
+          text: "Which team has won the most Constructors' Championships in Formula 1 history?",
+          correctAnswer: 'a) Ferrari',
+          userAnswer: 'b) McLaren',
+          timeTaken: 4328,
+        },
+        {
+          text: 'What is the fastest recorded lap in Formula 1 history (as of 2023)?',
+          correctAnswer: 'c) 1:12.908',
+          userAnswer: 'b) 1:13.553',
+          timeTaken: 6122,
+        },
+      ],
+    },
+    {
+      userName: 'arc admin',
+      userId: '0a63b60e-3c17-42b8-9924-8c337a43de1f',
+      score: 2467,
+      correctAnswers: 3,
+      avgTimeTaken: 7907.67,
+      totalQuestions: 5,
+      questions: [
+        {
+          text: 'In which year was the first Formula 1 World Championship held?',
+          correctAnswer: 'b) 1950',
+          userAnswer: 'b) 1950',
+          timeTaken: 10468,
+        },
+        {
+          text: 'Which driver holds the record for the most World Championships in Formula 1?',
+          correctAnswer: 'b) Lewis Hamilton',
+          userAnswer: 'b) Lewis Hamilton',
+          timeTaken: 6748,
+        },
+        {
+          text: "Which of the following circuits is known as 'The Temple of Speed'?",
+          correctAnswer: 'a) Monza',
+          userAnswer: 'a) Monza',
+          timeTaken: 6259,
+        },
+        {
+          text: "Which team has won the most Constructors' Championships in Formula 1 history?",
+          correctAnswer: 'a) Ferrari',
+          userAnswer: 'b) McLaren',
+          timeTaken: 4328,
+        },
+        {
+          text: 'What is the fastest recorded lap in Formula 1 history (as of 2023)?',
+          correctAnswer: 'c) 1:12.908',
+          userAnswer: 'b) 1:13.553',
+          timeTaken: 6122,
+        },
+      ],
+    },
+    {
+      userName: 'arc admin',
+      userId: '0a63b60e-3c17-42b8-9924-8c337a43de1f',
+      score: 2467,
+      correctAnswers: 3,
+      avgTimeTaken: 7907.67,
+      totalQuestions: 5,
+      questions: [
+        {
+          text: 'In which year was the first Formula 1 World Championship held?',
+          correctAnswer: 'b) 1950',
+          userAnswer: 'b) 1950',
+          timeTaken: 10468,
+        },
+        {
+          text: 'Which driver holds the record for the most World Championships in Formula 1?',
+          correctAnswer: 'b) Lewis Hamilton',
+          userAnswer: 'b) Lewis Hamilton',
+          timeTaken: 6748,
+        },
+        {
+          text: "Which of the following circuits is known as 'The Temple of Speed'?",
+          correctAnswer: 'a) Monza',
+          userAnswer: 'a) Monza',
+          timeTaken: 6259,
+        },
+        {
+          text: "Which team has won the most Constructors' Championships in Formula 1 history?",
+          correctAnswer: 'a) Ferrari',
+          userAnswer: 'b) McLaren',
+          timeTaken: 4328,
+        },
+        {
+          text: 'What is the fastest recorded lap in Formula 1 history (as of 2023)?',
+          correctAnswer: 'c) 1:12.908',
+          userAnswer: 'b) 1:13.553',
+          timeTaken: 6122,
+        },
+      ],
+    },
+  ],
   // currentQuiz: {
   //   topic: 'C#',
   //   showCorrectAnswers: true,

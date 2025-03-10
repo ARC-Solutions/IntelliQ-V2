@@ -1,13 +1,14 @@
 'use client';
 import React, { useEffect } from 'react';
 import { useState } from 'react';
-import { Trophy, Clock } from 'lucide-react';
+import { Trophy, Clock, X, Check } from 'lucide-react';
 import { Leaderboard, useQuiz } from '@/contexts/quiz-context';
 import { useRouter } from 'next/navigation';
+import { Dialog, DialogContent, DialogTitle, DialogClose } from '@/components/ui/dialog';
 
 const QuizLeaderboard = () => {
   const [selectedPlayer, setSelectedPlayer] = useState<Leaderboard | null>(null);
-
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const { leaderboard } = useQuiz();
   const router = useRouter();
   const topThree = leaderboard?.slice(0, 3) ?? [];
@@ -15,7 +16,7 @@ const QuizLeaderboard = () => {
 
   const handlePlayerClick = (player: Leaderboard) => {
     setSelectedPlayer(player);
-
+    setIsModalOpen(true);
     console.log(`Showing detailed results for ${player.userName}`);
   };
 
@@ -69,7 +70,7 @@ const QuizLeaderboard = () => {
       <h1 className='text-4xl font-bold mb-2 text-purple-300'>Quiz Leaderboard</h1>
       <div className='flex items-center gap-1 mb-8 text-sm opacity-70'>
         <Clock className='w-5 h-5' />
-        <p>Click on a player to see their detailed results (Coming Soon...)</p>
+        <p>Click on a player to see their detailed results</p>
       </div>
 
       <div className='w-full max-w-3xl'>
@@ -122,6 +123,94 @@ const QuizLeaderboard = () => {
           ))}
         </div>
       </div>
+      {/* Player Details Modal using shadcn Dialog */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className=' text-purple-200 max-w-2xl'>
+          <DialogClose className='absolute top-4 right-4 text-gray-400 hover:text-white'></DialogClose>
+
+          {selectedPlayer && (
+            <div className='pt-2'>
+              <DialogTitle className='text-2xl font-bold text-purple-300 mb-1'>
+                {selectedPlayer.userName}'s Summary
+              </DialogTitle>
+              <div className='mb-6'>
+                <p className='text-sm text-gray-400'>Total Score</p>
+                <p className='text-5xl font-bold text-purple-300'>{selectedPlayer.score}</p>
+              </div>
+
+              {/* Stats */}
+              <div className='space-y-6'>
+                <div>
+                  <p className='text-sm text-gray-400 mb-1'>Correct Answers</p>
+                  <div className='flex items-center gap-2'>
+                    <div className='flex-1 bg-gray-800 rounded-full h-6 overflow-hidden'>
+                      <div
+                        className='bg-purple-400 h-full rounded-full'
+                        style={{
+                          width: `${(
+                            (100 / selectedPlayer.totalQuestions) *
+                            selectedPlayer.correctAnswers
+                          ).toFixed(2)}%`,
+                        }}
+                      ></div>
+                    </div>
+                    <span className='text-white font-medium'>
+                      {(
+                        (100 / selectedPlayer.totalQuestions) *
+                        selectedPlayer.correctAnswers
+                      ).toFixed(2)}
+                      %
+                    </span>
+                  </div>
+                  <p className='text-sm text-gray-400 mt-1'>
+                    {selectedPlayer.correctAnswers} out of {selectedPlayer.totalQuestions}
+                  </p>
+                </div>
+
+                <div>
+                  <p className='text-sm text-gray-400 mb-1'>Average Time per Question</p>
+                  <p className='text-2xl font-bold'>
+                    {(selectedPlayer.avgTimeTaken / 1000).toFixed(2)} seconds
+                  </p>
+                </div>
+
+                <div>
+                  <p className='text-sm text-gray-400 mb-3'>Questions & Answers</p>
+                  <div className='space-y-3'>
+                    {selectedPlayer.questions.map((question, i) => (
+                      <div key={i} className='bg-gray-950 rounded-lg p-4'>
+                        <div className='flex justify-between'>
+                          <p className='font-medium'>{question.text}</p>
+                          <div className='flex items-center gap-2'>
+                            {question.userAnswer.toLowerCase() ===
+                            question.correctAnswer.toLowerCase() ? (
+                              <Check className='w-5 h-5 text-green-500' />
+                            ) : (
+                              <X className='w-5 h-5 text-red-500' />
+                            )}
+                            <span className='text-sm text-gray-400'>
+                              {(question.timeTaken / 1000).toFixed(2)}s
+                            </span>
+                          </div>
+                        </div>
+                        <p className='text-sm text-purple-400 mt-1'>
+                          Your answer: {question.userAnswer}
+                        </p>
+                        {question.userAnswer.toLowerCase() !==
+                          question.correctAnswer.toLowerCase() && (
+                          <p className='text-sm text-red-400 mt-1'>
+                            Correct answer: {question.correctAnswer}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
