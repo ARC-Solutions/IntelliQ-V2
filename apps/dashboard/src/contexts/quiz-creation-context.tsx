@@ -5,14 +5,7 @@ import React, { createContext, useContext } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useQuiz, SupportedLanguages } from './quiz-context';
-import {
-  useQueryState,
-  parseAsInteger,
-  parseAsBoolean,
-  parseAsArrayOf,
-  parseAsString,
-  parseAsStringEnum,
-} from 'nuqs';
+import { useQueryState, parseAsInteger, parseAsBoolean, parseAsArrayOf, parseAsString } from 'nuqs';
 import * as LZString from 'lz-string';
 import { QuizType } from '@intelliq/api';
 
@@ -24,15 +17,14 @@ const QuestionSchema = z.object({
 
 const QuizDataSchema = z.object({
   topic: z.string().min(1, { message: 'Topic is required' }),
-  description: z.string().min(1, { message: 'Description is required' }).max(1000),
+  description: z.string().max(1000).optional(),
   passingScore: z.number().min(5).max(100),
   showCorrectAnswers: z.boolean(),
   tags: z.array(z.string()).min(1, { message: 'At least one tag is required' }),
   questions: z.array(QuestionSchema),
   number: z.union([z.number(), z.string().min(1, { message: 'Number is required' })]),
   quizLanguage: z.nativeEnum(SupportedLanguages, {
-    required_error: 'Language selection is required',
-    invalid_type_error: 'Language must be selected from the options',
+    message: 'Choose a valid Language',
   }),
   quizType: z.nativeEnum(QuizType.Enum),
 });
@@ -115,7 +107,6 @@ const useQuizQueryState = () => {
   const [tags, setTags] = useQueryState('tags', parseAsArrayOf(parseAsString));
   const [quizLanguage, setQuizLanguage] = useQueryState(
     'quizLanguage',
-
     parseAsString.withDefault('en'),
   );
   return {

@@ -11,6 +11,7 @@ type Props = {
   questionNumber: number;
   userAnswer: string | null;
   correctAnswer?: string;
+  onAnswerSelected: (answer: string) => void;
 };
 
 const QAndA = ({
@@ -18,6 +19,7 @@ const QAndA = ({
   questionNumber,
   userAnswer,
   correctAnswer,
+  onAnswerSelected,
 }: Props) => {
   const questionsAndAnswers = quiz[questionNumber] as Quiz;
   let { options: answers, text: question } = questionsAndAnswers;

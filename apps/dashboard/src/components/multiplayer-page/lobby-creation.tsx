@@ -57,6 +57,7 @@ export default function LobbyScreen() {
         maxPlayers: 5,
         numQuestions: 5,
         timeLimit: 25,
+        language: 'en',
       },
     });
 

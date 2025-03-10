@@ -121,7 +121,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
     },
   )
   .post(
-    '/:roomId/submissions',
+    '/:roomCode/submissions',
     describeRoute({
       tags: ['Quiz Submissions Multiplayer'],
       summary: 'Submit quiz answers for a multiplayer room',
@@ -138,10 +138,10 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
         },
       },
     }),
-    zValidator('param', z.object({ roomId: z.string().uuid() })),
+    zValidator('param', z.object({ roomCode: z.string() })),
     zValidator('json', quizSubmissionAnswerSchema),
     async (c) => {
-      const { roomId } = c.req.valid('param');
+      const { roomCode } = c.req.valid('param');
       const { questionId, userAnswer, timeTaken } = c.req.valid('json');
 
       const supabase = getSupabase(c);
@@ -152,8 +152,15 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
       const db = await createDb(c);
 
       const result = await db.transaction(async (tx) => {
+        const currentRoom = await tx.query.rooms.findFirst({
+          where: eq(rooms.code, roomCode),
+          columns: {
+            id: true,
+          },
+        });
+        
         const quiz = await tx.query.quizzes.findFirst({
-          where: eq(quizzes.roomId, roomId),
+          where: eq(quizzes.roomId, currentRoom!.id),
           columns: {
             id: true,
             questionsCount: true,
@@ -198,7 +205,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
 
         // Get the room to access the timeLimit
         const room = await tx.query.rooms.findFirst({
-          where: eq(rooms.id, roomId),
+          where: eq(rooms.id, currentRoom!.id),
           columns: {
             timeLimit: true,
           },
@@ -243,7 +250,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           userId: user!.id,
           quizId: quiz.id,
           questionId: ans.questionId,
-          roomId: roomId,
+          roomId: currentRoom!.id,
           answer: ans.userAnswer,
           isCorrect: isCorrect,
           timeTaken: ans.timeTaken, // Store the time taken
@@ -275,7 +282,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           where: (submissions) =>
             eq(submissions.userId, user!.id) &&
             eq(submissions.quizId, quiz.id) &&
-            eq(submissions.roomId, roomId),
+            eq(submissions.roomId, currentRoom!.id),
           orderBy: (submissions) => desc(submissions.createdAt),
           columns: {
             userScore: true,
@@ -291,7 +298,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           where: (submissions) =>
             eq(submissions.userId, user!.id) &&
             eq(submissions.quizId, quiz.id) &&
-            eq(submissions.roomId, roomId),
+            eq(submissions.roomId, currentRoom!.id),
           columns: {
             id: true,
           },
@@ -326,7 +333,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
             .values({
               userId: user!.id,
               quizId: quiz.id,
-              roomId: roomId,
+              roomId: currentRoom!.id,
               userScore: newScore,
               correctAnswersCount: finalCorrectCount,
             })
@@ -348,6 +355,7 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           submission: finalSubmission,
           calculatedScore: isCorrect ? timeBasedPoints : 0,
           totalQuestions: quiz.questionsCount,
+          correctAnswer: correctAnswer,
         };
       });
 
@@ -526,4 +534,5 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
       }
     },
   );
+
 export default multiplayerQuizSubmissionsRoutes;
