@@ -24,7 +24,6 @@ import NumberFlow from '@number-flow/react';
 const Quiz = () => {
   const {
     currentQuiz,
-    submitQuiz,
     summaryQuiz,
     dispatch: dispatchQuiz,
     getLeaderboard,
