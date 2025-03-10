@@ -39,7 +39,7 @@ export async function generateQuiz(
         structuredOutputs: true,
       }),
       schemaName: "quizzes",
-      schemaDescription: "A quiz with multiple choice questions.",
+      schemaDescription: 'A quiz with multiple choice questions.',
       schema: quizSchema,
       prompt: generateQuizPrompt(
         quizTopic,
@@ -48,14 +48,12 @@ export async function generateQuiz(
         quizTags,
       ),
       maxTokens: 1024,
+      presencePenalty: 0.5,
       system: `You are creating a quiz with multiple choice questions. 
         Each question MUST have exactly 4 options - no more, no less.
         The correct answer must exactly match one of the options.
-        Do not include any letters (a,b,c,d) in the options or answers - these will be added later.
-        Example option: 'Paris'
-        Example correct answer: 'Paris'
-        
-        Important: Always provide exactly 4 options for each question.`,
+        Include letters a), b), c), d) in the options or answers.
+        Important: Always provide exactly 4 options for each question.`
     });
 
     // Add letters to options and correct answers

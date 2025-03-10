@@ -3,17 +3,15 @@ import { supportedLanguages } from "./common.schemas";
 import type { quizType } from "./common.schemas";
 
 export const quizSchema = z.object({
-  quizTitle: z.string().describe("The title of the quiz"),
-  questions: z
-    .array(
-      z.object({
-        questionTitle: z.string().describe("A brief title for the question"),
-        text: z.string().describe("The actual question text"),
-        options: z.array(z.string()).describe("Four possible answers"),
-        correctAnswer: z.string().describe("The correct answer text"),
-      }),
-    )
-    .describe("Array of quiz questions with their options and correct answers"),
+  quizTitle: z.string(),
+  questions: z.array(
+    z.object({
+      questionTitle: z.string().describe("A brief title for the question"),
+      text: z.string().describe("The actual question text"),
+      options: z.array(z.string()).describe("Four possible answers labeled a), b), c), and d)"),
+      correctAnswer: z.string().describe("The correct answer text"),
+    }),
+  ),
 });
 
 export const quizGenerationRequestSchema = z.object({
