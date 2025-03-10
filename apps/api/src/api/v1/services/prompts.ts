@@ -16,7 +16,8 @@ ${
 }
 
 Once the quizTitle is set, it should not change. Each question should have a unique questionTitle. 
-The questions should have exactly four options labeled a), b), c), and d). 
+The questions should have exactly four options.
+Do not include any letters (a,b,c,d) in the options - these will be added automatically.
 The Contextual questionTitle is not allowed to contain 'Question Number' or 'Interest Question Number', 
 think of something very special for each individual question.`;
 

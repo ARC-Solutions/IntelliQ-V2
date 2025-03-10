@@ -3,25 +3,27 @@ import { supportedLanguages } from "./common.schemas";
 import type { quizType } from "./common.schemas";
 
 export const quizSchema = z.object({
-  quizTitle: z.string(),
-  questions: z.array(
-    z.object({
-      questionTitle: z.string(),
-      text: z.string(),
-      options: z.array(z.string()),
-      correctAnswer: z.string(),
-    }),
-  ),
+  quizTitle: z.string().describe("The title of the quiz"),
+  questions: z
+    .array(
+      z.object({
+        questionTitle: z.string().describe("A brief title for the question"),
+        text: z.string().describe("The actual question text"),
+        options: z.array(z.string()).describe("Four possible answers"),
+        correctAnswer: z.string().describe("The correct answer text"),
+      }),
+    )
+    .describe("Array of quiz questions with their options and correct answers"),
 });
 
 export const quizGenerationRequestSchema = z.object({
-  quizTopic: z.string().min(1, 'Quiz topic is required'),
-  quizDescription: z.string().min(1, 'Quiz description is required').optional(),
+  quizTopic: z.string().min(1, "Quiz topic is required"),
+  quizDescription: z.string().min(1, "Quiz description is required").optional(),
   numberOfQuestions: z.coerce
     .number()
     .int()
-    .min(1, 'Must generate at least 1 question')
-    .max(10, 'Cannot generate more than 10 questions'),
+    .min(1, "Must generate at least 1 question")
+    .max(10, "Cannot generate more than 10 questions"),
   quizTags: z
     .preprocess(
       (val) =>
@@ -30,7 +32,7 @@ export const quizGenerationRequestSchema = z.object({
     )
     .optional(),
   language: supportedLanguages.default(supportedLanguages.Enum.en),
-  quizType: z.enum(['singleplayer', 'multiplayer', 'document', 'random']),
+  quizType: z.enum(["singleplayer", "multiplayer", "document", "random"]),
 });
 
 export const quizResponseSchema = z.object({
@@ -206,7 +208,7 @@ export const filteredQuizResponseSchema = z.object({
 
 // Query parameter schema for filtering
 export const filterQuerySchema = z.object({
-  filter: z.enum(['all', 'correct', 'incorrect']).default('all'),
+  filter: z.enum(["all", "correct", "incorrect"]).default("all"),
 });
 
 export type Quiz = {
