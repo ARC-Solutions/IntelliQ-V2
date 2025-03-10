@@ -74,7 +74,7 @@ const Quiz = () => {
           totalTimeInSeconds,
           currentQuiz,
           correctAnswer,
-          formValues.description,
+          formValues.description!,
           formValues.quizLanguage,
           formValues.topic,
           formValues.passingScore,
@@ -165,6 +165,9 @@ const Quiz = () => {
           questionNumber={questionNumber}
           userAnswer={selectedAnswer}
           correctAnswer={currentQuiz.quiz[questionNumber].correctAnswer}
+          onAnswerSelected={() => {
+            dispatch({ type: 'SET_SELECTED_ANSWER', payload: selectedAnswer });
+          }}
         />
 
         <Button

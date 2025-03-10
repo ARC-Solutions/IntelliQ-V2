@@ -1,12 +1,13 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useState } from 'react';
+import React, { createContext, useContext, useReducer } from 'react';
 import { toast } from 'react-toastify';
 import { useSupabase } from './supabase-context';
 import { quizReducer } from '@/utils/reducers/quiz-reducer';
 import { UserAnswer } from '@/contexts/quiz-logic-context';
 import { QuizData } from './quiz-creation-context';
 import { createApiClient } from '@/utils/api-client';
+import { json } from 'stream/consumers';
 
 type Props = {
   children: React.ReactNode;
@@ -23,11 +24,10 @@ export enum SupportedLanguages {
   Polish = 'pl',
 }
 export interface Quiz {
-  correctAnswer?: string;
+  correctAnswer: string;
   options: string[];
   text: string;
   questionTitle: string;
-  id?: string;
 }
 export interface HistoryQuestions {
   correctAnswer: string;
@@ -35,7 +35,6 @@ export interface HistoryQuestions {
   userAnswer: string;
 }
 interface CurrentQuiz {
-  quizId?: string;
   quiz: Quiz[];
   topic: string;
   showCorrectAnswers: boolean;
@@ -51,29 +50,11 @@ export interface QuizHistory {
   passingScore: number;
   questions: HistoryQuestions[];
 }
-
-export interface MultiplayerLeaderboardQuestions {
-  text: string;
-  correctAnswer: string;
-  userAnswer: string;
-  timeTaken: number;
-}
-
-export interface Leaderboard {
-  userName: string;
-  userId: string;
-  score: number;
-  correctAnswers: number;
-  avgTimeTaken: number;
-  totalQuestions: number;
-  questions: MultiplayerLeaderboardQuestions[];
-}
 export interface QuizContextValue {
   isLoading: boolean;
   fetchingFinished: boolean;
   currentQuiz: CurrentQuiz | null;
   summaryQuiz: QuizHistory | null;
-  leaderboard: Leaderboard[] | null;
   quizzes: QuizHistories[] | null;
 }
 export interface QuizHistories {
@@ -86,429 +67,32 @@ export type QuizAction =
   | { type: 'FETCH_QUIZ_ERROR' }
   | { type: 'RESET_QUIZ' }
   | { type: 'RESET_ALL' }
+  | { type: 'RESET_SUMMARY_QUIZ' }
   | { type: 'FETCH_QUIZ_SUCCESS'; payload: CurrentQuiz }
   | { type: 'SUBMIT_QUIZ_SUCESS'; payload: QuizHistory }
   | { type: 'STORE_QUIZZES'; payload: QuizHistories[] }
-  | { type: 'FETCH_MORE_QUIZZES'; payload: QuizHistories[] }
-  | { type: 'FETCH_LEADERBOARD_SUCCESS'; payload: Leaderboard[] };
+  | { type: 'FETCH_MORE_QUIZZES'; payload: QuizHistories[] };
 
 export interface QuizContextValues extends QuizContextValue {
   dispatch: React.Dispatch<QuizAction>;
-  fetchQuestions: (userQuizData: QuizData, roomId?: string) => void;
-  submitQuiz: (userAnswer: UserAnswer[], timeTaken: number) => void;
+  fetchQuestions: (userQuizData: QuizData) => void;
+  submitSinglePlayerQuiz: (
+    userAnswer: UserAnswer[],
+    timeTaken: number,
+    currentQuiz: CurrentQuiz,
+    userScore: number,
+    description: string,
+    language: SupportedLanguages,
+    topic: string,
+    passingScore: number,
+    tags: string[],
+  ) => void;
   fetchSingleQuiz: (quizID: string) => void;
-  getMultiplayerQuizForPlayers: (roomId: string, quiz: CurrentQuiz) => void;
-  isMultiplayerMode: boolean;
-  setIsMultiplayerMode: (mode: boolean) => void;
-  getLeaderboard: (roomId: string) => void;
 }
 const initialState: QuizContextValue = {
   isLoading: false,
   fetchingFinished: false,
   currentQuiz: null,
-  // leaderboard: null,
-  leaderboard: [
-    {
-      userName: 'John Doe',
-      userId: '16098146-8406-42b3-8c86-2b3119963494',
-      score: 3248,
-      correctAnswers: 4,
-      avgTimeTaken: 9056.25,
-      totalQuestions: 5,
-      questions: [
-        {
-          text: 'In which year was the first Formula 1 World Championship held?',
-          correctAnswer: 'b) 1950',
-          userAnswer: 'b) 1950',
-          timeTaken: 9990,
-        },
-        {
-          text: 'Which driver holds the record for the most World Championships in Formula 1?',
-          correctAnswer: 'b) Lewis Hamilton',
-          userAnswer: 'b) Lewis Hamilton',
-          timeTaken: 7737,
-        },
-        {
-          text: "Which of the following circuits is known as 'The Temple of Speed'?",
-          correctAnswer: 'a) Monza',
-          userAnswer: 'a) Monza',
-          timeTaken: 7672,
-        },
-        {
-          text: "Which team has won the most Constructors' Championships in Formula 1 history?",
-          correctAnswer: 'a) Ferrari',
-          userAnswer: 'b) McLaren',
-          timeTaken: 5144,
-        },
-        {
-          text: 'What is the fastest recorded lap in Formula 1 history (as of 2023)?',
-          correctAnswer: 'c) 1:12.908',
-          userAnswer: 'c) 1:12.908',
-          timeTaken: 7686,
-        },
-      ],
-    },
-    {
-      userName: 'Nippon Lama',
-      userId: '02607b81-16b0-4831-ba8a-16cdab27ceba',
-      score: 2687,
-      correctAnswers: 3,
-      avgTimeTaken: 4709.55,
-      totalQuestions: 5,
-      questions: [
-        {
-          text: 'In which year was the first Formula 1 World Championship held?',
-          correctAnswer: 'b) 1950',
-          userAnswer: 'a) 1946',
-          timeTaken: 8833,
-        },
-        {
-          text: 'Which driver holds the record for the most World Championships in Formula 1?',
-          correctAnswer: 'b) Lewis Hamilton',
-          userAnswer: 'b) Lewis Hamilton',
-          timeTaken: 5596,
-        },
-        {
-          text: "Which of the following circuits is known as 'The Temple of Speed'?",
-          correctAnswer: 'a) Monza',
-          userAnswer: 'a) Monza',
-          timeTaken: 4710,
-        },
-        {
-          text: "Which team has won the most Constructors' Championships in Formula 1 history?",
-          correctAnswer: 'a) Ferrari',
-          userAnswer: 'a) Ferrari',
-          timeTaken: 3467,
-        },
-        {
-          text: 'What is the fastest recorded lap in Formula 1 history (as of 2023)?',
-          correctAnswer: 'c) 1:12.908',
-          userAnswer: 'a) 1:14.260',
-          timeTaken: 4147,
-        },
-      ],
-    },
-    {
-      userName: 'arc admin',
-      userId: '0a63b60e-3c17-42b8-9924-8c337a43de1f',
-      score: 2467,
-      correctAnswers: 3,
-      avgTimeTaken: 7907.67,
-      totalQuestions: 5,
-      questions: [
-        {
-          text: 'In which year was the first Formula 1 World Championship held?',
-          correctAnswer: 'b) 1950',
-          userAnswer: 'b) 1950',
-          timeTaken: 10468,
-        },
-        {
-          text: 'Which driver holds the record for the most World Championships in Formula 1?',
-          correctAnswer: 'b) Lewis Hamilton',
-          userAnswer: 'b) Lewis Hamilton',
-          timeTaken: 6748,
-        },
-        {
-          text: "Which of the following circuits is known as 'The Temple of Speed'?",
-          correctAnswer: 'a) Monza',
-          userAnswer: 'a) Monza',
-          timeTaken: 6259,
-        },
-        {
-          text: "Which team has won the most Constructors' Championships in Formula 1 history?",
-          correctAnswer: 'a) Ferrari',
-          userAnswer: 'b) McLaren',
-          timeTaken: 4328,
-        },
-        {
-          text: 'What is the fastest recorded lap in Formula 1 history (as of 2023)?',
-          correctAnswer: 'c) 1:12.908',
-          userAnswer: 'b) 1:13.553',
-          timeTaken: 6122,
-        },
-      ],
-    },
-    {
-      userName: 'arc admin',
-      userId: '0a63b60e-3c17-42b8-9924-8c337a43de1f',
-      score: 2467,
-      correctAnswers: 3,
-      avgTimeTaken: 7907.67,
-      totalQuestions: 5,
-      questions: [
-        {
-          text: 'In which year was the first Formula 1 World Championship held?',
-          correctAnswer: 'b) 1950',
-          userAnswer: 'b) 1950',
-          timeTaken: 10468,
-        },
-        {
-          text: 'Which driver holds the record for the most World Championships in Formula 1?',
-          correctAnswer: 'b) Lewis Hamilton',
-          userAnswer: 'b) Lewis Hamilton',
-          timeTaken: 6748,
-        },
-        {
-          text: "Which of the following circuits is known as 'The Temple of Speed'?",
-          correctAnswer: 'a) Monza',
-          userAnswer: 'a) Monza',
-          timeTaken: 6259,
-        },
-        {
-          text: "Which team has won the most Constructors' Championships in Formula 1 history?",
-          correctAnswer: 'a) Ferrari',
-          userAnswer: 'b) McLaren',
-          timeTaken: 4328,
-        },
-        {
-          text: 'What is the fastest recorded lap in Formula 1 history (as of 2023)?',
-          correctAnswer: 'c) 1:12.908',
-          userAnswer: 'b) 1:13.553',
-          timeTaken: 6122,
-        },
-      ],
-    },
-    {
-      userName: 'arc admin',
-      userId: '0a63b60e-3c17-42b8-9924-8c337a43de1f',
-      score: 2467,
-      correctAnswers: 3,
-      avgTimeTaken: 7907.67,
-      totalQuestions: 5,
-      questions: [
-        {
-          text: 'In which year was the first Formula 1 World Championship held?',
-          correctAnswer: 'b) 1950',
-          userAnswer: 'b) 1950',
-          timeTaken: 10468,
-        },
-        {
-          text: 'Which driver holds the record for the most World Championships in Formula 1?',
-          correctAnswer: 'b) Lewis Hamilton',
-          userAnswer: 'b) Lewis Hamilton',
-          timeTaken: 6748,
-        },
-        {
-          text: "Which of the following circuits is known as 'The Temple of Speed'?",
-          correctAnswer: 'a) Monza',
-          userAnswer: 'a) Monza',
-          timeTaken: 6259,
-        },
-        {
-          text: "Which team has won the most Constructors' Championships in Formula 1 history?",
-          correctAnswer: 'a) Ferrari',
-          userAnswer: 'b) McLaren',
-          timeTaken: 4328,
-        },
-        {
-          text: 'What is the fastest recorded lap in Formula 1 history (as of 2023)?',
-          correctAnswer: 'c) 1:12.908',
-          userAnswer: 'b) 1:13.553',
-          timeTaken: 6122,
-        },
-      ],
-    },
-    {
-      userName: 'arc admin',
-      userId: '0a63b60e-3c17-42b8-9924-8c337a43de1f',
-      score: 2467,
-      correctAnswers: 3,
-      avgTimeTaken: 7907.67,
-      totalQuestions: 5,
-      questions: [
-        {
-          text: 'In which year was the first Formula 1 World Championship held?',
-          correctAnswer: 'b) 1950',
-          userAnswer: 'b) 1950',
-          timeTaken: 10468,
-        },
-        {
-          text: 'Which driver holds the record for the most World Championships in Formula 1?',
-          correctAnswer: 'b) Lewis Hamilton',
-          userAnswer: 'b) Lewis Hamilton',
-          timeTaken: 6748,
-        },
-        {
-          text: "Which of the following circuits is known as 'The Temple of Speed'?",
-          correctAnswer: 'a) Monza',
-          userAnswer: 'a) Monza',
-          timeTaken: 6259,
-        },
-        {
-          text: "Which team has won the most Constructors' Championships in Formula 1 history?",
-          correctAnswer: 'a) Ferrari',
-          userAnswer: 'b) McLaren',
-          timeTaken: 4328,
-        },
-        {
-          text: 'What is the fastest recorded lap in Formula 1 history (as of 2023)?',
-          correctAnswer: 'c) 1:12.908',
-          userAnswer: 'b) 1:13.553',
-          timeTaken: 6122,
-        },
-      ],
-    },
-    {
-      userName: 'arc admin',
-      userId: '0a63b60e-3c17-42b8-9924-8c337a43de1f',
-      score: 2467,
-      correctAnswers: 3,
-      avgTimeTaken: 7907.67,
-      totalQuestions: 5,
-      questions: [
-        {
-          text: 'In which year was the first Formula 1 World Championship held?',
-          correctAnswer: 'b) 1950',
-          userAnswer: 'b) 1950',
-          timeTaken: 10468,
-        },
-        {
-          text: 'Which driver holds the record for the most World Championships in Formula 1?',
-          correctAnswer: 'b) Lewis Hamilton',
-          userAnswer: 'b) Lewis Hamilton',
-          timeTaken: 6748,
-        },
-        {
-          text: "Which of the following circuits is known as 'The Temple of Speed'?",
-          correctAnswer: 'a) Monza',
-          userAnswer: 'a) Monza',
-          timeTaken: 6259,
-        },
-        {
-          text: "Which team has won the most Constructors' Championships in Formula 1 history?",
-          correctAnswer: 'a) Ferrari',
-          userAnswer: 'b) McLaren',
-          timeTaken: 4328,
-        },
-        {
-          text: 'What is the fastest recorded lap in Formula 1 history (as of 2023)?',
-          correctAnswer: 'c) 1:12.908',
-          userAnswer: 'b) 1:13.553',
-          timeTaken: 6122,
-        },
-      ],
-    },
-    {
-      userName: 'arc admin',
-      userId: '0a63b60e-3c17-42b8-9924-8c337a43de1f',
-      score: 2467,
-      correctAnswers: 3,
-      avgTimeTaken: 7907.67,
-      totalQuestions: 5,
-      questions: [
-        {
-          text: 'In which year was the first Formula 1 World Championship held?',
-          correctAnswer: 'b) 1950',
-          userAnswer: 'b) 1950',
-          timeTaken: 10468,
-        },
-        {
-          text: 'Which driver holds the record for the most World Championships in Formula 1?',
-          correctAnswer: 'b) Lewis Hamilton',
-          userAnswer: 'b) Lewis Hamilton',
-          timeTaken: 6748,
-        },
-        {
-          text: "Which of the following circuits is known as 'The Temple of Speed'?",
-          correctAnswer: 'a) Monza',
-          userAnswer: 'a) Monza',
-          timeTaken: 6259,
-        },
-        {
-          text: "Which team has won the most Constructors' Championships in Formula 1 history?",
-          correctAnswer: 'a) Ferrari',
-          userAnswer: 'b) McLaren',
-          timeTaken: 4328,
-        },
-        {
-          text: 'What is the fastest recorded lap in Formula 1 history (as of 2023)?',
-          correctAnswer: 'c) 1:12.908',
-          userAnswer: 'b) 1:13.553',
-          timeTaken: 6122,
-        },
-      ],
-    },
-    {
-      userName: 'arc admin',
-      userId: '0a63b60e-3c17-42b8-9924-8c337a43de1f',
-      score: 2467,
-      correctAnswers: 3,
-      avgTimeTaken: 7907.67,
-      totalQuestions: 5,
-      questions: [
-        {
-          text: 'In which year was the first Formula 1 World Championship held?',
-          correctAnswer: 'b) 1950',
-          userAnswer: 'b) 1950',
-          timeTaken: 10468,
-        },
-        {
-          text: 'Which driver holds the record for the most World Championships in Formula 1?',
-          correctAnswer: 'b) Lewis Hamilton',
-          userAnswer: 'b) Lewis Hamilton',
-          timeTaken: 6748,
-        },
-        {
-          text: "Which of the following circuits is known as 'The Temple of Speed'?",
-          correctAnswer: 'a) Monza',
-          userAnswer: 'a) Monza',
-          timeTaken: 6259,
-        },
-        {
-          text: "Which team has won the most Constructors' Championships in Formula 1 history?",
-          correctAnswer: 'a) Ferrari',
-          userAnswer: 'b) McLaren',
-          timeTaken: 4328,
-        },
-        {
-          text: 'What is the fastest recorded lap in Formula 1 history (as of 2023)?',
-          correctAnswer: 'c) 1:12.908',
-          userAnswer: 'b) 1:13.553',
-          timeTaken: 6122,
-        },
-      ],
-    },
-    {
-      userName: 'arc admin',
-      userId: '0a63b60e-3c17-42b8-9924-8c337a43de1f',
-      score: 2467,
-      correctAnswers: 3,
-      avgTimeTaken: 7907.67,
-      totalQuestions: 5,
-      questions: [
-        {
-          text: 'In which year was the first Formula 1 World Championship held?',
-          correctAnswer: 'b) 1950',
-          userAnswer: 'b) 1950',
-          timeTaken: 10468,
-        },
-        {
-          text: 'Which driver holds the record for the most World Championships in Formula 1?',
-          correctAnswer: 'b) Lewis Hamilton',
-          userAnswer: 'b) Lewis Hamilton',
-          timeTaken: 6748,
-        },
-        {
-          text: "Which of the following circuits is known as 'The Temple of Speed'?",
-          correctAnswer: 'a) Monza',
-          userAnswer: 'a) Monza',
-          timeTaken: 6259,
-        },
-        {
-          text: "Which team has won the most Constructors' Championships in Formula 1 history?",
-          correctAnswer: 'a) Ferrari',
-          userAnswer: 'b) McLaren',
-          timeTaken: 4328,
-        },
-        {
-          text: 'What is the fastest recorded lap in Formula 1 history (as of 2023)?',
-          correctAnswer: 'c) 1:12.908',
-          userAnswer: 'b) 1:13.553',
-          timeTaken: 6122,
-        },
-      ],
-    },
-  ],
   // currentQuiz: {
   //   topic: 'C#',
   //   showCorrectAnswers: true,
@@ -605,9 +189,7 @@ const QuizContext = createContext<QuizContextValues | null>(null);
 export const QuizProvider = ({ children }: Props) => {
   const [state, dispatch] = useReducer(quizReducer, initialState);
   const { supabase } = useSupabase();
-  const [isMultiplayerMode, setIsMultiplayerMode] = useState(false);
-
-  const fetchQuestions = async (userQuizData: QuizData, roomId?: string) => {
+  const fetchQuestions = async (userQuizData: QuizData) => {
     try {
       console.log('generating...');
 
@@ -667,13 +249,6 @@ export const QuizProvider = ({ children }: Props) => {
         showCorrectAnswers: userQuizData.showCorrectAnswers,
       };
 
-      if (quizType === 'multiplayer' && roomId) {
-        const multiplayerQuiz = await submitMultiplayerQuiz(roomId, quiz, interests, language);
-        if (multiplayerQuiz && 'questions' in multiplayerQuiz) {
-          quiz.quiz = multiplayerQuiz.questions as Quiz[];
-          quiz.quizId = multiplayerQuiz.quizId;
-        }
-      }
       dispatch({ type: 'FETCH_QUIZ_SUCCESS', payload: quiz });
     } catch (error: any) {
       dispatch({ type: 'FETCH_QUIZ_ERROR' });
@@ -697,21 +272,24 @@ export const QuizProvider = ({ children }: Props) => {
       const quizTitle = currentQuiz.topic;
       const questions = userAnswer.map((ans, i) => {
         const { correctAnswer, question, userAnswer } = ans;
-        const options = state.currentQuiz?.quiz[i].options.map((opt) => opt.slice(3));
+        const options = currentQuiz.quiz[i].options.map((opt) => opt.slice(3));
+        if (!userAnswer) {
+          throw new Error('Missing user answer');
+        }
         return { text: question, correctAnswer, userAnswer, options };
       });
 
-      const rawQuestions = {
-        quizTitle,
-        questions,
-        timeTaken,
-      };
-      const URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/submit-quiz`;
-      const response = await fetch(URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
+      const response = await client.api.v1['quiz-submissions'].singleplayer.submit.$post({
+        json: {
+          timeTaken,
+          quizTitle,
+          description,
+          language,
+          passingScore,
+          topic: [topic],
+          tags,
+          userScore,
+          questions,
         },
       });
       const data = (await response.json()) as QuizHistory;
@@ -748,83 +326,6 @@ export const QuizProvider = ({ children }: Props) => {
       console.log(error);
     }
   };
-
-  const getMultiplayerQuizForPlayers = async (roomId: string, quiz: CurrentQuiz) => {
-    try {
-      const client = createApiClient();
-
-      const response = await client.api.v1['quiz-submissions'].multiplayer[
-        ':roomId'
-      ].questions.$get({
-        param: { roomId },
-      });
-      const data = await response.json();
-
-      if ('error' in data) {
-        throw new Error(data.error);
-      }
-
-      const currentQuiz = { ...quiz, quiz: data.questions } as CurrentQuiz;
-      console.log('player', currentQuiz);
-
-      dispatch({ type: 'FETCH_QUIZ_SUCCESS', payload: currentQuiz });
-    } catch (error: any) {
-      toast(error.message);
-      console.log(error);
-    }
-  };
-
-  const submitMultiplayerQuiz = async (
-    roomId: string,
-    currentQuiz: CurrentQuiz,
-    quizTopics: string,
-    language: SupportedLanguages,
-  ) => {
-    try {
-      const client = createApiClient();
-      const { quiz: questions, topic: quizTitle } = currentQuiz;
-      const formattedQuestions = questions.map((q) => ({
-        ...q,
-        correctAnswer: q.correctAnswer || '',
-      }));
-
-      const response = await client.api.v1['quiz-submissions'].multiplayer[':roomId'].quiz.$post({
-        param: { roomId },
-        json: {
-          language,
-          questions: formattedQuestions,
-          quizTitle,
-          quizTopics: [quizTopics],
-        },
-      });
-
-      const data = await response.json();
-      console.log('succesfull', data);
-
-      return data;
-    } catch (error: any) {
-      toast(error.message);
-      console.log(error);
-    }
-  };
-
-  const getLeaderboard = async (roomId: string) => {
-    try {
-      const client = createApiClient();
-      const response = await client.api.v1['quiz-submissions'].multiplayer[
-        ':roomId'
-      ].leaderboard.$get({
-        param: { roomId },
-      });
-
-      const data = await response.json();
-      dispatch({ type: 'FETCH_LEADERBOARD_SUCCESS', payload: data.leaderboard });
-    } catch (error: any) {
-      toast(error.message);
-      console.log(error);
-    }
-  };
-
   return (
     <QuizContext.Provider
       value={{
@@ -833,10 +334,6 @@ export const QuizProvider = ({ children }: Props) => {
         fetchQuestions,
         submitSinglePlayerQuiz,
         fetchSingleQuiz,
-        getMultiplayerQuizForPlayers,
-        isMultiplayerMode,
-        setIsMultiplayerMode,
-        getLeaderboard,
       }}
     >
       {children}
