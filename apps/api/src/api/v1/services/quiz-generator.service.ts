@@ -2,7 +2,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { quizSchema } from "../schemas/quiz.schemas";
 import { generateQuizPrompt } from "./prompts";
-import { z } from "zod";
+import type { z } from "zod";
 
 // Use the quiz schema to infer the type
 type Quiz = z.infer<typeof quizSchema>;
