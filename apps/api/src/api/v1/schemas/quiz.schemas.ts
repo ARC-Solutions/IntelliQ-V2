@@ -15,13 +15,13 @@ export const quizSchema = z.object({
 });
 
 export const quizGenerationRequestSchema = z.object({
-  quizTopic: z.string().min(1, 'Quiz topic is required'),
-  quizDescription: z.string().min(1, 'Quiz description is required').optional(),
+  quizTopic: z.string().min(1, "Quiz topic is required"),
+  quizDescription: z.string().min(1, "Quiz description is required").optional(),
   numberOfQuestions: z.coerce
     .number()
     .int()
-    .min(1, 'Must generate at least 1 question')
-    .max(10, 'Cannot generate more than 10 questions'),
+    .min(1, "Must generate at least 1 question")
+    .max(10, "Cannot generate more than 10 questions"),
   quizTags: z
     .preprocess(
       (val) =>
@@ -30,7 +30,7 @@ export const quizGenerationRequestSchema = z.object({
     )
     .optional(),
   language: supportedLanguages.default(supportedLanguages.Enum.en),
-  quizType: z.enum(['singleplayer', 'multiplayer', 'document', 'random']),
+  quizType: z.enum(["singleplayer", "multiplayer", "document", "random"]),
 });
 
 export const quizResponseSchema = z.object({
@@ -206,7 +206,7 @@ export const filteredQuizResponseSchema = z.object({
 
 // Query parameter schema for filtering
 export const filterQuerySchema = z.object({
-  filter: z.enum(['all', 'correct', 'incorrect']).default('all'),
+  filter: z.enum(["all", "correct", "incorrect"]).default("all"),
 });
 
 export type Quiz = {
