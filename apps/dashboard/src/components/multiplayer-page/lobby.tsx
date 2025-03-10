@@ -26,23 +26,32 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Slider } from "@/components/ui/slider";
-import { useToast } from "@/components/ui/use-toast";
-import { Player, useMultiplayer } from "@/contexts/multiplayer-context";
-import { useAuth } from "@/contexts/user-context";
-import { createClient } from "@/lib/supabase/supabase-client-side";
-import { createApiClient } from "@/utils/api-client";
-import NumberFlow, { continuous } from "@number-flow/react";
-import { RealtimeChannel } from "@supabase/supabase-js";
-import { Brain, Crown, Sparkles, UsersRound, Zap } from "lucide-react";
-import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { RoomResponse, RoomDetailsResponse, QuizType } from "@intelliq/api";
-import { useDebouncedCallback } from "use-debounce";
-import { SupportedLanguages, useQuiz } from "@/contexts/quiz-context";
-import { languages, QuizData } from "../../contexts/quiz-creation-context";
+} from '@/components/ui/alert-dialog';
+import { Slider } from '@/components/ui/slider';
+import { useToast } from '@/components/ui/use-toast';
+import { Player, useMultiplayer } from '@/contexts/multiplayer-context';
+import { useAuth } from '@/contexts/user-context';
+import { createClient } from '@/lib/supabase/supabase-client-side';
+import { createApiClient } from '@/utils/api-client';
+import NumberFlow, { continuous } from '@number-flow/react';
+import { RealtimeChannel } from '@supabase/supabase-js';
+import { Brain, Crown, Sparkles, UsersRound, Zap } from 'lucide-react';
+import Image from 'next/image';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { RoomResponse, RoomDetailsResponse, QuizType } from '@intelliq/api';
+import { useDebouncedCallback } from 'use-debounce';
+import { SupportedLanguages, useQuiz } from '@/contexts/quiz-context';
+import { languages, QuizData } from '../../contexts/quiz-creation-context';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Switch } from '@/components/ui/switch';
+import { HelpCircle } from 'lucide-react';
+
 interface PresenceData {
   currentUser: {
     id: string;
@@ -53,6 +62,7 @@ interface PresenceData {
   maxPlayers: number;
   presence_ref: string;
 }
+
 export default function Lobby() {
   const { currentUser } = useAuth();
   const {
@@ -72,18 +82,11 @@ export default function Lobby() {
     setTopic,
     language,
     setLanguage,
-    roomId,
-    setRoomId,
+    showCorrectAnswers,
+    setShowCorrectAnswers,
   } = useMultiplayer();
-  const {
-    isLoading,
-    fetchQuestions,
-    fetchingFinished,
-    dispatch,
-    currentQuiz,
-    getMultiplayerQuizForPlayers,
-    setIsMultiplayerMode,
-  } = useQuiz();
+  const { isLoading, fetchQuestions, fetchingFinished, dispatch, currentQuiz } =
+    useQuiz();
   const routerParams = useParams();
   const router = useRouter();
   const roomCode = routerParams["roomCode"] as string;
@@ -122,43 +125,28 @@ export default function Lobby() {
 
   const updatePlayers = async (roomChannel: RealtimeChannel) => {
     const newState = roomChannel.presenceState();
-    console.log("NEW STATE:", newState);
 
     // Convert presence state to players array
-    const playersList = Object.entries(newState).flatMap(
-      ([_, players]) =>
-        players
-          .map((player, i) => {
-            // Check if the player data has the expected structure
-            const presenceData = player as PresenceData;
-            if (!presenceData.currentUser) {
-              console.warn(
-                "Received player data without currentUser:",
-                presenceData
-              );
-              return null; // Skip invalid player data
-            }
-
-            return {
-              id: presenceData.currentUser.id,
-              email: presenceData.currentUser.email,
-              userName: presenceData.currentUser.name,
-              settings: {
-                timeLimit: presenceData.settings?.timeLimit,
-                topic: presenceData.settings?.topic,
-              },
-            } as Player;
-          })
-          .filter(Boolean) // Remove any null entries from invalid data
+    const playersList = Object.entries(newState).flatMap(([_, players]) =>
+      players.map((player, i) => {
+        return {
+          id: (player as PresenceData).currentUser.id,
+          email: (player as PresenceData).currentUser.email,
+          userName: (player as PresenceData).currentUser.name,
+          settings: {
+            timeLimit: (player as PresenceData).settings?.timeLimit,
+            topic: (player as PresenceData).settings?.topic,
+          },
+        } as Player;
+      })
     );
-    console.log("PLAYERS LIST:", playersList);
 
     // First player in the list is the leader
     const updatedPlayers = playersList.map((player, index) => ({
       ...player,
       isCreator: index === 0,
     }));
-    console.log("UPDATED PLAYERSSSSS:", updatedPlayers);
+
     setPlayers(updatedPlayers as Player[]);
 
     // Update isCreator status for current user
@@ -184,14 +172,11 @@ export default function Lobby() {
         console.error("Error updating max players:", errorData.error);
         return;
       }
-      console.log(data);
 
       // Assuming data contains the updated room info
       setMaxPlayers(data.maxPlayers);
       setQuestionCount(data.numQuestions);
       setTimeLimit(data.timeLimit);
-      setRoomId(data.id);
-      setLanguage(data.language as SupportedLanguages);
     };
 
     updateSettings();
@@ -262,11 +247,14 @@ export default function Lobby() {
           case "language":
             setLanguage(value as SupportedLanguages);
             break;
+          case 'showCorrectAnswers':
+            setShowCorrectAnswers(value);
+            break;
         }
       })
       .on("broadcast", { event: "quiz-start" }, ({ payload }) => {
-        getMultiplayerQuizForPlayers(payload.roomId, payload.currentQuiz);
-        // router.push(`/multiplayer/${roomCode}/play`);
+        dispatch({ type: "FETCH_QUIZ_SUCCESS", payload: payload.currentQuiz });
+        router.push(`/multiplayer/${roomCode}/play`);
       });
 
     return () => {
@@ -282,11 +270,6 @@ export default function Lobby() {
       updateGameSettings("timeLimit", timeLimit);
     }
   }, [players]);
-
-  useEffect(() => {
-    setIsMultiplayerMode(true);
-    return () => setIsMultiplayerMode(false);
-  }, []);
 
   const changeAmountOfPlayers = async (newAmount: number) => {
     if (!channel || !isCreator) return;
@@ -330,8 +313,8 @@ export default function Lobby() {
   };
 
   const updateGameSettings = async (
-    type: "numQuestions" | "timeLimit" | "topic" | "language",
-    value: number | string | boolean
+    type: 'numQuestions' | 'timeLimit' | 'topic' | 'language' | 'showAnswers',
+    value: number | string | boolean,
   ) => {
     if (!channel || !isCreator) return;
 
@@ -345,7 +328,8 @@ export default function Lobby() {
         type === "timeLimit" ||
         type === "numQuestions" ||
         type === "language" ||
-        type === "topic"
+        type === "topic" ||
+        type === "showAnswers"
       ) {
         await client.api.v1.rooms[":roomCode"]["settings"].$patch({
           param: {
@@ -371,8 +355,8 @@ export default function Lobby() {
   // debounce the updateGameSettings function to prevent multiple API requests
   const debouncedUpdateSettings = useDebouncedCallback(
     (
-      type: "numQuestions" | "timeLimit" | "topic" | "language",
-      value: number | string | SupportedLanguages
+      type: 'numQuestions' | 'timeLimit' | 'topic' | 'language' | 'showAnswers',
+      value: number | string | SupportedLanguages | boolean
     ) => {
       updateGameSettings(type, value);
     },
@@ -381,7 +365,27 @@ export default function Lobby() {
 
   const startQuiz = async () => {
     if (!channel || !isCreator) return;
+    const client = createApiClient();
+    const response = await client.api.v1.rooms[":roomCode"]["settings"].$patch({
+      param: {
+        roomCode: roomCode,
+      },
+      json: {
+        type: "topic",
+        value: topic,
+      },
+    });
 
+    if (!response.ok) {
+      const errorData = (await response.json()) as unknown as { error: string };
+      toast({
+        duration: 3500,
+        variant: "destructive",
+        title: "Something went wrong.",
+        description: errorData.error,
+      });
+      return;
+    }
     const quizCreation = {
       topic,
       number: questionCount,
@@ -390,10 +394,13 @@ export default function Lobby() {
       showCorrectAnswers: true,
       passingScore: 70,
       questions: [],
-      quizLanguage: language as SupportedLanguages,
+      quizLanguage: language,
       quizType: QuizType.Enum.multiplayer,
     } as QuizData;
-    fetchQuestions(quizCreation, roomId);
+    fetchQuestions(quizCreation);
+
+    // router.push(`/multiplayer/${roomCode}/play`);
+    // await channel.send({ type: 'broadcast', event: 'quiz-start', payload: {} });
   };
 
   useEffect(() => {
@@ -411,7 +418,7 @@ export default function Lobby() {
         await channel.send({
           type: "broadcast",
           event: "quiz-start",
-          payload: { currentQuiz, roomId },
+          payload: { currentQuiz },
         });
         router.push(`/multiplayer/${roomCode}/play`);
       }
@@ -617,15 +624,45 @@ export default function Lobby() {
                       <span className="text-sm text-gray-400">60s</span>
                     </div>
                   </div>
-
-                  <div className="space-y-4">
-                    <div className="flex">
-                      <Label
-                        htmlFor="quizLanguage"
-                        className="flex items-center space-x-2"
-                      >
+                  <div className='space-y-4'>
+                    <div className='flex items-center justify-between'>
+                      <Label htmlFor='showCorrectAnswers' className='flex items-center space-x-2'>
+                        <span>Show Correct Answers</span>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <HelpCircle size={16} className='text-gray-500' />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Display correct answers between questions</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </Label>
+                      <Switch
+                        disabled={!isCreator}
+                        id='showCorrectAnswers'
+                        checked={showCorrectAnswers}
+                        onCheckedChange={async (checked) => {
+                          setShowCorrectAnswers(checked);
+                          debouncedUpdateSettings('showAnswers', checked);
+                          
+                          // Broadcast the change to all players
+                          if (channel && isCreator) {
+                            await channel.send({
+                              type: 'broadcast',
+                              event: 'settings-update',
+                              payload: { type: 'showCorrectAnswers', value: checked },
+                            });
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className='space-y-4'>
+                    <div className='flex'>
+                      <Label htmlFor='quizLanguage' className='flex items-center space-x-2'>
                         <span>Language</span>
-
                         <Select
                           disabled={!isCreator}
                           onValueChange={(value: SupportedLanguages) => {
