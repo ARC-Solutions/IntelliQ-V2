@@ -1,10 +1,9 @@
 'use client';
-import { createContext, useContext, useEffect, useState } from 'react';
-import { toast, useToast } from '@/components/ui/use-toast';
-import { ToastAction } from '@/components/ui/toast';
-import { useSupabase } from './supabase-context';
+import { toast } from '@/components/ui/use-toast';
 import { useRouter } from 'next/navigation';
-import { log } from 'console';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { useSupabase } from './supabase-context';
+
 type Props = {
   children: React.ReactNode;
 };
