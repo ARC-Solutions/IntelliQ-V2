@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { toast } from '@/components/ui/use-toast';
-import { useRouter } from 'next/navigation';
-import { createContext, useContext, useEffect, useState } from 'react';
-import { useSupabase } from './supabase-context';
+import { toast } from "@/components/ui/use-toast";
+import { useRouter } from "next/navigation";
+import { createContext, useContext, useEffect, useState } from "react";
+import { useSupabase } from "./supabase-context";
 
 type Props = {
   children: React.ReactNode;
@@ -27,6 +27,7 @@ interface AuthContextValue {
   isNewUser: boolean;
   setIsNewUser: React.Dispatch<React.SetStateAction<boolean>>;
   getUserInfo: () => void;
+  updateUserName: (newName: string) => void;
 }
 
 interface SignUpInput {
@@ -58,7 +59,7 @@ export const AuthProvider = ({ children }: Props) => {
       console.log(isNewUser);
       const options = {
         shouldCreateUser: isNewUser,
-        ...(isNewUser && 'firstName' in userInput
+        ...(isNewUser && "firstName" in userInput
           ? {
               data: {
                 email: userInput.email,
@@ -74,16 +75,16 @@ export const AuthProvider = ({ children }: Props) => {
       });
       if (error) {
         toast({
-          title: 'Error',
+          title: "Error",
           description: error.message,
-          variant: 'destructive',
+          variant: "destructive",
         });
         setIsLoading(false);
         return;
       }
       toast({
-        title: 'OTP sent to email',
-        description: 'Please check your email for the OTP',
+        title: "OTP sent to email",
+        description: "Please check your email for the OTP",
       });
       setOtpSent(true);
     } catch (error) {
@@ -94,17 +95,17 @@ export const AuthProvider = ({ children }: Props) => {
   const signinUsingOAuth = async () => {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
+        provider: "google",
         options: {
-          redirectTo: 'http://localhost:3000/dashboard',
+          redirectTo: "http://localhost:3000/dashboard",
         },
       });
 
       if (error) {
         toast({
-          title: 'Error',
+          title: "Error",
           description: error.message,
-          variant: 'destructive',
+          variant: "destructive",
         });
         return;
       }
@@ -119,14 +120,52 @@ export const AuthProvider = ({ children }: Props) => {
       setOtpSent(false);
       setIsLoading(false);
       toast({
-        title: 'User signed out',
-        description: 'You have been signed out',
+        title: "User signed out",
+        description: "You have been signed out",
       });
-      router.push('/login');
+      router.push("/login");
     } catch (error) {
       console.log(error);
     }
   };
+
+  const updateUserName = async (newName: string) => {
+    try {
+      const { data, error } = await supabase.auth.updateUser({
+        data: { name: newName },
+      });
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Update the current user state with the new name
+      if (currentUser) {
+        setCurrentUser({
+          ...currentUser,
+          name: newName,
+        });
+      }
+
+      toast({
+        title: "Success",
+        description: "Display name updated successfully",
+      });
+    } catch (error) {
+      console.log(error);
+      toast({
+        title: "Error",
+        description: "Failed to update display name",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getUserInfo = async () => {
     const {
       data: { session },
@@ -137,9 +176,9 @@ export const AuthProvider = ({ children }: Props) => {
     }
     if (error) {
       toast({
-        title: 'Error',
+        title: "Error",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     }
     const user = session?.user;
@@ -167,6 +206,7 @@ export const AuthProvider = ({ children }: Props) => {
     isNewUser,
     setIsNewUser,
     getUserInfo,
+    updateUserName,
   };
 
   useEffect(() => {
@@ -178,7 +218,7 @@ export const AuthProvider = ({ children }: Props) => {
 export const useAuth = (): AuthContextValue => {
   const authContext = useContext(AuthContext);
   if (authContext === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return authContext as AuthContextValue;
 };

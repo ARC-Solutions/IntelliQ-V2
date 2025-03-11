@@ -42,7 +42,7 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
-  const { signout } = useAuth();
+  const { signout, updateUserName } = useAuth();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { setTheme } = useTheme();
@@ -65,6 +65,7 @@ export function NavUser({
     sound: boolean;
   }) => {
     // Update user profile
+    updateUserName(settings.name);
     // updateUser({
     //   ...user,
     //   name: settings.name,
