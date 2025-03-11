@@ -39,7 +39,7 @@ export function NavMain({
               onClick={(e) => {
                 e.preventDefault();
                 resetValues();
-                dispatch({ type: 'RESET_QUIZ' });
+                dispatch({ type: 'RESET_ALL' });
 
                 setTimeout(() => {
                   router.push(item.url);
