@@ -14,7 +14,7 @@ export function DashboardFeatures() {
 
   useEffect(() => {
     if (currentQuiz) {
-      const url = `/single-player/quiz/play`;
+      const url = '/single-player/quiz/play';
       redirect(url);
     }
   }, [currentQuiz, summaryQuiz]);
