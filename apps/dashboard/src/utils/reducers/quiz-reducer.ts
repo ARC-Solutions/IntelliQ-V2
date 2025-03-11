@@ -18,7 +18,6 @@ export const quizReducer = (state: QuizContextValue, action: QuizAction): QuizCo
       isLoading: false,
       fetchingFinished: false,
       currentQuiz: null,
-      summaryQuiz: null,
       leaderboard: null,
     };
   } else if (action.type === 'RESET_ALL') {
