@@ -30,6 +30,7 @@ import { useAuth } from "@/contexts/user-context";
 import { useTheme } from "next-themes";
 import { useState } from "react";
 import { SettingsDialog } from "./settings-dialog";
+import { useLocalStorage } from "usehooks-ts";
 
 export function NavUser({
   user,
@@ -43,10 +44,18 @@ export function NavUser({
   const { isMobile } = useSidebar();
   const { signout } = useAuth();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { setTheme } = useTheme();
+  const [soundEnabled, setSoundEnabled] = useLocalStorage<boolean>(
+    "soundEnabled",
+    true,
+  );
 
   const handleSettingsClick = () => {
-    setIsSettingsOpen(true);
+    setIsDropdownOpen(false);
+    setTimeout(() => {
+      setIsSettingsOpen(true);
+    }, 10);
   };
 
   const handleSaveSettings = (settings: {
@@ -65,15 +74,15 @@ export function NavUser({
     // Apply theme using next-themes
     setTheme(settings.theme);
 
-    // You would typically save sound preferences to localStorage or user settings
-    localStorage.setItem("soundEnabled", settings.sound.toString());
+    // Update sound preference using the hook setter
+    setSoundEnabled(settings.sound);
   };
 
   return (
     <>
       <SidebarMenu>
         <SidebarMenuItem>
-          <DropdownMenu>
+          <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
                 size="lg"
@@ -125,7 +134,12 @@ export function NavUser({
                   <Bell />
                   Notifications
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleSettingsClick}>
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    handleSettingsClick();
+                  }}
+                >
                   <Settings />
                   Settings
                 </DropdownMenuItem>
@@ -145,6 +159,7 @@ export function NavUser({
         onOpenChange={setIsSettingsOpen}
         user={user}
         onSave={handleSaveSettings}
+        soundEnabled={soundEnabled}
       />
     </>
   );

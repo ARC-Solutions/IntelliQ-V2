@@ -58,6 +58,7 @@ interface SettingsDialogProps {
     email: string;
     avatar: string;
   };
+  soundEnabled: boolean;
   onSave: (settings: {
     name: string;
     avatar: string;
@@ -70,14 +71,16 @@ export function SettingsDialog({
   open,
   onOpenChange,
   user,
+  soundEnabled,
   onSave,
 }: SettingsDialogProps) {
   const [name, setName] = useState(user.name);
   const [avatar, setAvatar] = useState(user.avatar);
-  const [isSoundEnabled, setIsSoundEnabled] = useState(true);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(soundEnabled);
   const [activeAvatarCategory, setActiveAvatarCategory] = useState("Vercel");
   const { theme, setTheme } = useTheme();
   const isDarkMode = theme === "dark";
+  const [isAnimating, setIsAnimating] = useState(false);
 
   // References to control icon animations
   const volumeIconRef = useRef<React.ElementRef<typeof VolumeIcon>>(null);
@@ -89,8 +92,17 @@ export function SettingsDialog({
     if (open) {
       setName(user.name);
       setAvatar(user.avatar);
+      setIsSoundEnabled(soundEnabled);
+      // Initialize volume icon state
+      if (volumeIconRef.current) {
+        if (soundEnabled) {
+          volumeIconRef.current.startAnimation();
+        } else {
+          volumeIconRef.current.stopAnimation();
+        }
+      }
     }
-  }, [open, user]);
+  }, [open, user, soundEnabled]);
 
   const handleSave = () => {
     onSave({
@@ -104,7 +116,8 @@ export function SettingsDialog({
 
   const handleSoundToggle = (checked: boolean) => {
     setIsSoundEnabled(checked);
-    // Trigger animation when toggled
+    setIsAnimating(true);
+    // Trigger animation
     if (volumeIconRef.current) {
       if (checked) {
         volumeIconRef.current.startAnimation();
@@ -112,10 +125,15 @@ export function SettingsDialog({
         volumeIconRef.current.stopAnimation();
       }
     }
+    // Hide animation after it completes
+    setTimeout(() => {
+      setIsAnimating(false);
+    }, 500); // Adjust timing to match your animation duration
   };
 
   const handleThemeToggle = (checked: boolean) => {
-    setTheme(checked ? "dark" : "light");
+    const newTheme = checked ? "dark" : "light";
+    setTheme(newTheme);
     // Trigger animation when toggled
     if (checked && moonIconRef.current) {
       moonIconRef.current.startAnimation();
@@ -140,7 +158,7 @@ export function SettingsDialog({
             <div className="flex justify-center">
               <Avatar className="h-24 w-24 border-2 border-primary/20">
                 <AvatarImage
-                //   src={getPlaceholderUrl(avatar)}
+                  //   src={getPlaceholderUrl(avatar)}
                   alt="Selected avatar"
                 />
                 <AvatarFallback>
@@ -191,7 +209,7 @@ export function SettingsDialog({
                             }`}
                           >
                             <AvatarImage
-                            //   src={getPlaceholderUrl(avatarSrc)}
+                              //   src={getPlaceholderUrl(avatarSrc)}
                               alt="Avatar option"
                             />
                             <AvatarFallback>AV</AvatarFallback>
@@ -217,7 +235,7 @@ export function SettingsDialog({
               <SunIcon
                 ref={sunIconRef}
                 size={24}
-                className={isDarkMode ? "opacity-50" : "text-amber-500"}
+                className={`${isDarkMode ? "opacity-50" : "text-amber-500"} pointer-events-none`}
               />
               <Switch
                 id="theme-mode"
@@ -227,12 +245,12 @@ export function SettingsDialog({
               <MoonIcon
                 ref={moonIconRef}
                 size={24}
-                className={!isDarkMode ? "opacity-50" : "text-blue-400"}
+                className={`${!isDarkMode ? "opacity-50" : "text-blue-400"} pointer-events-none`}
               />
             </div>
           </div>
 
-          {/* Sound toggle with custom icon */}
+          {/* Sound toggle with VolumeIcon */}
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label htmlFor="sound">Sound</Label>
@@ -242,9 +260,12 @@ export function SettingsDialog({
             </div>
             <div className="flex items-center space-x-2">
               <VolumeIcon
-                ref={volumeIconRef}
                 size={24}
-                className={!isSoundEnabled ? "text-red-400" : "text-green-500"}
+                isMuted={!isSoundEnabled}
+                onMutedChange={(muted) => setIsSoundEnabled(!muted)}
+                mutedColor="rgb(248 113 113)" // text-red-400
+                unmutedColor="rgb(34 197 94)" // text-green-500
+                className="pointer-events-none"
               />
               <Switch
                 id="sound"
