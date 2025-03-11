@@ -11,25 +11,21 @@ type Props = {
   questionNumber: number;
   userAnswer: string | null;
   correctAnswer?: string;
+  onAnswerSelected?: (answer: string) => void;
 };
 
-const QAndA = ({
-  quiz,
-  questionNumber,
-  userAnswer,
-  correctAnswer,
-}: Props) => {
+const QAndA = ({ quiz, questionNumber, userAnswer, correctAnswer, onAnswerSelected }: Props) => {
   const questionsAndAnswers = quiz[questionNumber] as Quiz;
   let { options: answers, text: question } = questionsAndAnswers;
   const { showCorrectAnswer } = useQuizLogic();
-  const { showCorrectAnswers } = useMultiplayer(); 
+
   return (
     <section>
       <h1 className='w-full items-center rounded-md bg-primary p-6 text-center text-base font-bold text-black sm:text-2xl'>
         {question}
       </h1>
       <div className='mt-4 w-auto'>
-        {(showCorrectAnswer && showCorrectAnswers) ? ( 
+        {showCorrectAnswer && correctAnswer ? (
           <>
             <button
               className={`group my-3 w-full justify-start rounded-lg p-4 text-sm font-normal text-white sm:text-lg ${
@@ -43,14 +39,19 @@ const QAndA = ({
 
             <button className='group my-3 w-full justify-start rounded-lg bg-black p-4 text-sm font-normal text-white  sm:text-lg'>
               <span id='answer' className='capitalize'>
-                Correct Answer: {correctAnswer}
+                Correct Answer: {correctAnswer.slice(3)}
               </span>
             </button>
           </>
         ) : (
           answers.map((answer, i) => {
             return (
-              <Answer key={i} answer={answer.slice(3)} letter={answer.substring(0, 3)}></Answer>
+              <Answer
+                key={i}
+                answer={answer.slice(3)}
+                letter={answer.substring(0, 3)}
+                onAnswerSelected={onAnswerSelected}
+              ></Answer>
             );
           })
         )}

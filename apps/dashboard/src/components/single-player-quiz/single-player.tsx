@@ -182,7 +182,7 @@ const Quiz = () => {
                   type: 'VALIDATE_ANSWER',
                   payload: {
                     question: currentQuiz.quiz[questionNumber].text,
-                    correctAnswer: currentQuiz.quiz[questionNumber].correctAnswer,
+                    correctAnswer: currentQuiz.quiz[questionNumber].correctAnswer!,
                     userAnswer: selectedAnswer,
                   },
                 });
@@ -203,7 +203,7 @@ const Quiz = () => {
                 type: 'VALIDATE_ANSWER',
                 payload: {
                   question: currentQuiz.quiz[questionNumber].text,
-                  correctAnswer: currentQuiz.quiz[questionNumber].correctAnswer,
+                  correctAnswer: currentQuiz.quiz[questionNumber].correctAnswer!,
                   userAnswer: selectedAnswer,
                 },
               });
