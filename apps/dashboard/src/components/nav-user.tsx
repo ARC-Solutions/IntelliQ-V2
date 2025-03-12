@@ -39,10 +39,11 @@ export function NavUser({
     name: string;
     email: string;
     avatar: string;
+    id: string;
   };
 }) {
   const { isMobile } = useSidebar();
-  const { signout, updateUserName } = useAuth();
+  const { signout, updateUserProfile, currentUser } = useAuth();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { setTheme } = useTheme();
@@ -58,19 +59,17 @@ export function NavUser({
     }, 10);
   };
 
-  const handleSaveSettings = (settings: {
+  const handleSaveSettings = async (settings: {
     name: string;
     avatar: string;
     theme: string;
     sound: boolean;
   }) => {
     // Update user profile
-    updateUserName(settings.name);
-    // updateUser({
-    //   ...user,
-    //   name: settings.name,
-    //   avatar: settings.avatar,
-    // });
+    await updateUserProfile({
+      name: settings.name,
+      avatar: settings.avatar,
+    });
 
     // Apply theme using next-themes
     setTheme(settings.theme);
@@ -78,6 +77,10 @@ export function NavUser({
     // Update sound preference using the hook setter
     setSoundEnabled(settings.sound);
   };
+
+  // Use currentUser.img for the avatar if available, otherwise fall back to prop
+  const currentAvatar = currentUser?.img || user.avatar;
+  const currentName = currentUser?.name || user.name;
 
   return (
     <>
@@ -90,13 +93,13 @@ export function NavUser({
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
+                  <AvatarImage src={currentAvatar} alt={currentName} />
                   <AvatarFallback className="rounded-lg">
-                    {user.name.substring(0, 2).toUpperCase()}
+                    {currentName.substring(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{user.name}</span>
+                  <span className="truncate font-semibold">{currentName}</span>
                   <span className="truncate text-xs">{user.email}</span>
                 </div>
                 <ChevronsUpDown className="ml-auto size-4" />
@@ -111,13 +114,15 @@ export function NavUser({
               <DropdownMenuLabel className="p-0 font-normal">
                 <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                   <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src={user.avatar} alt={user.name} />
+                    <AvatarImage src={currentAvatar} alt={currentName} />
                     <AvatarFallback className="rounded-lg">
-                      {user.name.substring(0, 2).toUpperCase()}
+                      {currentName.substring(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">{user.name}</span>
+                    <span className="truncate font-semibold">
+                      {currentName}
+                    </span>
                     <span className="truncate text-xs">{user.email}</span>
                   </div>
                 </div>

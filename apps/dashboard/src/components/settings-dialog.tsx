@@ -1,5 +1,7 @@
 "use client";
 
+import type React from "react";
+
 import { useTheme } from "next-themes";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -20,35 +22,7 @@ import { SunIcon } from "@/components/ui/sun";
 import { MoonIcon } from "@/components/ui/moon";
 import { VolumeIcon } from "@/components/ui/volume";
 import { useEffect, useRef, useState } from "react";
-
-// Avatar options by category
-const avatarOptions = {
-  Vercel: [
-    "/avatars/vercel/vercel-1.png",
-    "/avatars/vercel/vercel-2.png",
-    "/avatars/vercel/vercel-3.png",
-    "/avatars/vercel/vercel-4.png",
-  ],
-  "Notion Style": [
-    "/avatars/notion/notion-1.png",
-    "/avatars/notion/notion-2.png",
-    "/avatars/notion/notion-3.png",
-    "/avatars/notion/notion-4.png",
-  ],
-  Emoji: [
-    "/avatars/emoji/emoji-1.png",
-    "/avatars/emoji/emoji-2.png",
-    "/avatars/emoji/emoji-3.png",
-    "/avatars/emoji/emoji-4.png",
-  ],
-};
-
-// For demo purposes, we'll use placeholder images
-const getPlaceholderUrl = (path: string) => {
-  //   const parts = path.split("/");
-  //   const filename = parts[parts.length - 1];
-  //   return `/placeholder.svg?height=40&width=40&text=${filename}`;
-};
+import { useSupabase } from "@/contexts/supabase-context";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -57,6 +31,7 @@ interface SettingsDialogProps {
     name: string;
     email: string;
     avatar: string;
+    id: string;
   };
   soundEnabled: boolean;
   onSave: (settings: {
@@ -74,6 +49,7 @@ export function SettingsDialog({
   soundEnabled,
   onSave,
 }: SettingsDialogProps) {
+  const { supabase } = useSupabase();
   const [name, setName] = useState(user.name);
   const [avatar, setAvatar] = useState(user.avatar);
   const [isSoundEnabled, setIsSoundEnabled] = useState(soundEnabled);
@@ -81,11 +57,56 @@ export function SettingsDialog({
   const { theme, setTheme } = useTheme();
   const isDarkMode = theme === "dark";
   const [isAnimating, setIsAnimating] = useState(false);
+  const [avatarsByCategory, setAvatarsByCategory] = useState<
+    Record<string, string[]>
+  >({
+    Vercel: [],
+    "Notion Style": [],
+    Emoji: [],
+  });
 
   // References to control icon animations
   const volumeIconRef = useRef<React.ElementRef<typeof VolumeIcon>>(null);
   const sunIconRef = useRef<React.ElementRef<typeof SunIcon>>(null);
   const moonIconRef = useRef<React.ElementRef<typeof MoonIcon>>(null);
+
+  const fetchAvatarsByFolder = async (folder: string) => {
+    const { data, error } = await supabase.storage.from("avatars").list(folder);
+
+    if (error) {
+      console.error(`Error fetching avatars from ${folder}:`, error);
+      return [];
+    }
+
+    const urls = await Promise.all(
+      data
+        .filter((file) => file.name.endsWith(".png"))
+        .map(async (file) => {
+          const { data: urlData } = await supabase.storage
+            .from("avatars")
+            .getPublicUrl(`${folder}/${file.name}`);
+          return urlData?.publicUrl;
+        }),
+    );
+
+    return urls.filter(Boolean) as string[];
+  };
+
+  const fetchAllAvatars = async () => {
+    const folders = ["vercel", "notion", "emoji"];
+    const results = await Promise.all(
+      folders.map(async (folder) => {
+        const urls = await fetchAvatarsByFolder(folder);
+        return [folder, urls];
+      }),
+    );
+
+    setAvatarsByCategory({
+      Vercel: results[0][1] as string[],
+      "Notion Style": results[1][1] as string[],
+      Emoji: results[2][1] as string[],
+    });
+  };
 
   // Reset form when dialog opens
   useEffect(() => {
@@ -93,6 +114,7 @@ export function SettingsDialog({
       setName(user.name);
       setAvatar(user.avatar);
       setIsSoundEnabled(soundEnabled);
+      fetchAllAvatars();
       // Initialize volume icon state
       if (volumeIconRef.current) {
         if (soundEnabled) {
@@ -104,13 +126,15 @@ export function SettingsDialog({
     }
   }, [open, user, soundEnabled]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    // Call the existing onSave handler
     onSave({
       name,
       avatar,
       theme: theme || "light",
       sound: isSoundEnabled,
     });
+
     onOpenChange(false);
   };
 
@@ -157,10 +181,7 @@ export function SettingsDialog({
           <div className="space-y-4">
             <div className="flex justify-center">
               <Avatar className="h-24 w-24 border-2 border-primary/20">
-                <AvatarImage
-                  //   src={getPlaceholderUrl(avatar)}
-                  alt="Selected avatar"
-                />
+                <AvatarImage src={avatar} alt="Selected avatar" />
                 <AvatarFallback>
                   {name.substring(0, 2).toUpperCase()}
                 </AvatarFallback>
@@ -190,33 +211,32 @@ export function SettingsDialog({
                 <TabsTrigger value="Notion Style">Notion</TabsTrigger>
                 <TabsTrigger value="Emoji">Emoji</TabsTrigger>
               </TabsList>
-              {Object.entries(avatarOptions).map(([category, avatars]) => (
+              {Object.entries(avatarsByCategory).map(([category, urls]) => (
                 <TabsContent key={category} value={category} className="pt-4">
-                  <div className="grid grid-cols-4 gap-2">
-                    {avatars.map((avatarSrc) => {
-                      const isSelected = avatar === avatarSrc;
-                      return (
-                        <div
-                          key={avatarSrc}
-                          className="relative cursor-pointer p-1"
-                          onClick={() => setAvatar(avatarSrc)}
-                        >
-                          <Avatar
-                            className={`h-16 w-16 transition-all ${
-                              isSelected
-                                ? "ring-4 ring-primary ring-offset-2"
-                                : "hover:ring-2 hover:ring-muted-foreground/20"
-                            }`}
+                  <div className="flex justify-center">
+                    <div className="grid grid-cols-4 gap-4 w-full max-w-md">
+                      {urls.map((url) => {
+                        const isSelected = avatar === url;
+                        return (
+                          <div
+                            key={url}
+                            className="flex justify-center items-center cursor-pointer"
+                            onClick={() => setAvatar(url)}
                           >
-                            <AvatarImage
-                              //   src={getPlaceholderUrl(avatarSrc)}
-                              alt="Avatar option"
-                            />
-                            <AvatarFallback>AV</AvatarFallback>
-                          </Avatar>
-                        </div>
-                      );
-                    })}
+                            <Avatar
+                              className={`h-16 w-16 transition-all ${
+                                isSelected
+                                  ? "ring-4 ring-primary ring-offset-2"
+                                  : "hover:ring-2 hover:ring-muted-foreground/20"
+                              }`}
+                            >
+                              <AvatarImage src={url} alt="Avatar option" />
+                              <AvatarFallback>AV</AvatarFallback>
+                            </Avatar>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </TabsContent>
               ))}

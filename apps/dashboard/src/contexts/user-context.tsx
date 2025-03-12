@@ -27,7 +27,10 @@ interface AuthContextValue {
   isNewUser: boolean;
   setIsNewUser: React.Dispatch<React.SetStateAction<boolean>>;
   getUserInfo: () => void;
-  updateUserName: (newName: string) => void;
+  updateUserProfile: (updates: {
+    name?: string;
+    avatar?: string;
+  }) => Promise<void>;
 }
 
 interface SignUpInput {
@@ -129,10 +132,17 @@ export const AuthProvider = ({ children }: Props) => {
     }
   };
 
-  const updateUserName = async (newName: string) => {
+  const updateUserProfile = async (updates: {
+    name?: string;
+    avatar?: string;
+  }) => {
     try {
+      // Update auth metadata
       const { data, error } = await supabase.auth.updateUser({
-        data: { name: newName },
+        data: {
+          ...(updates.name && { name: updates.name }),
+          ...(updates.avatar && { avatar_url: updates.avatar }),
+        },
       });
 
       if (error) {
@@ -144,23 +154,24 @@ export const AuthProvider = ({ children }: Props) => {
         return;
       }
 
-      // Update the current user state with the new name
+      // Update the current user state with the new values
       if (currentUser) {
         setCurrentUser({
           ...currentUser,
-          name: newName,
+          ...(updates.name && { name: updates.name }),
+          ...(updates.avatar && { img: updates.avatar }),
         });
       }
 
       toast({
         title: "Success",
-        description: "Display name updated successfully",
+        description: "Profile updated successfully",
       });
     } catch (error) {
       console.log(error);
       toast({
         title: "Error",
-        description: "Failed to update display name",
+        description: "Failed to update profile",
         variant: "destructive",
       });
     }
@@ -206,7 +217,7 @@ export const AuthProvider = ({ children }: Props) => {
     isNewUser,
     setIsNewUser,
     getUserInfo,
-    updateUserName,
+    updateUserProfile,
   };
 
   useEffect(() => {
