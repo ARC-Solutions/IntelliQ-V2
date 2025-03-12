@@ -13,6 +13,7 @@ export type Player = {
   settings?: {
     timeLimit: number;
     topic: string;
+    language?: string;
   };
 } | null;
 export interface PresenceData {
@@ -20,10 +21,21 @@ export interface PresenceData {
     id: string;
     email: string;
     name: string;
-    score: number;
-    selectedAnswer: string | null;
+    score?: number;
+    selectedAnswer?: string | null;
   };
-  settings?: { timeLimit: number; topic: string };
+  presenceData?: {
+    id?: string;
+    email?: string;
+    name?: string;
+    score?: number;
+    selectedAnswer?: string | null;
+  };
+  settings?: {
+    timeLimit: number;
+    topic: string;
+    language?: string;
+  };
   maxPlayers: number;
   presence_ref: string;
 }
@@ -44,8 +56,8 @@ type MultiContextType = {
   setTopic: (topic: string) => void;
   language: string;
   setLanguage: (language: SupportedLanguages) => void;
-  showCorrectAnswers: boolean;
-  setShowCorrectAnswers: (value: boolean) => void;
+  roomId: string;
+  setRoomId: (roomId: string) => void;
 };
 type GameState = {
   status: 'idle' | 'started' | 'finished';
@@ -65,8 +77,8 @@ export const MultiplayerProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [timeLimit, setTimeLimit] = useState<number>(25);
   const [topic, setTopic] = useState<string>('');
   const [language, setLanguage] = useState<SupportedLanguages>(SupportedLanguages.English);
-  const [showCorrectAnswers, setShowCorrectAnswers] = useState<boolean>(true);
 
+  const [roomId, setRoomId] = useState<string>('');
   return (
     <MultiplayerContext.Provider
       value={{
@@ -86,8 +98,8 @@ export const MultiplayerProvider: React.FC<{ children: ReactNode }> = ({ childre
         setTopic,
         language,
         setLanguage,
-        showCorrectAnswers,
-        setShowCorrectAnswers,
+        roomId,
+        setRoomId,
       }}
     >
       {children}

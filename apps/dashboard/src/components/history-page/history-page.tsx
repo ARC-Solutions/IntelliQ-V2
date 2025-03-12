@@ -28,7 +28,7 @@ export default function HistoryPage({
   const [selectedTag, setSelectedTag] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
 
-  const { dispatch, quizzes, fetchSingleQuiz, summaryQuiz, currentQuiz } = useQuiz();
+  const { dispatch, quizzes, summaryQuiz, currentQuiz } = useQuiz();
   useEffect(() => {
     dispatch({ type: 'STORE_QUIZZES', payload: historyQuizzes.quizzes });
   }, []);
@@ -117,12 +117,7 @@ export default function HistoryPage({
                 </CardContent>
 
                 <CardFooter>
-                  <Button
-                    onClick={() => {
-                      fetchSingleQuiz(quiz.id);
-                    }}
-                    className='w-full py-2'
-                  >
+                  <Button onClick={() => {}} className='w-full py-2'>
                     View Summary
                   </Button>
                 </CardFooter>
