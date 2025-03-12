@@ -1,7 +1,7 @@
-import { z } from "zod";
-
+import { z } from 'zod';
+import { supportedLanguages } from './common.schemas';
 export const roomSchema = z.object({
-  roomCode: z.string().min(4, "Room code is required"),
+  roomCode: z.string().min(4, 'Room code is required'),
 });
 
 export const roomResponseSchema = z.object({
@@ -29,17 +29,11 @@ export const roomDetailsResponseSchema = z.object({
 
   // endedAt can be null
   endedAt: z.string().nullable(),
+  language: z.string(),
 });
 
 export const updateRoomSettingsSchema = z.object({
-  type: z.enum([
-    "numQuestions",
-    "timeLimit",
-    "topic",
-    "showAnswers",
-    "maxPlayers",
-    "language",
-  ]),
+  type: z.enum(['numQuestions', 'timeLimit', 'topic', 'showAnswers', 'maxPlayers', 'language']),
   value: z.union([z.number(), z.string(), z.boolean()]),
 });
 
@@ -49,6 +43,7 @@ export const createRoomSchema = z.object({
   maxPlayers: roomDetailsResponseSchema.shape.maxPlayers,
   numQuestions: roomDetailsResponseSchema.shape.numQuestions,
   timeLimit: roomDetailsResponseSchema.shape.timeLimit,
+  language: roomDetailsResponseSchema.shape.language,
 });
 
 export const createRoomResponseSchema = z.object({

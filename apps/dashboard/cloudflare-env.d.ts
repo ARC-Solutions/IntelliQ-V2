@@ -2,7 +2,7 @@
 
 interface CloudflareEnv {
   IntelliQ_CACHE_VERSION: KVNamespace;
-  id: "e4ba004cd93a4e25853e135da77c9509";
+  id: 'e4ba004cd93a4e25853e135da77c9509';
   ADMIN_TOKEN: string;
   API_URL: string;
   AWS_ACCESS_KEY_ID: string;
@@ -15,4 +15,5 @@ interface CloudflareEnv {
   SUPABASE_URL: string;
   UPSTASH_REDIS_REST_TOKEN: string;
   UPSTASH_REDIS_REST_URL: string;
+  HYPERDRIVE: Hyperdrive;
 }
