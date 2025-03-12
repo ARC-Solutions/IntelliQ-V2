@@ -131,7 +131,7 @@ export function NavUser({
 
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem>
+                {/* <DropdownMenuItem>
                   <BadgeCheck />
                   Account
                 </DropdownMenuItem>
@@ -139,7 +139,7 @@ export function NavUser({
                 <DropdownMenuItem>
                   <Bell />
                   Notifications
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
                 <DropdownMenuItem
                   onSelect={(e) => {
                     e.preventDefault();
