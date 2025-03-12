@@ -235,7 +235,7 @@ export default function Lobby() {
           const presenceData = {
             currentUser: {
               ...currentUser,
-              avatar: currentUser.img || currentUser.avatar || "",
+              avatar: currentUser.avatar || "",
             },
             maxPlayers,
             settings: {
