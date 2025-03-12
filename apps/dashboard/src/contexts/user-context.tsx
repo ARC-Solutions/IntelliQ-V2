@@ -13,6 +13,7 @@ export interface User {
   email: string;
   img: string;
   name: string;
+  avatar: string;
 }
 
 interface AuthContextValue {
