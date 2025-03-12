@@ -204,6 +204,7 @@ export const AuthProvider = ({ children }: Props) => {
       email: userEmail,
       img: avatar,
       name: name,
+      avatar: avatar,
     });
   };
   const value = {
