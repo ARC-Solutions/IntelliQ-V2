@@ -1,13 +1,9 @@
 "use client";
 
 import {
-  BadgeCheck,
-  Bell,
   ChevronsUpDown,
-  CreditCard,
   LogOut,
-  Settings,
-  Sparkles,
+  Settings
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -29,8 +25,8 @@ import {
 import { useAuth } from "@/contexts/user-context";
 import { useTheme } from "next-themes";
 import { useState } from "react";
-import { SettingsDialog } from "./settings-dialog";
 import { useLocalStorage } from "usehooks-ts";
+import { SettingsDialog } from "./settings-dialog";
 
 export function NavUser({
   user,

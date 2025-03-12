@@ -1,14 +1,12 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuiz } from "@/contexts/quiz-context";
-import { createClient } from "@/lib/supabase/supabase-client-side";
 import { redirect } from "next/navigation";
-import React, { useState } from "react";
 import { Card, CardHeader, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatTime } from "@/lib/format-time";
-import QuestionsList from "./summary-questions"; // Assuming this component displays questions list
+import QuestionsList from "./summary-questions";
 import Image from "next/image";
 import { Award, Clock } from "lucide-react";
 import { Progress } from "../ui/progress";

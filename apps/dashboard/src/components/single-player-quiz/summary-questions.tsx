@@ -1,6 +1,5 @@
-import { HistoryQuestions } from '@/contexts/quiz-context';
-import React from 'react';
-import { CircleX, CircleCheck } from 'lucide-react';
+import type { HistoryQuestions } from "@/contexts/quiz-context";
+import { CircleX, CircleCheck } from "lucide-react";
 
 const QuestionsList = ({ questions }: { questions: HistoryQuestions[] }) => {
   return (

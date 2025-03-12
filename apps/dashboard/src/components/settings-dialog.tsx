@@ -23,6 +23,7 @@ import { MoonIcon } from "@/components/ui/moon";
 import { VolumeIcon } from "@/components/ui/volume";
 import { useEffect, useRef, useState } from "react";
 import { useSupabase } from "@/contexts/supabase-context";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -64,6 +65,7 @@ export function SettingsDialog({
     "Notion Style": [],
     Emoji: [],
   });
+  const [isLoading, setIsLoading] = useState(true);
 
   // References to control icon animations
   const volumeIconRef = useRef<React.ElementRef<typeof VolumeIcon>>(null);
@@ -93,6 +95,7 @@ export function SettingsDialog({
   };
 
   const fetchAllAvatars = async () => {
+    setIsLoading(true);
     const folders = ["vercel", "notion", "emoji"];
     const results = await Promise.all(
       folders.map(async (folder) => {
@@ -106,6 +109,7 @@ export function SettingsDialog({
       "Notion Style": results[1][1] as string[],
       Emoji: results[2][1] as string[],
     });
+    setIsLoading(false);
   };
 
   // Reset form when dialog opens
@@ -214,29 +218,42 @@ export function SettingsDialog({
               {Object.entries(avatarsByCategory).map(([category, urls]) => (
                 <TabsContent key={category} value={category} className="pt-4">
                   <div className="flex justify-center">
-                    <div className="grid grid-cols-4 gap-4 w-full max-w-md">
-                      {urls.map((url) => {
-                        const isSelected = avatar === url;
-                        return (
+                    {isLoading ? (
+                      <div className="grid grid-cols-4 gap-4 w-full max-w-md">
+                        {Array.from({ length: 4 }).map((_, i) => (
                           <div
-                            key={url}
-                            className="flex justify-center items-center cursor-pointer"
-                            onClick={() => setAvatar(url)}
+                            key={i}
+                            className="flex justify-center items-center"
                           >
-                            <Avatar
-                              className={`h-16 w-16 transition-all ${
-                                isSelected
-                                  ? "ring-4 ring-primary ring-offset-2"
-                                  : "hover:ring-2 hover:ring-muted-foreground/20"
-                              }`}
-                            >
-                              <AvatarImage src={url} alt="Avatar option" />
-                              <AvatarFallback>AV</AvatarFallback>
-                            </Avatar>
+                            <Skeleton className="h-16 w-16 rounded-full" />
                           </div>
-                        );
-                      })}
-                    </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-4 gap-4 w-full max-w-md">
+                        {urls.map((url) => {
+                          const isSelected = avatar === url;
+                          return (
+                            <div
+                              key={url}
+                              className="flex justify-center items-center cursor-pointer"
+                              onClick={() => setAvatar(url)}
+                            >
+                              <Avatar
+                                className={`h-16 w-16 transition-all ${
+                                  isSelected
+                                    ? "ring-4 ring-primary ring-offset-2"
+                                    : "hover:ring-2 hover:ring-muted-foreground/20"
+                                }`}
+                              >
+                                <AvatarImage src={url} alt="Avatar option" />
+                                <AvatarFallback>AV</AvatarFallback>
+                              </Avatar>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </TabsContent>
               ))}
