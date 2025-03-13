@@ -13,6 +13,7 @@ import type {
   quizGenerationRequestSchema,
   quizResponseSchema,
 } from "../../apps/api/src/api/v1/schemas/quiz.schemas";
+import { quizType } from "../../apps/api/src/api/v1/schemas/common.schemas";
 
 export type AppType = ApiAppType;
 
@@ -26,3 +27,7 @@ export type CreateRoom = z.infer<typeof createRoomSchema>;
 export type QuizSchema = z.infer<typeof quizSchema>;
 export type QuizGenerationRequest = z.infer<typeof quizGenerationRequestSchema>;
 export type QuizResponse = z.infer<typeof quizResponseSchema>;
+
+// Quiz Common Types
+export const QuizType = quizType;
+export type QuizType = z.infer<typeof quizType>;

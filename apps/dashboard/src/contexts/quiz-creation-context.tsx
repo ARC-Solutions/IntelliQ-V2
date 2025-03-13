@@ -5,8 +5,16 @@ import React, { createContext, useContext } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useQuiz, SupportedLanguages } from './quiz-context';
-import { useQueryState, parseAsInteger, parseAsBoolean, parseAsArrayOf, parseAsString } from 'nuqs';
+import {
+  useQueryState,
+  parseAsInteger,
+  parseAsBoolean,
+  parseAsArrayOf,
+  parseAsString,
+  parseAsStringEnum,
+} from 'nuqs';
 import * as LZString from 'lz-string';
+import { QuizType } from '@intelliq/api';
 
 const QuestionSchema = z.object({
   text: z.string().min(1, { message: 'Question text is required' }),
@@ -16,15 +24,17 @@ const QuestionSchema = z.object({
 
 const QuizDataSchema = z.object({
   topic: z.string().min(1, { message: 'Topic is required' }),
-  description: z.string().max(1000).optional(),
+  description: z.string().min(1, { message: 'Description is required' }).max(1000),
   passingScore: z.number().min(5).max(100),
   showCorrectAnswers: z.boolean(),
-  tags: z.array(z.string()).optional(),
+  tags: z.array(z.string()).min(1, { message: 'At least one tag is required' }),
   questions: z.array(QuestionSchema),
   number: z.union([z.number(), z.string().min(1, { message: 'Number is required' })]),
   quizLanguage: z.nativeEnum(SupportedLanguages, {
-    message: 'Choose a valid Language',
+    required_error: 'Language selection is required',
+    invalid_type_error: 'Language must be selected from the options',
   }),
+  quizType: z.nativeEnum(QuizType.Enum),
 });
 
 export type QuizData = z.infer<typeof QuizDataSchema>;
@@ -75,6 +85,7 @@ const initialState = {
   questions: [],
   number: '',
   quizLangauge: 'en',
+  quizType: QuizType.Enum.singleplayer,
 };
 
 const QuizCreationContext = createContext<QuizContextValues | null>(null);
@@ -102,7 +113,11 @@ const useQuizQueryState = () => {
     parseAsBoolean.withDefault(true),
   );
   const [tags, setTags] = useQueryState('tags', parseAsArrayOf(parseAsString));
-  const [quizLanguage, setQuizLanguage] = useQueryState('quizLanguage');
+  const [quizLanguage, setQuizLanguage] = useQueryState(
+    'quizLanguage',
+
+    parseAsString.withDefault('en'),
+  );
   return {
     queryState: {
       topic,
@@ -157,6 +172,7 @@ export const QuizCreationProvider = ({ children }: Props) => {
       passingScore: queryState.passingScore!,
       showCorrectAnswers: queryState.showCorrectAnswers!,
       tags: queryState.tags!,
+      quizLanguage: (queryState.quizLanguage as SupportedLanguages) ?? 'en',
     },
   });
 

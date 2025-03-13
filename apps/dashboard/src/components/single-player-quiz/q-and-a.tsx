@@ -4,30 +4,28 @@ import { Quiz } from '@/contexts/quiz-context';
 import Answer from '@/components/single-player-quiz/answer';
 import { Button } from '@/components/ui/button';
 import { useQuizLogic } from '@/contexts/quiz-logic-context';
+import { useMultiplayer } from '@/contexts/multiplayer-context';
 
 type Props = {
   quiz: Quiz[];
   questionNumber: number;
   userAnswer: string | null;
   correctAnswer?: string;
+  onAnswerSelected?: (answer: string) => void;
 };
 
-const QAndA = ({
-  quiz,
-  questionNumber,
-  userAnswer,
-  correctAnswer,
-}: Props) => {
+const QAndA = ({ quiz, questionNumber, userAnswer, correctAnswer, onAnswerSelected }: Props) => {
   const questionsAndAnswers = quiz[questionNumber] as Quiz;
   let { options: answers, text: question } = questionsAndAnswers;
   const { showCorrectAnswer } = useQuizLogic();
+
   return (
     <section>
       <h1 className='w-full items-center rounded-md bg-primary p-6 text-center text-base font-bold text-black sm:text-2xl'>
         {question}
       </h1>
       <div className='mt-4 w-auto'>
-        {showCorrectAnswer ? (
+        {showCorrectAnswer && correctAnswer ? (
           <>
             <button
               className={`group my-3 w-full justify-start rounded-lg p-4 text-sm font-normal text-white sm:text-lg ${
@@ -41,14 +39,19 @@ const QAndA = ({
 
             <button className='group my-3 w-full justify-start rounded-lg dark:bg-black bg-inherit p-4 text-sm font-normal dark:text-white text-black sm:text-lg'>
               <span id='answer' className='capitalize'>
-                Correct Answer: {correctAnswer}
+                Correct Answer: {correctAnswer.slice(3)}
               </span>
             </button>
           </>
         ) : (
           answers.map((answer, i) => {
             return (
-              <Answer key={i} answer={answer.slice(3)} letter={answer.substring(0, 3)}></Answer>
+              <Answer
+                key={i}
+                answer={answer.slice(3)}
+                letter={answer.substring(0, 3)}
+                onAnswerSelected={onAnswerSelected}
+              ></Answer>
             );
           })
         )}

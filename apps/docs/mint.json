@@ -63,6 +63,18 @@
       "pages": ["local-development-arc-devs"]
     },
     {
+      "group": "Multiplayer Features",
+      "pages": ["multiplayer-flow"]
+    },
+    {
+      "group": "Quiz Sharing",
+      "pages": ["sharing-flow"]
+    },
+    {
+      "group": "Tag Analysis",
+      "pages": ["tag-analysis-flow"]
+    },
+    {
       "group": "Essentials",
       "pages": [
         "essentials/markdown",

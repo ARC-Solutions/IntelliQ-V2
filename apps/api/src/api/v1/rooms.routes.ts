@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { Hono } from 'hono';
 import {
   roomDetailsResponseSchema,
   roomResponseSchema,
@@ -7,35 +7,36 @@ import {
   roomSettingsResponseSchema,
   createRoomSchema,
   createRoomResponseSchema,
-} from "./schemas/room.schemas";
-import { createDb } from "../../db/index";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator as zValidator } from "hono-openapi/zod";
-import { eq } from "drizzle-orm";
-import { rooms } from "../../../drizzle/schema";
-import { z } from "zod";
+} from './schemas/room.schemas';
+import { createDb } from '../../db/index';
+import { describeRoute } from 'hono-openapi';
+import { resolver, validator as zValidator } from 'hono-openapi/zod';
+import { eq } from 'drizzle-orm';
+import { rooms } from '../../../drizzle/schema';
+import { z } from 'zod';
+import { HTTPException } from 'hono/http-exception';
 
 const app = new Hono<{ Bindings: CloudflareEnv }>()
   .get(
-    "/:roomCode",
+    '/:roomCode',
     describeRoute({
-      tags: ["Rooms"],
-      summary: "Get room details",
-      description: "Get room details by room code",
+      tags: ['Rooms'],
+      summary: 'Get room details',
+      description: 'Get room details by room code',
       validateResponse: true,
       responses: {
         200: {
-          description: "Room details",
+          description: 'Room details',
           content: {
-            "application/json": {
+            'application/json': {
               schema: resolver(roomResponseSchema),
             },
           },
         },
         400: {
-          description: "Bad Request",
+          description: 'Bad Request',
           content: {
-            "application/json": {
+            'application/json': {
               schema: z.object({
                 error: z.string(),
               }),
@@ -44,39 +45,40 @@ const app = new Hono<{ Bindings: CloudflareEnv }>()
         },
       },
     }),
-    zValidator("param", roomSchema),
+    zValidator('param', roomSchema),
     async (c) => {
-      const { roomCode } = c.req.valid("param");
+      const { roomCode } = c.req.valid('param');
 
       const db = await createDb(c);
+
       const { maxPlayers } = (await db.query.rooms.findFirst({
-        where: (rooms) => eq(rooms.code, roomCode),
+        where: eq(rooms.code, roomCode),
       }))!;
 
-      return c.json({ max_players: maxPlayers });
-    }
+      return c.json({ maxPlayers: maxPlayers });
+    },
   )
   .get(
-    "/:roomCode/details",
+    '/:roomCode/details',
     describeRoute({
-      tags: ["Rooms"],
-      summary: "Get room details",
-      description: "Get room details by room code",
+      tags: ['Rooms'],
+      summary: 'Get room details',
+      description: 'Get room details by room code',
       validateResponse: true,
       responses: {
         200: {
-          description: "Room details",
+          description: 'Room details',
           content: {
-            "application/json": {
+            'application/json': {
               schema: resolver(roomDetailsResponseSchema),
             },
           },
         },
       },
     }),
-    zValidator("param", roomSchema),
+    zValidator('param', roomSchema),
     async (c) => {
-      const { roomCode } = c.req.valid("param");
+      const { roomCode } = c.req.valid('param');
 
       const db = await createDb(c);
       const room = await db.query.rooms.findFirst({
@@ -84,39 +86,39 @@ const app = new Hono<{ Bindings: CloudflareEnv }>()
       });
 
       return c.json(room);
-    }
+    },
   )
   .patch(
-    "/:roomCode/settings",
+    '/:roomCode/settings',
     describeRoute({
-      tags: ["Rooms"],
-      summary: "Update room settings",
-      description: "Update room settings by room code",
+      tags: ['Rooms'],
+      summary: 'Update room settings',
+      description: 'Update room settings by room code',
       validateResponse: true,
       responses: {
         200: {
-          description: "Room settings updated",
+          description: 'Room settings updated',
           content: {
-            "application/json": {
+            'application/json': {
               schema: resolver(roomSettingsResponseSchema),
             },
           },
         },
         400: {
-          description: "Bad Request",
+          description: 'Bad Request',
           content: {
-            "application/json": {
+            'application/json': {
               schema: z.object({ error: z.string() }),
             },
           },
         },
       },
     }),
-    zValidator("param", roomSchema),
-    zValidator("json", updateRoomSettingsSchema),
+    zValidator('param', roomSchema),
+    zValidator('json', updateRoomSettingsSchema),
     async (c) => {
-      const { roomCode } = c.req.valid("param");
-      const { type, value } = c.req.valid("json");
+      const { roomCode } = c.req.valid('param');
+      const { type, value } = c.req.valid('json');
 
       const db = await createDb(c);
       const updatedSettings = await db
@@ -126,7 +128,6 @@ const app = new Hono<{ Bindings: CloudflareEnv }>()
         .returning({
           code: rooms.code,
           id: rooms.id,
-          quizId: rooms.quizId,
           hostId: rooms.hostId,
           maxPlayers: rooms.maxPlayers,
           numQuestions: rooms.numQuestions,
@@ -136,42 +137,43 @@ const app = new Hono<{ Bindings: CloudflareEnv }>()
         });
 
       if (!updatedSettings[0]) {
-        return c.json({ error: "Failed to update room settings" }, 400);
+        throw new HTTPException(400, {
+          message: 'Failed to update room settings',
+        });
       }
 
       return c.json(updatedSettings[0]);
-    }
+    },
   )
   .post(
-    "/",
+    '/',
     describeRoute({
-      tags: ["Rooms"],
-      summary: "Create a room",
-      description: "Create a room",
+      tags: ['Rooms'],
+      summary: 'Create a room',
+      description: 'Create a room',
       validateResponse: true,
       responses: {
         200: {
-          description: "Room created",
+          description: 'Room created',
           content: {
-            "application/json": {
+            'application/json': {
               schema: resolver(createRoomResponseSchema),
             },
           },
         },
         400: {
-          description: "Bad Request",
+          description: 'Bad Request',
           content: {
-            "application/json": {
+            'application/json': {
               schema: z.object({ error: z.string() }),
             },
           },
         },
       },
     }),
-    zValidator("json", createRoomSchema),
+    zValidator('json', createRoomSchema),
     async (c) => {
-      const { code, hostId, maxPlayers, numQuestions, timeLimit } =
-        c.req.valid("json");
+      const { code, hostId, maxPlayers, numQuestions, timeLimit, language } = c.req.valid('json');
 
       const db = await createDb(c);
       const newRoom = await db
@@ -182,6 +184,7 @@ const app = new Hono<{ Bindings: CloudflareEnv }>()
           maxPlayers,
           numQuestions,
           timeLimit,
+          language,
         })
         .returning({
           id: rooms.id,
@@ -194,7 +197,7 @@ const app = new Hono<{ Bindings: CloudflareEnv }>()
         });
 
       return c.json(newRoom[0], 201);
-    }
+    },
   );
 
 export default app;

@@ -6,8 +6,9 @@ import {
   supabaseMiddleware,
   getSupabase,
 } from "./api/v1/middleware/auth.middleware";
-import api from './api/index'
+import api from "./api/index";
 import { openAPISpecs } from "hono-openapi";
+import { bearerAuth } from "hono/bearer-auth";
 
 const app = new Hono();
 // Middleware
@@ -39,7 +40,7 @@ const routes = app
           },
         ],
       },
-    })
+    }),
   )
   .get("/api/user", async (c) => {
     const supabase = getSupabase(c);

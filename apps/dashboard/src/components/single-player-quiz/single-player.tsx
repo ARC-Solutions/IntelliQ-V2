@@ -11,9 +11,12 @@ import QAndA from './q-and-a';
 import Lottie from 'lottie-react';
 import Summarizing from '../../../public/intelliq_summarizing.json';
 import { Progress } from '@/components/ui/progress';
+import NumberFlow, { NumberFlowGroup } from '@number-flow/react';
+import { motion } from 'framer-motion';
+import { useQuizCreation } from '@/contexts/quiz-creation-context';
 
 const Quiz = () => {
-  const { currentQuiz, submitQuiz, summaryQuiz, dispatch: dispatchQuiz } = useQuiz();
+  const { currentQuiz, submitSinglePlayerQuiz, summaryQuiz, dispatch: dispatchQuiz } = useQuiz();
 
   const {
     questionNumber,
@@ -28,6 +31,7 @@ const Quiz = () => {
     setShowCorrectAnswer,
     showCorrectAnswer,
   } = useQuizLogic();
+  const { formValues } = useQuizCreation();
   const [time, setTime] = useState({ minutes: 0, seconds: 0 });
   const [quizFinished, setQuizFinished] = useState(false);
   const [totalTimeInSeconds, setTotalTimeInSeconds] = useState(0);
@@ -59,14 +63,24 @@ const Quiz = () => {
     setTime({ minutes: 0, seconds: 0 });
     dispatch({ type: 'RESET_GAME_LOGIC' });
     setQuestionNumber(0);
-    redirect(`/single-player/summary/${summaryQuiz.quiz_id}`);
+    redirect(`/single-player/summary/${summaryQuiz.quizId}`);
   }
 
   useEffect(() => {
     if (quizFinished) {
       setTimeout(() => {
-        submitQuiz(userAnswer, totalTimeInSeconds);
-      }, 3000);
+        submitSinglePlayerQuiz(
+          userAnswer,
+          totalTimeInSeconds,
+          currentQuiz,
+          correctAnswer,
+          formValues.description,
+          formValues.quizLanguage,
+          formValues.topic,
+          formValues.passingScore,
+          formValues.tags,
+        );
+      }, 1000);
     }
   }, [quizFinished]);
 
@@ -90,26 +104,56 @@ const Quiz = () => {
       </header>
       <section className='w-full rounded-lg p-6 text-center shadow-none'>
         <div className='mb-4 flex items-center justify-between'>
-          <Button className='inline-flex items-center rounded p-2 pr-3 text-sm font-medium text-black sm:text-xl'>
-            <Timer className='mr-2 text-base sm:text-2xl' />{' '}
-            <span id='time'>
-              {time.minutes > 0 ? `${time.minutes}m ` : ''}
-              {time.seconds}s
+          <motion.div
+            layout
+            className='inline-flex items-center rounded p-2 pr-3 text-sm font-medium text-black sm:text-xl bg-primary'
+            animate={{
+              width: time.minutes > 0 ? '7.75rem' : '5.5rem',
+            }}
+            transition={{
+              duration: 0.3,
+              ease: 'easeInOut',
+            }}
+          >
+            <Timer className='mr-2 text-base sm:text-2xl' />
+            <span id='time' className='flex items-center gap-2'>
+              <NumberFlowGroup>
+                {time.minutes > 0 && (
+                  <NumberFlow
+                    value={time.minutes}
+                    suffix='m'
+                    transformTiming={{
+                      duration: 500,
+                      easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+                    }}
+                    opacityTiming={{ duration: 400, easing: 'ease-out' }}
+                  />
+                )}
+                <NumberFlow
+                  value={time.seconds}
+                  suffix='s'
+                  transformTiming={{
+                    duration: 500,
+                    easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+                  }}
+                />
+              </NumberFlowGroup>
             </span>
-          </Button>
+          </motion.div>
           <Card className='flex items-center rounded-lg border-b-[0.5px] border-white border-opacity-20 text-2xl font-bold text-green-500'>
             <div className='mx-2 flex items-center'>
               <CircleCheck className='text-2xl sm:text-3xl ' />
-              <span className='mb-1 ml-1 text-2xl sm:text-3xl'>{correctAnswer}</span>
+              <NumberFlow value={correctAnswer} className='ml-1 text-2xl sm:text-3xl' />
             </div>
             <div className='mx-2 flex items-center text-red-500'>
-              <span className='mb-1 mr-1 text-2xl sm:text-3xl'>{wrongAnswer}</span>
+              <NumberFlow value={wrongAnswer} className='mr-1 text-2xl sm:text-3xl' />
               <CircleX className='text-2xl sm:text-3xl' />
             </div>
           </Card>
         </div>
         <CardDescription className='my-3 flex items-start text-sm sm:text-base'>
-          <span>{questionNumber + 1}</span>&nbsp;out of {currentQuiz.quiz.length} Questions
+          <NumberFlow value={questionNumber + 1} suffix=' out of ' />
+          {currentQuiz.quiz.length}
         </CardDescription>
         <Progress
           value={progressValue}
@@ -120,7 +164,7 @@ const Quiz = () => {
           quiz={currentQuiz.quiz}
           questionNumber={questionNumber}
           userAnswer={selectedAnswer}
-          correctAnswer={currentQuiz.quiz[questionNumber].correctAnswer.slice(3)}
+          correctAnswer={currentQuiz.quiz[questionNumber].correctAnswer}
         />
 
         <Button
@@ -138,7 +182,7 @@ const Quiz = () => {
                   type: 'VALIDATE_ANSWER',
                   payload: {
                     question: currentQuiz.quiz[questionNumber].text,
-                    correctAnswer: currentQuiz.quiz[questionNumber].correctAnswer.slice(3),
+                    correctAnswer: currentQuiz.quiz[questionNumber].correctAnswer!,
                     userAnswer: selectedAnswer,
                   },
                 });
@@ -159,7 +203,7 @@ const Quiz = () => {
                 type: 'VALIDATE_ANSWER',
                 payload: {
                   question: currentQuiz.quiz[questionNumber].text,
-                  correctAnswer: currentQuiz.quiz[questionNumber].correctAnswer.slice(3),
+                  correctAnswer: currentQuiz.quiz[questionNumber].correctAnswer!,
                   userAnswer: selectedAnswer,
                 },
               });

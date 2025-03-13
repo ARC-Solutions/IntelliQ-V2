@@ -9,15 +9,15 @@ import { useQuiz } from '@/contexts/quiz-context';
 import { useAuth } from '@/contexts/user-context';
 
 export function DashboardFeatures() {
-  const { isLoading, fetchingFinished: finished, currentQuiz, dispatch, summaryQuiz } = useQuiz();
+  const { isLoading, fetchingFinished: finished, currentQuiz, dispatch, summaryQuiz, isMultiplayerMode } = useQuiz();
   const { getUserInfo } = useAuth();
 
   useEffect(() => {
     if (currentQuiz) {
-      const url = `/single-player/quiz/play`;
+      const url = '/single-player/quiz/play';
       redirect(url);
     }
-  }, [currentQuiz, summaryQuiz]);
+  }, [currentQuiz, summaryQuiz, isMultiplayerMode]);
   return (
     <div className='h-screen w-full overflow-hidden'>
       <div className='max-w-4xl mx-auto h-full overflow-y-auto px-4 py-6'>

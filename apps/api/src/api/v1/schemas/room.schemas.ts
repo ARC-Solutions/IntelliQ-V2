@@ -1,17 +1,16 @@
-import { z } from "zod";
-
+import { z } from 'zod';
+import { supportedLanguages } from './common.schemas';
 export const roomSchema = z.object({
-  roomCode: z.string().min(4, "Room code is required"),
+  roomCode: z.string().min(4, 'Room code is required'),
 });
 
 export const roomResponseSchema = z.object({
-  max_players: z.number(),
+  maxPlayers: z.number(),
 });
 
 export const roomDetailsResponseSchema = z.object({
   // UUIDs or strings
   id: z.string(),
-  quizId: z.string().nullable(), // Because it can be null
   hostId: z.string(),
 
   // Numbers
@@ -30,16 +29,11 @@ export const roomDetailsResponseSchema = z.object({
 
   // endedAt can be null
   endedAt: z.string().nullable(),
+  language: z.string(),
 });
 
 export const updateRoomSettingsSchema = z.object({
-  type: z.enum([
-    "numQuestions",
-    "timeLimit",
-    "topic",
-    "showAnswers",
-    "maxPlayers",
-  ]),
+  type: z.enum(['numQuestions', 'timeLimit', 'topic', 'showAnswers', 'maxPlayers', 'language']),
   value: z.union([z.number(), z.string(), z.boolean()]),
 });
 
@@ -49,6 +43,7 @@ export const createRoomSchema = z.object({
   maxPlayers: roomDetailsResponseSchema.shape.maxPlayers,
   numQuestions: roomDetailsResponseSchema.shape.numQuestions,
   timeLimit: roomDetailsResponseSchema.shape.timeLimit,
+  language: roomDetailsResponseSchema.shape.language,
 });
 
 export const createRoomResponseSchema = z.object({
@@ -64,7 +59,6 @@ export const createRoomResponseSchema = z.object({
 export const roomSettingsResponseSchema = z.object({
   code: roomSchema.shape.roomCode,
   id: roomDetailsResponseSchema.shape.id,
-  quizId: roomDetailsResponseSchema.shape.quizId,
   hostId: roomDetailsResponseSchema.shape.hostId,
   maxPlayers: roomDetailsResponseSchema.shape.maxPlayers,
   numQuestions: roomDetailsResponseSchema.shape.numQuestions,
