@@ -24,6 +24,8 @@ import { VolumeIcon } from "@/components/ui/volume";
 import { useEffect, useRef, useState } from "react";
 import { useSupabase } from "@/contexts/supabase-context";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PartyPopperIcon } from "./ui/party-popper";
+import { useLocalStorage } from "usehooks-ts";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -40,6 +42,7 @@ interface SettingsDialogProps {
     avatar: string;
     theme: string;
     sound: boolean;
+    particles: boolean;
   }) => void;
 }
 
@@ -54,9 +57,19 @@ export function SettingsDialog({
   const [name, setName] = useState(user.name);
   const [avatar, setAvatar] = useState(user.avatar);
   const [isSoundEnabled, setIsSoundEnabled] = useState(soundEnabled);
+  const [isParticlesEnabled, setIsParticlesEnabled] = useState(false);
+  const [soundEnabledStorage, setSoundEnabledStorage] =
+    useLocalStorage<boolean>("soundEnabled", true);
+  const [particlesEnabledStorage, setParticlesEnabledStorage] =
+    useLocalStorage<boolean>("particlesEnabled", true);
   const [activeAvatarCategory, setActiveAvatarCategory] = useState("Vercel");
   const { theme, setTheme } = useTheme();
-  const isDarkMode = theme === "dark";
+  const isDarkMode =
+    theme === "system"
+      ? typeof window !== "undefined"
+        ? window.matchMedia("(prefers-color-scheme: dark)").matches
+        : false
+      : theme === "dark";
   const [isAnimating, setIsAnimating] = useState(false);
   const [avatarsByCategory, setAvatarsByCategory] = useState<
     Record<string, string[]>
@@ -117,26 +130,37 @@ export function SettingsDialog({
     if (open) {
       setName(user.name);
       setAvatar(user.avatar);
-      setIsSoundEnabled(soundEnabled);
+      setIsSoundEnabled(soundEnabledStorage);
+      setIsParticlesEnabled(particlesEnabledStorage);
       fetchAllAvatars();
       // Initialize volume icon state
       if (volumeIconRef.current) {
-        if (soundEnabled) {
+        if (soundEnabledStorage) {
           volumeIconRef.current.startAnimation();
         } else {
           volumeIconRef.current.stopAnimation();
         }
       }
+      // Initialize theme icons based on current theme
+      if (isDarkMode && moonIconRef.current) {
+        moonIconRef.current.startAnimation();
+      } else if (!isDarkMode && sunIconRef.current) {
+        sunIconRef.current.startAnimation();
+      }
     }
-  }, [open, user, soundEnabled]);
+  }, [open, user, soundEnabledStorage, particlesEnabledStorage, isDarkMode]);
 
   const handleSave = async () => {
+    setSoundEnabledStorage(isSoundEnabled);
+    setParticlesEnabledStorage(isParticlesEnabled);
+
     // Call the existing onSave handler
     onSave({
       name,
       avatar,
-      theme: theme || "light",
+      theme: theme!,
       sound: isSoundEnabled,
+      particles: isParticlesEnabled,
     });
 
     onOpenChange(false);
@@ -156,7 +180,7 @@ export function SettingsDialog({
     // Hide animation after it completes
     setTimeout(() => {
       setIsAnimating(false);
-    }, 500); // Adjust timing to match your animation duration
+    }, 500);
   };
 
   const handleThemeToggle = (checked: boolean) => {
@@ -168,6 +192,10 @@ export function SettingsDialog({
     } else if (!checked && sunIconRef.current) {
       sunIconRef.current.startAnimation();
     }
+  };
+
+  const handleParticlesToggle = (checked: boolean) => {
+    setIsParticlesEnabled(checked);
   };
 
   return (
@@ -310,6 +338,29 @@ export function SettingsDialog({
                 onCheckedChange={handleSoundToggle}
               />
             </div>
+          </div>
+        </div>
+
+        {/* Particles/Confetti with Party-Popper Icon */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label htmlFor="particles">Particles</Label>
+            <div className="text-sm text-muted-foreground">
+              Enable or disable particles
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <PartyPopperIcon
+              size={24}
+              color={isParticlesEnabled ? "rgb(34 197 94)" : "rgb(107 114 128)"}
+              showConfetti={isParticlesEnabled}
+              className="pointer-events-none"
+            />
+            <Switch
+              id="particles"
+              checked={isParticlesEnabled}
+              onCheckedChange={handleParticlesToggle}
+            />
           </div>
         </div>
 

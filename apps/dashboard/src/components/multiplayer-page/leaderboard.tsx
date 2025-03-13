@@ -1,8 +1,8 @@
 "use client";
-import React, { useEffect, useRef } from "react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Trophy, Clock, X, Check } from "lucide-react";
-import { Leaderboard, useQuiz } from "@/contexts/quiz-context";
+import type { Leaderboard } from "@/contexts/quiz-context";
+import { useQuiz } from "@/contexts/quiz-context";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -11,6 +11,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { useLocalStorage } from "usehooks-ts";
+import ReactConfetti from "react-confetti";
 
 // Create a single audio instance outside the component
 const successSound =
@@ -27,6 +28,7 @@ const QuizLeaderboard = () => {
   const topThree = leaderboard?.slice(0, 3) ?? [];
   const restOfPlayers = leaderboard?.slice(3) ?? [];
   const [soundEnabled] = useLocalStorage<boolean>("soundEnabled", true);
+  const [particlesEnabled] = useLocalStorage<boolean>("particlesEnabled", true);
 
   const handlePlayerClick = (player: Leaderboard) => {
     setSelectedPlayer(player);
@@ -77,7 +79,7 @@ const QuizLeaderboard = () => {
     if (!leaderboard) {
       router.push("/multiplayer");
     } else if (soundEnabled && !hasPlayedRef.current && successSound) {
-      hasPlayedRef.current = true; // Mark as played immediately
+      hasPlayedRef.current = true;
       successSound.play().catch((error) => {
         console.error("Error playing sound:", error);
       });
@@ -86,6 +88,9 @@ const QuizLeaderboard = () => {
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-black text-purple-200 p-6">
+      {particlesEnabled && (
+        <ReactConfetti recycle={false} numberOfPieces={200} gravity={0.2} />
+      )}
       <h1 className="text-4xl font-bold mb-2 text-purple-300">
         Quiz Leaderboard
       </h1>
