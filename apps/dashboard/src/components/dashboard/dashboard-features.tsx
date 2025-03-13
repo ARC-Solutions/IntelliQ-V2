@@ -13,8 +13,8 @@ export function DashboardFeatures() {
   const { getUserInfo } = useAuth();
 
   useEffect(() => {
-    if (currentQuiz && !isMultiplayerMode) {
-      const url = `/single-player/quiz/play`;
+    if (currentQuiz) {
+      const url = '/single-player/quiz/play';
       redirect(url);
     }
   }, [currentQuiz, summaryQuiz, isMultiplayerMode]);
