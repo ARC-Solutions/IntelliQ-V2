@@ -31,24 +31,25 @@ const Answer = ({ answer, letter, onAnswerSelected }: Props) => {
         // Keep the existing multiplayer validation with FULL answer
         if (isMultiplayer && currentQuiz) {
           dispatch({
-            type: 'VALIDATE_ANSWER',
+            type: "VALIDATE_ANSWER",
             payload: {
               question: currentQuiz.quiz[questionNumber].text,
-              correctAnswer: fullAnswer,
-              userAnswer: fullAnswer,
+              correctAnswer:
+                currentQuiz.quiz[questionNumber].correctAnswer!.slice(3),
+              userAnswer: answer,
             },
           });
         }
       }}
-      className='group my-3 w-full justify-start rounded-lg border border-primary border-opacity-30 bg-black p-7 text-sm font-normal text-white hover:border-none hover:text-black focus:bg-primary focus:text-black sm:text-lg'
+      className="group my-3 w-full justify-start rounded-lg border border-primary border-opacity-30 bg-white dark:bg-black p-7 text-sm font-normal text-black dark:text-white hover:border-none hover:text-white dark:hover:text-black focus:bg-primary focus:text-black sm:text-lg"
     >
       <span
-        id='letter'
-        className='me-4 rounded-md border border-primary/60 border-opacity-20 px-2 py-1 text-base group-hover:border-black group-focus:border-black sm:text-2xl'
+        id="letter"
+        className="me-4 rounded-md border border-primary/60 border-opacity-20 px-2 py-1 text-base group-hover:border-white dark:group-hover:border-black group-focus:border-black sm:text-2xl"
       >
         {letter}
       </span>
-      <span id='answer' className='capitalize'>
+      <span id="answer" className="capitalize">
         {answer}
       </span>
     </Button>
