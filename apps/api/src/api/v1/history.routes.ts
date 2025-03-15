@@ -1,9 +1,9 @@
 import { format } from "date-fns";
-import { arrayOverlaps, count, desc, eq, sql } from "drizzle-orm";
+import { arrayOverlaps, count, desc, eq, sql, and } from "drizzle-orm";
 import { Hono } from "hono";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
 import prettyMilliseconds from "pretty-ms";
-import { quizzes } from "../../../drizzle/schema";
+import { quizzes, multiplayerQuizSubmissions } from "../../../drizzle/schema";
 import { createDb } from "../../db/index";
 import { getSupabase } from "./middleware/auth.middleware";
 import {
@@ -15,6 +15,7 @@ import {
   quizHistoryResponseSchema,
 } from "./schemas/history.schemas";
 import { describeRoute } from "hono-openapi";
+import { quizType } from "./schemas/common.schemas";
 
 const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>().get(
   "/",
@@ -22,7 +23,7 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>().get(
     tags: ["History"],
     summary: "Get user's quiz history",
     description: "Get user's quiz history with optional filtering",
-    validateResponse: true,
+    // validateResponse: true,
     responses: {
       200: {
         description: "Quiz history retrieved successfully",
@@ -43,9 +44,9 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>().get(
           ? data.tags
           : [data.tags]
         : undefined,
-    }))
+    })),
   ),
-  createCacheMiddleware("quiz-history", MEDIUM_CACHE),
+  // createCacheMiddleware("quiz-history", MEDIUM_CACHE),
   async (c) => {
     const { tags, type, status, page, limit } = c.req.valid("query");
 
@@ -74,7 +75,7 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>().get(
       const [{ count: totalCount }] = await tx
         .select({ count: count() })
         .from(quizzes)
-        .where(whereConditions.reduce((acc, condition) => acc && condition));
+        .where(sql`${and(...whereConditions)}`);
 
       const results = await tx
         .select({
@@ -84,22 +85,48 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>().get(
           totalTime: quizzes.totalTimeTaken,
           date: quizzes.createdAt,
           correct: quizzes.correctAnswersCount,
-          incorrect: sql`${quizzes.questionsCount} - ${quizzes.correctAnswersCount}`,
+          incorrect:
+            sql`${quizzes.questionsCount} - ${quizzes.correctAnswersCount}`.as(
+              "incorrect",
+            ),
+          passed: quizzes.passed,
+          type: quizzes.type,
+          multiplayerScore: multiplayerQuizSubmissions.userScore,
+          multiplayerCorrect: multiplayerQuizSubmissions.correctAnswersCount,
+          questionsCount: quizzes.questionsCount,
         })
         .from(quizzes)
-        .where(whereConditions.reduce((acc, condition) => acc && condition))
+        .leftJoin(
+          multiplayerQuizSubmissions,
+          eq(multiplayerQuizSubmissions.quizId, quizzes.id),
+        )
+        .where(sql`${and(...whereConditions)}`)
         .orderBy(desc(quizzes.createdAt))
         .limit(limit)
         .offset((page - 1) * limit);
 
-      const quizResults = results.map((quiz) => ({
-        ...quiz,
-        date: format(quiz.date, "dd.MM.yyyy"),
-        totalTime: `${prettyMilliseconds(quiz.totalTime! * 1000, {
-          colonNotation: true,
-          secondsDecimalDigits: 0,
-        })} min`,
-      }));
+      const quizResults = results.map((quiz) => {
+        if (quiz.type === quizType.Enum.multiplayer) {
+          return {
+            id: quiz.id,
+            title: quiz.title,
+            score: quiz.multiplayerScore,
+            correct: quiz.multiplayerCorrect,
+            incorrect: quiz.questionsCount - quiz.multiplayerCorrect!,
+            date: format(quiz.date, "dd/MM/yyyy"),
+            type: quiz.type,
+          };
+        }
+
+        return {
+          ...quiz,
+          date: format(quiz.date, "dd/MM/yyyy"),
+          totalTime: `${prettyMilliseconds(quiz.totalTime! * 1000, {
+            colonNotation: true,
+            secondsDecimalDigits: 0,
+          })} min`,
+        };
+      });
 
       return {
         data: quizResults,
@@ -115,7 +142,7 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>().get(
     });
 
     return c.json(userQuizzes);
-  }
+  },
 );
 
 export default historyRoutes;
