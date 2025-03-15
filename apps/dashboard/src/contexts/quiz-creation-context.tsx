@@ -5,14 +5,7 @@ import React, { createContext, useContext } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useQuiz, SupportedLanguages } from './quiz-context';
-import {
-  useQueryState,
-  parseAsInteger,
-  parseAsBoolean,
-  parseAsArrayOf,
-  parseAsString,
-  parseAsStringEnum,
-} from 'nuqs';
+import { useQueryState, parseAsInteger, parseAsBoolean, parseAsArrayOf, parseAsString } from 'nuqs';
 import * as LZString from 'lz-string';
 import { QuizType } from '@intelliq/api';
 
@@ -214,8 +207,7 @@ export const QuizCreationProvider = ({ children }: Props) => {
   };
 
   const onSubmit = handleSubmit((data: QuizData) => {
-    console.log('Quiz Data:', data);
-    const questions = data.questions.map((question, index) => {
+    const questions = data.questions.map((question) => {
       let answerLabel;
       const options = question.options?.map((option, optionIndex) => {
         const optionLabel = String.fromCharCode(97 + optionIndex); // 97 is the ASCII code for 'a'

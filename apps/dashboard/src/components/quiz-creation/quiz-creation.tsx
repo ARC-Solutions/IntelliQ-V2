@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Controller } from 'react-hook-form';
 import Lottie from 'lottie-react';
 import Loading from '../../../public/Loading.json';
@@ -22,7 +22,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { BookOpen, HelpCircle, Plus, Trash2, Tag, Hash } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useQuizCreation, Question } from '@/contexts/quiz-creation-context';
+import { useQuizCreation } from '@/contexts/quiz-creation-context';
+import type { Question } from '@/contexts/quiz-creation-context';
 import { useQuiz } from '@/contexts/quiz-context';
 import { redirect } from 'next/navigation';
 import { useQueryState } from 'nuqs';
@@ -40,13 +41,11 @@ export default function QuizCreator() {
     register,
     errors,
     control,
-    resetValues,
     setTopicValue,
     setDescriptionValue,
     setNumberValue,
     setPassingScoreValue,
     setShowCorrectAnswersValue,
-    setTagsValue,
     setQuizLanguageValue,
   } = useQuizCreation();
   const { isLoading, fetchingFinished, currentQuiz, isMultiplayerMode } = useQuiz();
@@ -129,7 +128,7 @@ export default function QuizCreator() {
                   type='number'
                   id='number'
                   {...register('number')}
-                  onChange={(e) => setNumberValue(parseInt(e.target.value))}
+                  onChange={(e) => setNumberValue(Number.parseInt(e.target.value))}
                   value={formValues.number || ''}
                   placeholder='How many AI-generated questions?'
                   className='pl-10'
@@ -144,7 +143,7 @@ export default function QuizCreator() {
               <Controller
                 name='passingScore'
                 control={control}
-                render={({ field }) => (
+                render={() => (
                   <Slider
                     id='passingScore'
                     min={0} // Keep visual minimum at 0
@@ -182,7 +181,7 @@ export default function QuizCreator() {
                 <Controller
                   name='showCorrectAnswers'
                   control={control}
-                  render={({ field }) => (
+                  render={() => (
                     <Switch
                       id='showCorrectAnswers'
                       checked={formValues.showCorrectAnswers}
