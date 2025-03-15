@@ -40,7 +40,7 @@ import { useEffect, useState } from 'react';
 import { RoomResponse, RoomDetailsResponse, QuizType } from '@intelliq/api';
 import { useDebouncedCallback } from 'use-debounce';
 import { SupportedLanguages, useQuiz } from '@/contexts/quiz-context';
-import { languages, QuizData } from '../../contexts/quiz-creation-context';
+import { languages, QuizData } from '@/contexts/quiz-creation-context';
 
 interface PresenceData {
   currentUser: {

@@ -1,5 +1,5 @@
-import type { HistoryQuestions } from "@/contexts/quiz-context";
-import { CircleX, CircleCheck } from "lucide-react";
+import type { HistoryQuestions } from '@/contexts/quiz-context';
+import { CircleX, CircleCheck } from 'lucide-react';
 
 const QuestionsList = ({ questions }: { questions: HistoryQuestions[] }) => {
   return (
@@ -33,7 +33,7 @@ const QuestionsList = ({ questions }: { questions: HistoryQuestions[] }) => {
             {question.userAnswer !== question.correctAnswer && (
               <p className='text-base mt-1'>
                 <span className='font-semibold'>Correct Answer: </span>
-                <span className='text-blue-400'>{question.correctAnswer}</span>
+                <span className='text-green-500'>{question.correctAnswer}</span>
               </p>
             )}
           </div>
