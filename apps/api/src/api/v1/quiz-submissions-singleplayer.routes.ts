@@ -24,6 +24,7 @@ import {
 import { incrementUserCacheVersion } from "../../utils/kv-user-version";
 import prettyMilliseconds from "pretty-ms";
 import { HTTPException } from "hono/http-exception";
+import { queueTagAnalysis } from "./services/queue-tag-analysis";
 
 const singleplayerQuizSubmissionsRoutes = new Hono<{
   Bindings: CloudflareEnv;
@@ -121,7 +122,7 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
         totalQuestions: quiz.questionsCount,
         questions: formattedQuestions,
       });
-    }
+    },
   )
   .post(
     "/submit",
@@ -184,7 +185,7 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
         const correctAnswersCount = questions.reduce(
           (count, question) =>
             count + (question.userAnswer === question.correctAnswer ? 1 : 0),
-          0
+          0,
         );
 
         for (const question of questions) {
@@ -215,6 +216,7 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
           })
           .where(eq(quizzes.id, createdQuiz.id));
 
+        await queueTagAnalysis(c, createdQuiz.id, quizType.enum.singleplayer);
         return {
           quizId: createdQuiz.id,
           quizTitle: quizTitle,
@@ -222,6 +224,7 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
           totalTime: createdQuiz.totalTimeTaken,
           correctAnswersCount,
           totalQuestions: createdQuiz.questionsCount,
+          passingScore: createdQuiz.passingScore,
           questions: questions.map((question) => ({
             text: question.text,
             correctAnswer: question.correctAnswer,
@@ -233,7 +236,7 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
       await incrementUserCacheVersion(c.env.IntelliQ_CACHE_VERSION, user!.id);
 
       return c.json(result, 201);
-    }
+    },
   );
 
 export default singleplayerQuizSubmissionsRoutes;
