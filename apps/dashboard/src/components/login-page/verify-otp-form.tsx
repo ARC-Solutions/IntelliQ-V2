@@ -56,8 +56,8 @@ export default function VerifyOTPForm({ email }: { email: string }) {
   }, [verifyOtp.result, toast]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="w-full max-w-md p-8 space-y-6">
+    <div className="flex items-center justify-center min-h-screen text-white">
+      <div className="p-8 space-y-6">
         <h1 className="text-4xl font-bold text-center mb-6">
           Security code sent!
         </h1>
@@ -73,6 +73,7 @@ export default function VerifyOTPForm({ email }: { email: string }) {
             maxLength={6}
             value={otp}
             onChange={(value) => setOtp(value)}
+            
           >
             <InputOTPGroup>
               <InputOTPSlot index={0} />
