@@ -1,4 +1,4 @@
-import { QuizAction, QuizContextValue } from '@/contexts/quiz-context';
+import type { QuizAction, QuizContextValue } from '@/contexts/quiz-context';
 
 export const quizReducer = (state: QuizContextValue, action: QuizAction): QuizContextValue => {
   if (action.type === 'FETCH_QUIZ_REQUEST') {
