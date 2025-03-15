@@ -14,10 +14,11 @@ import { Progress } from '@/components/ui/progress';
 import NumberFlow, { NumberFlowGroup } from '@number-flow/react';
 import { motion } from 'framer-motion';
 import { useQuizCreation } from '@/contexts/quiz-creation-context';
+import { useLocalStorage } from 'usehooks-ts';
 
 const Quiz = () => {
   const { currentQuiz, submitSinglePlayerQuiz, summaryQuiz, dispatch: dispatchQuiz } = useQuiz();
-
+  const [soundEnabled] = useLocalStorage<boolean>('soundEnabled', true);
   const {
     questionNumber,
     setQuestionNumber,
@@ -87,6 +88,19 @@ const Quiz = () => {
   useEffect(() => {
     setProgressValue(((questionNumber + 1) / currentQuiz.quiz.length) * 100);
   }, [questionNumber]);
+
+  useEffect(() => {
+    const audio = new Audio('/correct.mp3');
+    if (soundEnabled && correctAnswer > 0) {
+      audio.play();
+    }
+  }, [correctAnswer]);
+  useEffect(() => {
+    const audio = new Audio('/wrong.mp3');
+    if (soundEnabled && wrongAnswer > 0) {
+      audio.play();
+    }
+  }, [wrongAnswer]);
 
   if (quizFinished) {
     return (

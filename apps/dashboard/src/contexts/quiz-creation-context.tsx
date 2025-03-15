@@ -84,7 +84,7 @@ const initialState = {
   tags: [],
   questions: [],
   number: '',
-  quizLangauge: 'en',
+  quizLangauge: SupportedLanguages.English,
   quizType: QuizType.Enum.singleplayer,
 };
 
