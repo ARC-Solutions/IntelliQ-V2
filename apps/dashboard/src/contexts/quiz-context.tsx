@@ -59,6 +59,11 @@ export interface QuizHistories {
   id: string;
   quiz_title: string;
   created_at: string;
+  score: number | null;
+  correct: number | null;
+  incorrect: number | null;
+  totalTime: string;
+  tags: string[];
 }
 export type QuizAction =
   | { type: "FETCH_QUIZ_REQUEST" }
