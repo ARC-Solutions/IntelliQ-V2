@@ -1,12 +1,11 @@
 'use client';
 import { cn } from '@/lib/utils';
 import React, { useEffect } from 'react';
-import { BentoGrid, BentoGridItem } from '../ui/bento-grid';
+import { BentoGridItem } from '../ui/bento-grid';
 import { UserRound, UsersRound, Paperclip, Dices } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { useQuiz } from '@/contexts/quiz-context';
-import { useAuth } from '@/contexts/user-context';
 
 export function DashboardFeatures() {
   const {
@@ -17,7 +16,6 @@ export function DashboardFeatures() {
     summaryQuiz,
     isMultiplayerMode,
   } = useQuiz();
-  const { getUserInfo } = useAuth();
 
   useEffect(() => {
     if (currentQuiz) {
@@ -25,6 +23,7 @@ export function DashboardFeatures() {
       redirect(url);
     }
   }, [currentQuiz, summaryQuiz, isMultiplayerMode]);
+
   return (
     <div className='h-screen w-full overflow-hidden'>
       <div className='max-w-4xl mx-auto h-full overflow-y-auto px-4 py-6'>
@@ -61,6 +60,7 @@ export function DashboardFeatures() {
 const Skeleton = () => (
   <div className='flex flex-1 w-full h-full min-h-[6rem] rounded-xl dark:bg-dot-white/[0.2] bg-dot-black/[0.2] [mask-image:radial-gradient(ellipse_at_center,white,transparent)]  border border-transparent dark:border-white/[0.2] bg-neutral-100 dark:bg-black' />
 );
+
 const items = [
   {
     title: 'Quiz Me',

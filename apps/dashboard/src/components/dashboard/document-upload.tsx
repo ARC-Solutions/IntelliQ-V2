@@ -16,3 +16,4 @@ export function DocumentUpload() {
 
   return <FileUpload onChange={handleFileUpload} />;
 }
+ 
