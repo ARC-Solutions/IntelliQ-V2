@@ -1,4 +1,4 @@
-import { pgTable, foreignKey, unique, uuid, smallint, timestamp, integer, text, real, pgPolicy, boolean, bigint, jsonb, vector, index, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, foreignKey, unique, uuid, smallint, timestamp, pgPolicy, text, boolean, integer, real, bigint, jsonb, vector, index, pgEnum } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const quizType = pgEnum("quiz_type", ['singleplayer', 'multiplayer', 'document', 'random'])
@@ -29,27 +29,6 @@ export const multiplayerQuizSubmissions = pgTable("multiplayer_quiz_submissions"
 			name: "multiplayer_quiz_submissions_user_id_fkey"
 		}).onUpdate("cascade").onDelete("cascade"),
 	unique("unique_user_quiz_room").on(table.userId, table.quizId, table.roomId),
-]);
-
-export const userUsageData = pgTable("user_usage_data", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	userId: uuid("user_id").notNull(),
-	promptTokens: integer("prompt_tokens").notNull(),
-	completionTokens: integer("completion_tokens").notNull(),
-	totalTokens: integer("total_tokens").notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	usedModel: text("used_model").notNull(),
-	countQuestions: integer("count_Questions").notNull(),
-	responseTimeTaken: real("response_time_taken").notNull(),
-	prompt: text().notNull(),
-	language: text().notNull(),
-	quizType: quizType("quiz_type").notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.userId],
-			foreignColumns: [users.id],
-			name: "user_usage_data_user_id_fkey"
-		}).onUpdate("cascade").onDelete("cascade"),
 ]);
 
 export const users = pgTable("users", {
@@ -95,6 +74,27 @@ export const userResponses = pgTable("user_responses", {
 		}).onUpdate("cascade").onDelete("cascade"),
 	pgPolicy("Users can view their own responses", { as: "permissive", for: "select", to: ["authenticated"], using: sql`(( SELECT auth.uid() AS uid) = user_id)` }),
 	pgPolicy("Users can insert their own responses", { as: "permissive", for: "insert", to: ["authenticated"] }),
+]);
+
+export const userUsageData = pgTable("user_usage_data", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	userId: uuid("user_id").notNull(),
+	promptTokens: integer("prompt_tokens").notNull(),
+	completionTokens: integer("completion_tokens").notNull(),
+	totalTokens: integer("total_tokens").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	usedModel: text("used_model").notNull(),
+	countQuestions: integer("count_Questions").notNull(),
+	responseTimeTaken: real("response_time_taken").notNull(),
+	prompt: text().notNull(),
+	language: text().notNull(),
+	quizType: quizType("quiz_type").notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "user_usage_data_user_id_fkey"
+		}).onUpdate("cascade").onDelete("cascade"),
 ]);
 
 export const documents = pgTable("documents", {
