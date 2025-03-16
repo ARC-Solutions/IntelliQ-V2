@@ -47,7 +47,6 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>().get(
   // createCacheMiddleware("quiz-history", MEDIUM_CACHE),
   async (c) => {
     const { tags, type, status, page, limit } = c.req.valid("query");
-    console.log("Processing tags:", tags);
 
     const supabase = getSupabase(c);
     const {

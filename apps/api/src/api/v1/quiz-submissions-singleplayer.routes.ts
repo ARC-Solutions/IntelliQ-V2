@@ -25,6 +25,8 @@ import { incrementUserCacheVersion } from "../../utils/kv-user-version";
 import prettyMilliseconds from "pretty-ms";
 import { HTTPException } from "hono/http-exception";
 import { queueTagAnalysis } from "./services/queue-tag-analysis";
+import { generateQuizEmbedding } from "./services/embedding";
+import { queueEmbeddings } from "./services/queue-embeddings";
 
 const singleplayerQuizSubmissionsRoutes = new Hono<{
   Bindings: CloudflareEnv;
@@ -217,6 +219,8 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
           .where(eq(quizzes.id, createdQuiz.id));
 
         await queueTagAnalysis(c, createdQuiz.id, quizType.enum.singleplayer);
+        await queueEmbeddings(c, createdQuiz.id);
+        
         return {
           quizId: createdQuiz.id,
           quizTitle: quizTitle,
