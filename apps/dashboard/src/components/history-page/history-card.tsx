@@ -57,10 +57,10 @@ export function HistoryCard({
           </div>
           {type !== "multiplayer" && (
             <Badge
-              variant={passed ? "default" : "destructive"}
+              variant={passed ? "success" : "destructive"}
               className={
                 passed
-                  ? "bg-[#c8b6ff]/20 text-[#c8b6ff]"
+                  ? "bg-green-500/20 text-green-500"
                   : "bg-destructive/20 text-destructive"
               }
             >

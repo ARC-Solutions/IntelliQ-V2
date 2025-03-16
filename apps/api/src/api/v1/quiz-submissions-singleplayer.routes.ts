@@ -179,7 +179,7 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
             questionsCount: questions.length,
             totalTimeTaken: timeTaken,
             userScore,
-            passed: userScore >= passingScore,
+            passed: userScore * 10 >= passingScore,
           })
           .returning();
 
@@ -219,7 +219,7 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
 
         await queueTagAnalysis(c, createdQuiz.id, quizType.enum.singleplayer);
         await queueEmbeddings(c, createdQuiz.id);
-        
+
         return {
           quizId: createdQuiz.id,
           quizTitle: quizTitle,
