@@ -15,6 +15,10 @@ import {
   quizHistoryResponseSchema,
 } from "./schemas/history.schemas";
 import { z } from "zod";
+import {
+  MEDIUM_CACHE,
+  createCacheMiddleware,
+} from "./middleware/cache.middleware";
 
 const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
   .get(
@@ -46,7 +50,7 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           : undefined,
       })),
     ),
-    // createCacheMiddleware("quiz-history", MEDIUM_CACHE),
+    createCacheMiddleware("quiz-history", MEDIUM_CACHE),  
     async (c) => {
       const { tags, type, status, page, limit } = c.req.valid("query");
 
@@ -151,7 +155,7 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
       tags: ["History"],
       summary: "Search user's quiz history",
       description: "Search user's quiz history with optional filtering",
-      // validateResponse: true,
+      validateResponse: true,
       responses: {
         200: {
           description: "Quiz history retrieved successfully",
@@ -246,16 +250,14 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           return {
             id: quiz.id,
             title: quiz.title,
-            score: quiz.user_score,
-            totalTime: quiz.total_time_taken
-              ? `${prettyMilliseconds(
-                  (quiz.total_time_taken as number) * 1000,
-                  {
-                    colonNotation: true,
-                    secondsDecimalDigits: 0,
-                  },
-                )} min`
-              : undefined,
+            score: (quiz.user_score as number) * 10,
+            totalTime: `${prettyMilliseconds(
+              ((quiz.total_time_taken || 0) as number) * 1000,
+              {
+                colonNotation: true,
+                secondsDecimalDigits: 0,
+              },
+            )} min`,
             date: format(new Date(quiz.created_at as string), "dd/MM/yyyy"),
             correct: quiz.correct_answers_count,
             incorrect: quiz.incorrect,
