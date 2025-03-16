@@ -10,18 +10,21 @@ import QuestionsList from "./summary-questions";
 import Image from "next/image";
 import { Award, Clock } from "lucide-react";
 import { Progress } from "../ui/progress";
+import { useLocalStorage } from "usehooks-ts";
+import ReactConfetti from "react-confetti";
+
+const successSound =
+  typeof window !== "undefined" ? new Audio("/success.mp3") : null;
 
 const Summary = () => {
   const { dispatch, summaryQuiz } = useQuiz();
   const [isMounted, setIsMounted] = useState(false); // State to track if component has mounted
-  const successAudioRef = useRef<HTMLAudioElement | null>(null);
+  const [soundEnabled] = useLocalStorage<boolean>("soundEnabled", true);
+  const [particlesEnabled] = useLocalStorage<boolean>("particlesEnabled", true);
 
   useEffect(() => {
     setIsMounted(true);
     dispatch({ type: "RESET_QUIZ" });
-
-    // Create audio element when component mounts
-    successAudioRef.current = new Audio("/success.mp3");
   }, []);
 
   useEffect(() => {
@@ -31,9 +34,11 @@ const Summary = () => {
       summaryQuiz &&
       (correctAnswersCount / totalQuestions) * 100 >= summaryQuiz.passingScore
     ) {
-      successAudioRef.current?.play().catch((err) => {
-        console.error("Error playing success sound:", err);
-      });
+      if (soundEnabled) {
+        successSound!.play().catch((err) => {
+          console.error("Error playing success sound:", err);
+        });
+      }
     }
   }, [isMounted]);
 
@@ -68,6 +73,9 @@ const Summary = () => {
 
   return (
     <div className="mx-auto flex w-full flex-col px-6 py-3 text-white sm:w-10/12">
+      {particlesEnabled && (
+        <ReactConfetti recycle={false} numberOfPieces={200} gravity={0.2} />
+      )}
       <header className="mb-14 flex w-full flex-col items-center justify-center">
         <Image src="/logo-dark.svg" alt="IntelliQ" width={250} height={250} />
         <h1 className="text-2xl font-bold sm:text-4xl text-primary">
