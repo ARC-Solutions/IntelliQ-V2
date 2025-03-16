@@ -301,29 +301,43 @@ export const statusFilterOptions: FilterOption[] = [
   },
 ];
 
-export const tagFilterOptions: FilterOption[] = [
-  "tag1",
-  "tag2",
-  "tag3",
-  "tag4",
-  "tag5",
-].map((tag) => ({
-  name: tag,
-  icon: <Tag className="size-3.5" />,
-}));
+// Update the MenuBar props interface
+interface MenuBarProps {
+  filters: Filter[];
+  setFilters: Dispatch<SetStateAction<Filter[]>>;
+  searchQuery: string;
+  setSearchQuery: Dispatch<SetStateAction<string>>;
+  availableTags: { tag: string; count: number }[];
+}
 
-// Update the mapping of filter types to their options
-export const filterViewToFilterOptions: Record<FilterType, FilterOption[]> = {
+// Replace the static tagFilterOptions with a dynamic function
+export const getTagFilterOptions = (
+  availableTags: { tag: string; count: number }[],
+): FilterOption[] => {
+  return availableTags.map((tagData) => ({
+    name: tagData.tag
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" "),
+    icon: <Tag className="size-3.5" />,
+    label: `${tagData.count}`, // Optionally show the count
+  }));
+};
+
+// Update the filterViewToFilterOptions to use the dynamic tags
+export const getFilterViewToFilterOptions = (
+  availableTags: { tag: string; count: number }[],
+): Record<FilterType, FilterOption[]> => ({
   [FilterType.TYPE]: typeFilterOptions,
   [FilterType.STATUS]: statusFilterOptions,
-  [FilterType.TAGS]: tagFilterOptions,
+  [FilterType.TAGS]: getTagFilterOptions(availableTags),
   [FilterType.ASSIGNEE]: [],
   [FilterType.LABELS]: [],
   [FilterType.PRIORITY]: [],
   [FilterType.DUE_DATE]: [],
   [FilterType.CREATED_DATE]: [],
   [FilterType.UPDATED_DATE]: [],
-};
+});
 
 const filterOperators = ({
   filterType,
@@ -396,19 +410,23 @@ const FilterOperatorDropdown = ({
   );
 };
 
+// Update the FilterValueCombobox component to use dynamic filter options
 const FilterValueCombobox = ({
   filterType,
   filterValues,
   setFilterValues,
+  availableTags,
 }: {
   filterType: FilterType;
   filterValues: string[];
   setFilterValues: (filterValues: string[]) => void;
+  availableTags: { tag: string; count: number }[];
 }) => {
   const [open, setOpen] = useState(false);
   const [commandInput, setCommandInput] = useState("");
   const commandInputRef = useRef<HTMLInputElement>(null);
-  const nonSelectedFilterValues = filterViewToFilterOptions[filterType]?.filter(
+  const filterOptions = getFilterViewToFilterOptions(availableTags)[filterType];
+  const nonSelectedFilterValues = filterOptions?.filter(
     (filter) => !filterValues.includes(filter.name),
   );
   return (
@@ -537,10 +555,12 @@ const FilterValueDateCombobox = ({
   filterType,
   filterValues,
   setFilterValues,
+  availableTags,
 }: {
   filterType: FilterType;
   filterValues: string[];
   setFilterValues: (filterValues: string[]) => void;
+  availableTags: { tag: string; count: number }[];
 }) => {
   const [open, setOpen] = useState(false);
   const [commandInput, setCommandInput] = useState("");
@@ -578,7 +598,7 @@ const FilterValueDateCombobox = ({
             <CommandList>
               <CommandEmpty>No results found.</CommandEmpty>
               <CommandGroup>
-                {filterViewToFilterOptions[filterType].map(
+                {getFilterViewToFilterOptions(availableTags)[filterType].map(
                   (filter: FilterOption) => (
                     <CommandItem
                       className="group flex gap-2 items-center"
@@ -618,9 +638,11 @@ const FilterValueDateCombobox = ({
 export default function Filters({
   filters,
   setFilters,
+  availableTags,
 }: {
   filters: Filter[];
   setFilters: Dispatch<SetStateAction<Filter[]>>;
+  availableTags: { tag: string; count: number }[];
 }) {
   return (
     <div className="flex gap-2">
@@ -657,6 +679,7 @@ export default function Filters({
                     ),
                   );
                 }}
+                availableTags={availableTags}
               />
             ) : (
               <FilterValueCombobox
@@ -669,6 +692,7 @@ export default function Filters({
                     ),
                   );
                 }}
+                availableTags={availableTags}
               />
             )}
             <Button

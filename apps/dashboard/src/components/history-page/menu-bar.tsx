@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { motion } from "framer-motion"
-import { Search, ListFilter } from "lucide-react"
-import Filters from "@/components/ui/filters"
-import { Button } from "@/components/ui/button"
+import * as React from "react";
+import { motion } from "framer-motion";
+import { Search, ListFilter } from "lucide-react";
+import Filters, { Filter } from "@/components/ui/filters";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -13,10 +13,14 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from "@/components/ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { nanoid } from "nanoid"
-import { AnimateChangeInHeight } from "@/components/ui/filters"
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { nanoid } from "nanoid";
+import { AnimateChangeInHeight } from "@/components/ui/filters";
 import {
   DueDate,
   type Filter as FilterType,
@@ -24,18 +28,19 @@ import {
   type FilterOption,
   FilterType as FilterTypeEnum,
   filterViewOptions,
-  filterViewToFilterOptions,
-} from "@/components/ui/filters"
+  getFilterViewToFilterOptions,
+} from "@/components/ui/filters";
+import { Dispatch, SetStateAction } from "react";
 
 const itemVariants = {
   initial: { rotateX: 0, opacity: 1 },
   hover: { rotateX: -90, opacity: 0 },
-}
+};
 
 const backVariants = {
   initial: { rotateX: 90, opacity: 0 },
   hover: { rotateX: 0, opacity: 1 },
-}
+};
 
 const glowVariants = {
   initial: { opacity: 0, scale: 0.8 },
@@ -47,7 +52,7 @@ const glowVariants = {
       scale: { duration: 0.5, type: "spring", stiffness: 300, damping: 25 },
     },
   },
-}
+};
 
 const navGlowVariants = {
   initial: { opacity: 0 },
@@ -58,42 +63,60 @@ const navGlowVariants = {
       ease: [0.4, 0, 0.2, 1],
     },
   },
-}
+};
 
 const sharedTransition = {
   type: "spring",
   stiffness: 100,
   damping: 20,
   duration: 0.5,
-}
+};
 
 interface MenuBarProps {
-  filters: FilterType[]
-  setFilters: React.Dispatch<React.SetStateAction<FilterType[]>>
-  searchQuery: string
-  setSearchQuery: React.Dispatch<React.SetStateAction<string>>
+  filters: Filter[];
+  setFilters: Dispatch<SetStateAction<Filter[]>>;
+  searchQuery: string;
+  setSearchQuery: Dispatch<SetStateAction<string>>;
+  availableTags: {
+    tag: string;
+    count: number;
+  }[];
 }
 
-export function MenuBar({ filters, setFilters, searchQuery, setSearchQuery }: MenuBarProps) {
-  const [open, setOpen] = React.useState(false)
-  const [selectedView, setSelectedView] = React.useState<FilterTypeEnum | null>(null)
-  const [commandInput, setCommandInput] = React.useState("")
-  const commandInputRef = React.useRef<HTMLInputElement>(null)
+export function MenuBar({
+  filters,
+  setFilters,
+  searchQuery,
+  setSearchQuery,
+  availableTags,
+}: MenuBarProps) {
+  const [open, setOpen] = React.useState(false);
+  const [selectedView, setSelectedView] = React.useState<FilterTypeEnum | null>(
+    null,
+  );
+  const [commandInput, setCommandInput] = React.useState("");
+  const commandInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Get the filter options with available tags
+  const filterViewToFilterOptions = React.useMemo(
+    () => getFilterViewToFilterOptions(availableTags),
+    [availableTags],
+  );
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value)
-    console.log("Search input changed:", e.target.value)
-  }
+    setSearchQuery(e.target.value);
+    console.log("Search input changed:", e.target.value);
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Search submitted:", searchQuery)
+    e.preventDefault();
+    console.log("Search submitted:", searchQuery);
     // Focus back on the input after submission
-    const searchInput = e.currentTarget.querySelector("input")
+    const searchInput = e.currentTarget.querySelector("input");
     if (searchInput) {
-      searchInput.focus()
+      searchInput.focus();
     }
-  }
+  };
 
   return (
     <motion.nav
@@ -124,8 +147,13 @@ export function MenuBar({ filters, setFilters, searchQuery, setSearchQuery }: Me
         </form>
         <div className="flex items-center gap-4">
           <div className="flex gap-2 flex-wrap">
-            <Filters filters={filters} setFilters={setFilters} />
-            {filters.filter((filter) => filter.value?.length > 0).length > 0 && (
+            <Filters
+              filters={filters}
+              setFilters={setFilters}
+              availableTags={availableTags}
+            />
+            {filters.filter((filter) => filter.value?.length > 0).length >
+              0 && (
               <Button
                 variant="outline"
                 size="sm"
@@ -138,12 +166,12 @@ export function MenuBar({ filters, setFilters, searchQuery, setSearchQuery }: Me
             <Popover
               open={open}
               onOpenChange={(open) => {
-                setOpen(open)
+                setOpen(open);
                 if (!open) {
                   setTimeout(() => {
-                    setSelectedView(null)
-                    setCommandInput("")
-                  }, 200)
+                    setSelectedView(null);
+                    setCommandInput("");
+                  }, 200);
                 }
               }}
             >
@@ -168,19 +196,34 @@ export function MenuBar({ filters, setFilters, searchQuery, setSearchQuery }: Me
                     className="flex items-center gap-2 px-4 py-2 relative z-10 bg-transparent text-[#c8b6ff]/70 group-hover:text-[#c8b6ff] transition-colors rounded-xl cursor-pointer"
                     variants={itemVariants}
                     transition={sharedTransition}
-                    style={{ transformStyle: "preserve-3d", transformOrigin: "center bottom" }}
+                    style={{
+                      transformStyle: "preserve-3d",
+                      transformOrigin: "center bottom",
+                    }}
                   >
                     <ListFilter className="h-5 w-5" />
-                    <span>{filters.length > 0 ? `Filters (${filters.length})` : "Filter"}</span>
+                    <span>
+                      {filters.length > 0
+                        ? `Filters (${filters.length})`
+                        : "Filter"}
+                    </span>
                   </motion.div>
                   <motion.div
                     className="flex items-center gap-2 px-4 py-2 absolute inset-0 z-10 bg-transparent text-[#c8b6ff]/70 group-hover:text-[#c8b6ff] transition-colors rounded-xl cursor-pointer"
                     variants={backVariants}
                     transition={sharedTransition}
-                    style={{ transformStyle: "preserve-3d", transformOrigin: "center top", rotateX: 90 }}
+                    style={{
+                      transformStyle: "preserve-3d",
+                      transformOrigin: "center top",
+                      rotateX: 90,
+                    }}
                   >
                     <ListFilter className="h-5 w-5" />
-                    <span>{filters.length > 0 ? `Filters (${filters.length})` : "Filter"}</span>
+                    <span>
+                      {filters.length > 0
+                        ? `Filters (${filters.length})`
+                        : "Filter"}
+                    </span>
                   </motion.div>
                 </motion.div>
               </PopoverTrigger>
@@ -192,7 +235,7 @@ export function MenuBar({ filters, setFilters, searchQuery, setSearchQuery }: Me
                       className="h-9"
                       value={commandInput}
                       onInputCapture={(e) => {
-                        setCommandInput(e.currentTarget.value)
+                        setCommandInput(e.currentTarget.value);
                       }}
                       ref={commandInputRef}
                     />
@@ -200,62 +243,78 @@ export function MenuBar({ filters, setFilters, searchQuery, setSearchQuery }: Me
                       <CommandEmpty>No results found.</CommandEmpty>
                       {selectedView ? (
                         <CommandGroup>
-                          {filterViewToFilterOptions[selectedView].map((filter: FilterOption) => (
-                            <CommandItem
-                              className="group text-[#c8b6ff]/70 flex gap-2 items-center"
-                              key={filter.name}
-                              value={filter.name}
-                              onSelect={(currentValue) => {
-                                setFilters((prev) => [
-                                  ...prev,
-                                  {
-                                    id: nanoid(),
-                                    type: selectedView,
-                                    operator:
-                                      selectedView === FilterTypeEnum.DUE_DATE && currentValue !== DueDate.IN_THE_PAST
-                                        ? FilterOperator.BEFORE
-                                        : FilterOperator.IS,
-                                    value: [currentValue],
-                                  },
-                                ])
-                                setTimeout(() => {
-                                  setSelectedView(null)
-                                  setCommandInput("")
-                                }, 200)
-                                setOpen(false)
-                              }}
-                            >
-                              {filter.icon}
-                              <span className="text-[#c8b6ff]">{filter.name}</span>
-                              {filter.label && (
-                                <span className="text-[#c8b6ff]/50 text-xs ml-auto">{filter.label}</span>
-                              )}
-                            </CommandItem>
-                          ))}
+                          {filterViewToFilterOptions[selectedView].map(
+                            (filter: FilterOption) => (
+                              <CommandItem
+                                className="group text-[#c8b6ff]/70 flex gap-2 items-center"
+                                key={filter.name}
+                                value={filter.name}
+                                onSelect={(currentValue) => {
+                                  setFilters((prev) => [
+                                    ...prev,
+                                    {
+                                      id: nanoid(),
+                                      type: selectedView,
+                                      operator:
+                                        selectedView ===
+                                          FilterTypeEnum.DUE_DATE &&
+                                        currentValue !== DueDate.IN_THE_PAST
+                                          ? FilterOperator.BEFORE
+                                          : FilterOperator.IS,
+                                      value: [currentValue],
+                                    },
+                                  ]);
+                                  setTimeout(() => {
+                                    setSelectedView(null);
+                                    setCommandInput("");
+                                  }, 200);
+                                  setOpen(false);
+                                }}
+                              >
+                                {filter.icon}
+                                <span className="text-[#c8b6ff]">
+                                  {filter.name}
+                                </span>
+                                {filter.label && (
+                                  <span className="text-[#c8b6ff]/50 text-xs ml-auto">
+                                    {filter.label}
+                                  </span>
+                                )}
+                              </CommandItem>
+                            ),
+                          )}
                         </CommandGroup>
                       ) : (
-                        filterViewOptions.map((group: FilterOption[], index: number) => (
-                          <React.Fragment key={index}>
-                            <CommandGroup>
-                              {group.map((filter: FilterOption) => (
-                                <CommandItem
-                                  className="group text-[#c8b6ff]/70 flex gap-2 items-center"
-                                  key={filter.name}
-                                  value={filter.name}
-                                  onSelect={(currentValue) => {
-                                    setSelectedView(currentValue as FilterTypeEnum)
-                                    setCommandInput("")
-                                    commandInputRef.current?.focus()
-                                  }}
-                                >
-                                  {filter.icon}
-                                  <span className="text-[#c8b6ff]">{filter.name}</span>
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                            {index < filterViewOptions.length - 1 && <CommandSeparator />}
-                          </React.Fragment>
-                        ))
+                        filterViewOptions.map(
+                          (group: FilterOption[], index: number) => (
+                            <React.Fragment key={index}>
+                              <CommandGroup>
+                                {group.map((filter: FilterOption) => (
+                                  <CommandItem
+                                    className="group text-[#c8b6ff]/70 flex gap-2 items-center"
+                                    key={filter.name}
+                                    value={filter.name}
+                                    onSelect={(currentValue) => {
+                                      setSelectedView(
+                                        currentValue as FilterTypeEnum,
+                                      );
+                                      setCommandInput("");
+                                      commandInputRef.current?.focus();
+                                    }}
+                                  >
+                                    {filter.icon}
+                                    <span className="text-[#c8b6ff]">
+                                      {filter.name}
+                                    </span>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                              {index < filterViewOptions.length - 1 && (
+                                <CommandSeparator />
+                              )}
+                            </React.Fragment>
+                          ),
+                        )
                       )}
                     </CommandList>
                   </Command>
@@ -266,6 +325,5 @@ export function MenuBar({ filters, setFilters, searchQuery, setSearchQuery }: Me
         </div>
       </div>
     </motion.nav>
-  )
+  );
 }
-  

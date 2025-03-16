@@ -7,16 +7,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-interface HistoryCardProps {
+export interface HistoryCardProps {
   id: string;
   title: string;
-  score: number;
-  totalTime?: string | null;
   date: string;
-  incorrect: number | null;
+  score: number | null;
   correct: number | null;
+  incorrect: number | null;
+  totalTime?: string; // Optional since multiplayer doesn't have it
   passed?: boolean;
-  type: string;
+  type: string; // Make this required since we need it for conditional rendering
 }
 
 export function HistoryCard({

@@ -16,9 +16,9 @@ interface QuizHistory {
   score: number | null;
   correct: number | null;
   incorrect: number | null;
-  totalTime: string;
+  totalTime?: string;
   passed?: boolean;
-  type?: string;
+  type: string;
 }
 
 interface PaginationInfo {
@@ -45,6 +45,9 @@ export default function HistoryPage() {
     hasNextPage: false,
     hasPreviousPage: false,
   });
+  const [availableTags, setAvailableTags] = useState<
+    { tag: string; count: number }[]
+  >([]);
 
   useEffect(() => {
     setPagination((prev) => ({
@@ -76,6 +79,24 @@ export default function HistoryPage() {
     }
   }, [searchQuery, allQuizHistory]);
 
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const client = createApiClient();
+        const response = await client.api.v1.analysis["top-tags"].$get();
+        if (!response.ok) {
+          throw new Error(`Failed to fetch tags: ${response.status}`);
+        }
+        const data = await response.json();
+        setAvailableTags(data.tags);
+      } catch (err) {
+        console.error("Error fetching tags:", err);
+      }
+    };
+
+    fetchTags();
+  }, []);
+
   const fetchQuizHistory = async (pageNumber = 1) => {
     setIsLoading(true);
     setError(null);
@@ -98,7 +119,7 @@ export default function HistoryPage() {
               : statusFilter === "Failed"
                 ? "false"
                 : undefined,
-          tags: tagsFilter,
+          tags: tagsFilter?.toLowerCase().replace(" ", "_"),
           type: typeFilter?.toLowerCase(),
         },
       });
@@ -110,18 +131,17 @@ export default function HistoryPage() {
       const responseData = await response.json();
 
       const mappedQuizzes = responseData.data.map(
-        (item: any) =>
-          ({
-            id: item.id,
-            title: item.title,
-            date: item.date,
-            score: item.score,
-            correct: item.correct,
-            incorrect: item.incorrect || 0,
-            totalTime: item.totalTime,
-            passed: item.passed,
-            type: item.type,
-          }) as QuizHistory,
+        (item: any): QuizHistory => ({
+          id: item.id,
+          title: item.title,
+          date: item.date,
+          score: item.score,
+          correct: item.correct,
+          incorrect: item.incorrect || 0,
+          totalTime: item.totalTime,
+          passed: item.passed,
+          type: item.type || "singleplayer",
+        }),
       );
 
       setAllQuizHistory(mappedQuizzes);
@@ -165,6 +185,7 @@ export default function HistoryPage() {
           setFilters={setFilters}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
+          availableTags={availableTags}
         />
 
         {error && (
