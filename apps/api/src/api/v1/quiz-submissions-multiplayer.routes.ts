@@ -1,17 +1,19 @@
-import { count, desc, eq, sql, and } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { describeRoute } from 'hono-openapi';
 import { resolver, validator as zValidator } from 'hono-openapi/zod';
+import { HTTPException } from 'hono/http-exception';
 import { z } from 'zod';
 import {
   multiplayerQuizSubmissions,
   questions as questionsTable,
   quizzes,
-  userResponses,
   rooms,
+  userResponses,
 } from '../../../drizzle/schema';
 import { createDb } from '../../db/index';
 import { getSupabase } from './middleware/auth.middleware';
+import { MEDIUM_CACHE, createCacheMiddleware } from './middleware/cache.middleware';
 import { quizType } from './schemas/common.schemas';
 import {
   quizLeaderboardResponseSchema,
@@ -21,8 +23,7 @@ import {
   quizSubmissionMultiplayerResponseSchema,
   quizSubmissionMultiplayerSubmitResponseSchema,
 } from './schemas/quiz.schemas';
-import { MEDIUM_CACHE, createCacheMiddleware } from './middleware/cache.middleware';
-import { HTTPException } from 'hono/http-exception';
+import { queueEmbeddings } from './services/queue-embeddings';
 import { queueTagAnalysis } from './services/queue-tag-analysis';
 
 const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
@@ -104,7 +105,8 @@ const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           }
 
           await queueTagAnalysis(c, createdQuiz.id, quizType.Enum.multiplayer);
-
+          await queueEmbeddings(c, createdQuiz.id);
+          
           return {
             quizId: createdQuiz.id,
             questions: createdQuestions,

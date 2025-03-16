@@ -16,6 +16,6 @@ const v1 = new Hono<{ Bindings: CloudflareEnv }>()
   .route("/history", historyRoutes)
   .route("/share", shareRoutes)
   .route("/admin", admin)
-  .route("/analysis", userAnalysisRoutes);
+  .route("/analysis", userAnalysisRoutes)
 
 export default v1;

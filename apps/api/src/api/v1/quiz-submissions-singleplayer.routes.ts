@@ -1,7 +1,9 @@
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
+import { HTTPException } from "hono/http-exception";
+import prettyMilliseconds from "pretty-ms";
 import { z } from "zod";
 import {
   questions as questionsTable,
@@ -9,7 +11,12 @@ import {
   userResponses,
 } from "../../../drizzle/schema";
 import { createDb } from "../../db/index";
+import { incrementUserCacheVersion } from "../../utils/kv-user-version";
 import { getSupabase } from "./middleware/auth.middleware";
+import {
+  MEDIUM_CACHE,
+  createCacheMiddleware,
+} from "./middleware/cache.middleware";
 import { quizType } from "./schemas/common.schemas";
 import {
   filterQuerySchema,
@@ -17,13 +24,7 @@ import {
   singlePlayerQuizSubmissionRequestSchema,
   singlePlayerQuizSubmissionResponseSchema,
 } from "./schemas/quiz.schemas";
-import {
-  MEDIUM_CACHE,
-  createCacheMiddleware,
-} from "./middleware/cache.middleware";
-import { incrementUserCacheVersion } from "../../utils/kv-user-version";
-import prettyMilliseconds from "pretty-ms";
-import { HTTPException } from "hono/http-exception";
+import { queueEmbeddings } from "./services/queue-embeddings";
 import { queueTagAnalysis } from "./services/queue-tag-analysis";
 
 const singleplayerQuizSubmissionsRoutes = new Hono<{
@@ -217,6 +218,8 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
           .where(eq(quizzes.id, createdQuiz.id));
 
         await queueTagAnalysis(c, createdQuiz.id, quizType.enum.singleplayer);
+        await queueEmbeddings(c, createdQuiz.id);
+        
         return {
           quizId: createdQuiz.id,
           quizTitle: quizTitle,
