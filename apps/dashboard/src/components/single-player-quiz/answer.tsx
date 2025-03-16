@@ -1,4 +1,5 @@
 'use client';
+
 import { useQuizLogic } from '@/contexts/quiz-logic-context';
 import { Button } from '@/components/ui/button';
 import { useQuiz } from '@/contexts/quiz-context';
@@ -6,25 +7,35 @@ import { useQuiz } from '@/contexts/quiz-context';
 type Props = {
   answer: string;
   letter: string;
+  onAnswerSelected?: (answer: string) => void;
 };
 
-const Answer = ({ answer, letter }: Props) => {
+const Answer = ({ answer, letter, onAnswerSelected }: Props) => {
   const { dispatch, selectedAnswer, questionNumber, isMultiplayer } = useQuizLogic();
   const { currentQuiz } = useQuiz();
+
+  // Reconstruct the full answer with prefix for backend submission
+  const fullAnswer = `${letter}${answer}`;
 
   return (
     <Button
       disabled={isMultiplayer && selectedAnswer != null}
       onClick={() => {
-        dispatch({ type: 'SET_SELECTED_ANSWER', payload: answer });
-        // Validate answer immediately when selected
+        // Use the callback if provided with the FULL answer
+        if (onAnswerSelected) {
+          onAnswerSelected(fullAnswer);
+        } else {
+          dispatch({ type: 'SET_SELECTED_ANSWER', payload: fullAnswer });
+        }
+
+        // Keep the existing multiplayer validation with FULL answer
         if (isMultiplayer && currentQuiz) {
           dispatch({
             type: 'VALIDATE_ANSWER',
             payload: {
               question: currentQuiz.quiz[questionNumber].text,
-              correctAnswer: currentQuiz.quiz[questionNumber].correctAnswer.slice(3),
-              userAnswer: answer,
+              correctAnswer: fullAnswer,
+              userAnswer: fullAnswer,
             },
           });
         }

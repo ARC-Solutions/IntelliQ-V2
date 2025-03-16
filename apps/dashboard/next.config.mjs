@@ -16,6 +16,9 @@ const nextConfig = {
 
     return [];
   },
+  images: {
+    domains: ["yrdpjeewqjuwhjjpniju.supabase.co", "lh3.googleusercontent.com"],
+  },
 };
 
 if (process.env.NODE_ENV === "development") {

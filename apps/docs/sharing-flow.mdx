@@ -17,20 +17,18 @@ sequenceDiagram
     participant API
     participant Database
 
-    %% Quiz Completion Flow
-    User->>Frontend: Completes Quiz
-    Frontend->>Frontend: Show Share Dialog
-
-    %% Create Share Flow
-    alt User clicks "Create Share Link"
-        Frontend->>API: POST /v1/share/create
-        Note over Frontend,API: {quizId, isAnonymous}
-        API->>Database: Check Quiz Ownership
-        API->>Database: Create/Update SharedQuiz
-        Database-->>API: Return SharedQuiz Data
-        API-->>Frontend: Return ShareURL & Settings
-        Frontend->>User: Display Share Link
+    %% Share Flow - Both Singleplayer and Multiplayer
+    alt Share Singleplayer Quiz
+        Frontend->>API: POST /v1/share/singleplayer
+        Note over Frontend,API: {quizId, isAnonymous, isPublic}
+    else Share Multiplayer Quiz
+        Frontend->>API: POST /v1/share/multiplayer
+        Note over Frontend,API: {quizId, roomId, isAnonymous, isPublic}
     end
+    API->>Database: Create SharedQuiz
+    Database-->>API: Return SharedQuiz Data
+    API-->>Frontend: Return ShareURL & Settings
+    Frontend->>User: Display Share Link
 
     %% Update Share Settings Flow
     alt User modifies share settings
@@ -56,29 +54,24 @@ sequenceDiagram
 
 <Steps>
   1. **Share Quiz** (Quiz Owner Only)
+     
+     For Singleplayer:
      ```http
      POST /api/v1/share/singleplayer
      ```
+     
+     For Multiplayer:
+     ```http
+     POST /api/v1/share/multiplayer
+     ```
+     
      Share a completed quiz with specified visibility settings:
      ```json
      {
        "quizId": "quiz-uuid",
        "isAnonymous": false,
-       "isPublic": true
-     }
-     ```
-     The response includes the share URL and settings:
-     ```json
-     {
-       "shareId": "share-uuid",
-       "shareUrl": "http://example.com/api/v1/share/share-uuid",
-       "isAnonymous": false,
        "isPublic": true,
-       "type": "singleplayer",
-       "quiz": {
-         "quizId": "quiz-uuid",
-         "title": "Quiz Title"
-       }
+       "roomId": "room-uuid" // Only for multiplayer
      }
      ```
 

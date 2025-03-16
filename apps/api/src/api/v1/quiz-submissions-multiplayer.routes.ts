@@ -23,8 +23,8 @@ import {
   quizSubmissionMultiplayerResponseSchema,
   quizSubmissionMultiplayerSubmitResponseSchema,
 } from './schemas/quiz.schemas';
-import { queueTagAnalysis } from './services/queue-tag-analysis';
 import { queueEmbeddings } from './services/queue-embeddings';
+import { queueTagAnalysis } from './services/queue-tag-analysis';
 
 const multiplayerQuizSubmissionsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
   .post(

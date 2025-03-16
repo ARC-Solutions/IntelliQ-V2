@@ -1,31 +1,29 @@
-"use client";
+'use client';
 
-import { InviteButton } from "@/components/invite-button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import Lottie from "lottie-react";
-import Loading from "../../../public/Loading.json";
+import { InviteButton } from '@/components/invite-button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import Lottie from 'lottie-react';
+import Loading from '../../../public/Loading.json';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Slider } from '@/components/ui/slider';
 import { useToast } from '@/components/ui/use-toast';
@@ -43,20 +41,13 @@ import { RoomResponse, RoomDetailsResponse, QuizType } from '@intelliq/api';
 import { useDebouncedCallback } from 'use-debounce';
 import { SupportedLanguages, useQuiz } from '@/contexts/quiz-context';
 import { languages, QuizData } from '../../contexts/quiz-creation-context';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { Switch } from '@/components/ui/switch';
-import { HelpCircle } from 'lucide-react';
 
 interface PresenceData {
   currentUser: {
     id: string;
     email: string;
     name: string;
+    avatar: string;
   };
   settings?: { timeLimit: number; topic: string };
   maxPlayers: number;
@@ -82,14 +73,21 @@ export default function Lobby() {
     setTopic,
     language,
     setLanguage,
-    showCorrectAnswers,
-    setShowCorrectAnswers,
+    roomId,
+    setRoomId,
   } = useMultiplayer();
-  const { isLoading, fetchQuestions, fetchingFinished, dispatch, currentQuiz } =
-    useQuiz();
+  const {
+    isLoading,
+    fetchQuestions,
+    fetchingFinished,
+    dispatch,
+    currentQuiz,
+    setIsMultiplayerMode,
+    getMultiplayerQuizForPlayers,
+  } = useQuiz();
   const routerParams = useParams();
   const router = useRouter();
-  const roomCode = routerParams["roomCode"] as string;
+  const roomCode = routerParams['roomCode'] as string;
   const [isRoomFull, setIsRoomFull] = useState(false);
   const supabase = createClient();
   const { toast } = useToast();
@@ -98,7 +96,7 @@ export default function Lobby() {
     try {
       // Get current room data
       const client = createApiClient();
-      const response = await client.api.v1.rooms[":roomCode"].$get({
+      const response = await client.api.v1.rooms[':roomCode'].$get({
         param: {
           roomCode: roomCode,
         },
@@ -118,7 +116,7 @@ export default function Lobby() {
         return room.maxPlayers;
       }
     } catch (error) {
-      console.error("Error joining room:", error);
+      console.error('Error joining room:', error);
       return false;
     }
   };
@@ -127,19 +125,31 @@ export default function Lobby() {
     const newState = roomChannel.presenceState();
 
     // Convert presence state to players array
-    const playersList = Object.entries(newState).flatMap(([_, players]) =>
-      players.map((player, i) => {
-        return {
-          id: (player as PresenceData).currentUser.id,
-          email: (player as PresenceData).currentUser.email,
-          userName: (player as PresenceData).currentUser.name,
-          settings: {
-            timeLimit: (player as PresenceData).settings?.timeLimit,
-            topic: (player as PresenceData).settings?.topic,
-          },
-        } as Player;
-      })
+    const playersList = Object.entries(newState).flatMap(
+      ([_, players]) =>
+        players
+          .map((player, i) => {
+            // Check if the player data has the expected structure
+            const presenceData = player as PresenceData;
+            if (!presenceData.currentUser) {
+              console.warn('Received player data without currentUser:', presenceData);
+              return null; // Skip invalid player data
+            }
+
+            return {
+              id: presenceData.currentUser.id,
+              email: presenceData.currentUser.email,
+              userName: presenceData.currentUser.name,
+              avatar: presenceData.currentUser.avatar,
+              settings: {
+                timeLimit: presenceData.settings?.timeLimit,
+                topic: presenceData.settings?.topic,
+              },
+            } as Player;
+          })
+          .filter(Boolean), // Remove any null entries from invalid data
     );
+    console.log('PLAYERS LIST:', playersList);
 
     // First player in the list is the leader
     const updatedPlayers = playersList.map((player, index) => ({
@@ -158,7 +168,7 @@ export default function Lobby() {
   useEffect(() => {
     const updateSettings = async () => {
       const client = createApiClient();
-      const response = await client.api.v1.rooms[":roomCode"].details.$get({
+      const response = await client.api.v1.rooms[':roomCode'].details.$get({
         param: {
           roomCode: roomCode,
         },
@@ -169,7 +179,7 @@ export default function Lobby() {
         const errorData = (await response.json()) as unknown as {
           error: string;
         };
-        console.error("Error updating max players:", errorData.error);
+        console.error('Error updating max players:', errorData.error);
         return;
       }
 
@@ -177,6 +187,8 @@ export default function Lobby() {
       setMaxPlayers(data.maxPlayers);
       setQuestionCount(data.numQuestions);
       setTimeLimit(data.timeLimit);
+      setRoomId(data.id);
+      setLanguage(data.language as SupportedLanguages);
     };
 
     updateSettings();
@@ -187,16 +199,16 @@ export default function Lobby() {
     setChannel(roomChannel);
 
     roomChannel
-      .on("presence", { event: "sync" }, () => {
+      .on('presence', { event: 'sync' }, () => {
         updatePlayers(roomChannel);
       })
-      .on("presence", { event: "join" }, ({ key, newPresences }) => {
+      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
         // const newState = roomChannel.presenceState();
         // Object.entries(newState).flatMap(([_, players]) => {
         //   console.log(players);
         // });
       })
-      .on("presence", { event: "leave" }, ({ key, leftPresences }) => {
+      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
         const newState = roomChannel.presenceState();
         if (Object.keys(newState).length === 0) {
           setIsCreator(false);
@@ -204,11 +216,14 @@ export default function Lobby() {
         }
       })
       .subscribe(async (status) => {
-        if (status === "SUBSCRIBED" && currentUser) {
+        if (status === 'SUBSCRIBED' && currentUser) {
           const maxPlayers = await checkAndJoinRoom(roomChannel);
 
           const presenceData = {
-            currentUser,
+            currentUser: {
+              ...currentUser,
+              avatar: currentUser.avatar || '',
+            },
             maxPlayers,
             settings: {
               timeLimit,
@@ -222,38 +237,32 @@ export default function Lobby() {
 
     roomChannel
 
-      .on(
-        "broadcast",
-        { event: "change-amount-of-players" },
-        async ({ payload }) => {
-          setMaxPlayers(payload.newAmount);
-        }
-      )
-      .on("broadcast", { event: "loading-animation" }, async ({ payload }) => {
-        dispatch({ type: "FETCH_QUIZ_REQUEST" });
+      .on('broadcast', { event: 'change-amount-of-players' }, async ({ payload }) => {
+        setMaxPlayers(payload.newAmount);
       })
-      .on("broadcast", { event: "settings-update" }, ({ payload }) => {
+      .on('broadcast', { event: 'loading-animation' }, async ({ payload }) => {
+        dispatch({ type: 'FETCH_QUIZ_REQUEST' });
+      })
+      .on('broadcast', { event: 'settings-update' }, ({ payload }) => {
         const { type, value } = payload;
 
         switch (type) {
-          case "numQuestions":
+          case 'numQuestions':
             setQuestionCount(value as number);
             break;
-          case "timeLimit":
+          case 'timeLimit':
             setTimeLimit(value as number);
             break;
-          case "topic":
+          case 'topic':
             setTopic(value as string);
-          case "language":
+          case 'language':
             setLanguage(value as SupportedLanguages);
-            break;
-          case 'showCorrectAnswers':
-            setShowCorrectAnswers(value);
             break;
         }
       })
-      .on("broadcast", { event: "quiz-start" }, ({ payload }) => {
-        dispatch({ type: "FETCH_QUIZ_SUCCESS", payload: payload.currentQuiz });
+      .on('broadcast', { event: 'quiz-start' }, ({ payload }) => {
+        getMultiplayerQuizForPlayers(payload.roomId, payload.currentQuiz);
+        dispatch({ type: 'FETCH_QUIZ_SUCCESS', payload: payload.currentQuiz });
         router.push(`/multiplayer/${roomCode}/play`);
       });
 
@@ -266,24 +275,27 @@ export default function Lobby() {
 
   useEffect(() => {
     if (isCreator) {
-      updateGameSettings("topic", topic);
-      updateGameSettings("timeLimit", timeLimit);
+      updateGameSettings('topic', topic);
+      updateGameSettings('timeLimit', timeLimit);
     }
   }, [players]);
+
+  useEffect(() => {
+    setIsMultiplayerMode(true);
+    return () => setIsMultiplayerMode(false);
+  }, []);
 
   const changeAmountOfPlayers = async (newAmount: number) => {
     if (!channel || !isCreator) return;
 
     try {
       const client = createApiClient();
-      const response = await client.api.v1.rooms[":roomCode"][
-        "settings"
-      ].$patch({
+      const response = await client.api.v1.rooms[':roomCode']['settings'].$patch({
         param: {
           roomCode: roomCode,
         },
         json: {
-          type: "maxPlayers",
+          type: 'maxPlayers',
           value: newAmount,
         },
       });
@@ -293,8 +305,8 @@ export default function Lobby() {
         };
         toast({
           duration: 3500,
-          variant: "destructive",
-          title: "Something went wrong.",
+          variant: 'destructive',
+          title: 'Something went wrong.',
           description: errorData.message,
         });
         return;
@@ -303,12 +315,12 @@ export default function Lobby() {
       // Update local state and broadcast to others
       setMaxPlayers(newAmount);
       await channel.send({
-        type: "broadcast",
-        event: "change-amount-of-players",
+        type: 'broadcast',
+        event: 'change-amount-of-players',
         payload: { newAmount },
       });
     } catch (error) {
-      console.error("Failed to update max players:", error);
+      console.error('Failed to update max players:', error);
     }
   };
 
@@ -325,13 +337,12 @@ export default function Lobby() {
       // To Do type === 'language' || -- February 5th
       // Done: -- February 9th
       if (
-        type === "timeLimit" ||
-        type === "numQuestions" ||
-        type === "language" ||
-        type === "topic" ||
-        type === "showAnswers"
+        type === 'timeLimit' ||
+        type === 'numQuestions' ||
+        type === 'language' ||
+        type === 'topic'
       ) {
-        await client.api.v1.rooms[":roomCode"]["settings"].$patch({
+        await client.api.v1.rooms[':roomCode']['settings'].$patch({
           param: {
             roomCode: roomCode,
           },
@@ -343,12 +354,12 @@ export default function Lobby() {
       }
 
       await channel.send({
-        type: "broadcast",
-        event: "settings-update",
+        type: 'broadcast',
+        event: 'settings-update',
         payload: { type, value },
       });
     } catch (error) {
-      console.error("Failed to update game settings:", error);
+      console.error('Failed to update game settings:', error);
     }
   };
 
@@ -356,36 +367,16 @@ export default function Lobby() {
   const debouncedUpdateSettings = useDebouncedCallback(
     (
       type: 'numQuestions' | 'timeLimit' | 'topic' | 'language' | 'showAnswers',
-      value: number | string | SupportedLanguages | boolean
+      value: number | string | SupportedLanguages | boolean,
     ) => {
       updateGameSettings(type, value);
     },
-    555
+    555,
   );
 
   const startQuiz = async () => {
     if (!channel || !isCreator) return;
-    const client = createApiClient();
-    const response = await client.api.v1.rooms[":roomCode"]["settings"].$patch({
-      param: {
-        roomCode: roomCode,
-      },
-      json: {
-        type: "topic",
-        value: topic,
-      },
-    });
 
-    if (!response.ok) {
-      const errorData = (await response.json()) as unknown as { error: string };
-      toast({
-        duration: 3500,
-        variant: "destructive",
-        title: "Something went wrong.",
-        description: errorData.error,
-      });
-      return;
-    }
     const quizCreation = {
       topic,
       number: questionCount,
@@ -397,7 +388,7 @@ export default function Lobby() {
       quizLanguage: language,
       quizType: QuizType.Enum.multiplayer,
     } as QuizData;
-    fetchQuestions(quizCreation);
+    fetchQuestions(quizCreation, roomId);
 
     // router.push(`/multiplayer/${roomCode}/play`);
     // await channel.send({ type: 'broadcast', event: 'quiz-start', payload: {} });
@@ -408,17 +399,17 @@ export default function Lobby() {
       if (!channel) return;
       if (isLoading) {
         await channel.send({
-          type: "broadcast",
-          event: "loading-animation",
+          type: 'broadcast',
+          event: 'loading-animation',
           payload: {},
         });
       }
 
       if (fetchingFinished && currentQuiz && !isLoading) {
         await channel.send({
-          type: "broadcast",
-          event: "quiz-start",
-          payload: { currentQuiz },
+          type: 'broadcast',
+          event: 'quiz-start',
+          payload: { currentQuiz, roomId },
         });
         router.push(`/multiplayer/${roomCode}/play`);
       }
@@ -429,44 +420,35 @@ export default function Lobby() {
 
   if (isLoading) {
     return (
-      <div className="absolute left-1/2 top-1/2 flex w-[40] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[30vw]">
+      <div className='absolute left-1/2 top-1/2 flex w-[40] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[30vw]'>
         <Lottie animationData={Loading} />
       </div>
     );
   }
   return (
     <>
-      <div className="min-h-screen w-full bg-black text-white relative flex flex-col">
-        <div className="relative z-10 w-full p-8 flex flex-col gap-8">
+      <div className='min-h-screen w-full bg-black text-white relative flex flex-col'>
+        <div className='relative z-10 w-full p-8 flex flex-col gap-8'>
           {/* Logo */}
-          <div className="flex justify-center">
-            <Image
-              src="/logo-dark.svg"
-              alt="IntelliQ"
-              width={250}
-              height={250}
-            />
+          <div className='flex justify-center'>
+            <Image src='/logo-dark.svg' alt='IntelliQ' width={250} height={250} />
           </div>
 
-          <div className="grid lg:grid-cols-[300px_1fr] gap-8 max-w-7xl mx-auto w-full">
+          <div className='grid lg:grid-cols-[300px_1fr] gap-8 max-w-7xl mx-auto w-full'>
             {/* Player List */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-primary">
+            <div className='space-y-4'>
+              <div className='flex items-center gap-2 text-primary'>
                 <UsersRound />
-                <div className="flex items-center gap-1">
-                  <h2 className="text-xl font-semibold uppercase flex items-center">
+                <div className='flex items-center gap-1'>
+                  <h2 className='text-xl font-semibold uppercase flex items-center'>
                     <NumberFlow
                       willChange
                       plugins={[continuous]}
                       value={players.length}
-                      prefix="players "
+                      prefix='players '
                     />
                     /
-                    <NumberFlow
-                      willChange
-                      plugins={[continuous]}
-                      value={maxPlayers}
-                    />
+                    <NumberFlow willChange plugins={[continuous]} value={maxPlayers} />
                   </h2>
                 </div>
               </div>
@@ -478,25 +460,21 @@ export default function Lobby() {
                 }}
                 value={`${maxPlayers}`}
               >
-                <SelectTrigger className="w-full bg-black border-gray-800">
-                  <SelectValue placeholder="Select players" />
+                <SelectTrigger className='w-full bg-black border-gray-800'>
+                  <SelectValue placeholder='Select players' />
                 </SelectTrigger>
                 <SelectContent>
                   {[...Array(9)].map((slot, i) => {
                     return (
-                      <SelectItem
-                        disabled={i + 2 < players.length}
-                        key={i}
-                        value={`${i + 2}`}
-                      >
+                      <SelectItem disabled={i + 2 < players.length} key={i} value={`${i + 2}`}>
                         {i + 2} Players
                       </SelectItem>
                     );
                   })}
                 </SelectContent>
               </Select>
-              <ScrollArea className="w-full h-[400px]">
-                <div className="space-y-4">
+              <ScrollArea className='w-full h-[400px]'>
+                <div className='space-y-4'>
                   {[...Array(maxPlayers)].map((_, i) => {
                     if (i === 0 && players.length > 0) {
                       // Render the leader of the lobby
@@ -504,23 +482,23 @@ export default function Lobby() {
                       return (
                         <div
                           key={i}
-                          className="flex items-center gap-2 p-4 rounded-lg bg-gray-900/50"
+                          className='flex items-center gap-2 p-4 rounded-lg bg-gray-900/50'
                         >
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback className="bg-primary/20 text-primary">
-                              {leader?.email.charAt(0)}
+                          <Avatar className='h-8 w-8'>
+                            <AvatarImage src={leader?.avatar} />
+                            <AvatarFallback className='bg-primary/20 text-primary'>
+                              {leader?.userName.charAt(0)}
                             </AvatarFallback>
                           </Avatar>
                           <span
                             className={`${
-                              leader?.userName === currentUser?.name &&
-                              "font-extrabold"
+                              leader?.userName === currentUser?.name && 'font-extrabold'
                             }`}
                           >
-                            {leader?.userName}{" "}
+                            {leader?.userName}{' '}
                           </span>
-                          <div className="flex gap-1 ml-auto">
-                            <Crown className="w-6 h-6 text-primary" />
+                          <div className='flex gap-1 ml-auto'>
+                            <Crown className='w-6 h-6 text-primary' />
                           </div>
                         </div>
                       );
@@ -530,17 +508,17 @@ export default function Lobby() {
                       return (
                         <div
                           key={i}
-                          className="flex items-center gap-2 p-4 rounded-lg bg-gray-900/50"
+                          className='flex items-center gap-2 p-4 rounded-lg bg-gray-900/50'
                         >
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback className="bg-primary/20 text-primary">
-                              {player?.email.charAt(0)}
+                          <Avatar className='h-8 w-8'>
+                            <AvatarImage src={player?.avatar} />
+                            <AvatarFallback className='bg-primary/20 text-primary'>
+                              {player?.userName.charAt(0)}
                             </AvatarFallback>
                           </Avatar>
                           <span
                             className={`${
-                              player?.userName === currentUser?.name &&
-                              "font-extrabold"
+                              player?.userName === currentUser?.name && 'font-extrabold'
                             }`}
                           >
                             {player?.userName}
@@ -552,10 +530,10 @@ export default function Lobby() {
                     return (
                       <div
                         key={i}
-                        className="flex items-center gap-2 p-4 rounded-lg bg-gray-900/50"
+                        className='flex items-center gap-2 p-4 rounded-lg bg-gray-900/50'
                       >
-                        <div className="h-8 w-8 rounded-full border border-gray-800" />
-                        <span className="text-gray-400">Empty</span>
+                        <div className='h-8 w-8 rounded-full border border-gray-800' />
+                        <span className='text-gray-400'>Empty</span>
                       </div>
                     );
                   })}
@@ -563,100 +541,65 @@ export default function Lobby() {
               </ScrollArea>
             </div>
 
-            <div className="space-y-8">
+            <div className='space-y-8'>
               {/* Game Modes */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="bg-primary/10 border-primary/20 p-6 flex flex-col items-center justify-center gap-2">
-                  <Brain className="w-8 h-8 text-primary" />
+              <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                <Card className='bg-primary/10 border-primary/20 p-6 flex flex-col items-center justify-center gap-2'>
+                  <Brain className='w-8 h-8 text-primary' />
                   <span>Default</span>
                 </Card>
-                <Card className="bg-black border-gray-800 p-6 flex flex-col items-center justify-center gap-2">
-                  <Zap className="w-8 h-8 text-primary" />
+                <Card className='bg-black border-gray-800 p-6 flex flex-col items-center justify-center gap-2'>
+                  <Zap className='w-8 h-8 text-primary' />
                   <span>Fast</span>
                 </Card>
-                <Card className="bg-black border-gray-800 p-6 flex flex-col items-center justify-center gap-2">
-                  <Sparkles className="w-8 h-8 text-primary" />
+                <Card className='bg-black border-gray-800 p-6 flex flex-col items-center justify-center gap-2'>
+                  <Sparkles className='w-8 h-8 text-primary' />
                   <span>Custom</span>
                 </Card>
               </div>
 
               {/* Settings */}
-              <div className="space-y-6">
-                <h2 className="text-2xl">Settings</h2>
+              <div className='space-y-6'>
+                <h2 className='text-2xl'>Settings</h2>
 
-                <div className="space-y-8">
-                  <div className="space-y-4">
+                <div className='space-y-8'>
+                  <div className='space-y-4'>
                     <Label>Question count</Label>
-                    <div className="flex items-center gap-4">
-                      <span className="text-sm text-gray-400">1</span>
+                    <div className='flex items-center gap-4'>
+                      <span className='text-sm text-gray-400'>1</span>
                       <Slider
                         disabled={!isCreator}
                         value={[questionCount]}
                         max={10}
                         min={1}
                         step={1}
-                        className="flex-1"
+                        className='flex-1'
                         onValueChange={(value) => {
                           setQuestionCount(value[0]);
-                          debouncedUpdateSettings("numQuestions", value[0]);
+                          debouncedUpdateSettings('numQuestions', value[0]);
                         }}
                       />
-                      <span className="text-sm text-gray-400">10</span>
+                      <span className='text-sm text-gray-400'>10</span>
                     </div>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className='space-y-4'>
                     <Label>Time Limit per Question</Label>
-                    <div className="flex items-center gap-4">
-                      <span className="text-sm text-gray-400">5s</span>
+                    <div className='flex items-center gap-4'>
+                      <span className='text-sm text-gray-400'>5s</span>
                       <Slider
                         disabled={!isCreator}
                         value={[timeLimit]}
                         max={60}
                         min={5}
                         step={5}
-                        className="flex-1"
+                        className='flex-1'
                         onValueChange={(value) => {
                           setTimeLimit(value[0]);
-                          debouncedUpdateSettings("timeLimit", value[0]);
+                          debouncedUpdateSettings('timeLimit', value[0]);
                         }}
                       />
-                      <span className="text-sm text-gray-400">60s</span>
-                    </div>
-                  </div>
-                  <div className='space-y-4'>
-                    <div className='flex items-center justify-between'>
-                      <Label htmlFor='showCorrectAnswers' className='flex items-center space-x-2'>
-                        <span>Show Correct Answers</span>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <HelpCircle size={16} className='text-gray-500' />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Display correct answers between questions</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </Label>
-                      <Switch
-                        disabled={!isCreator}
-                        id='showCorrectAnswers'
-                        checked={showCorrectAnswers}
-                        onCheckedChange={async (checked) => {
-                          setShowCorrectAnswers(checked);
-                          debouncedUpdateSettings('showAnswers', checked);
-                          
-                          // Broadcast the change to all players
-                          if (channel && isCreator) {
-                            await channel.send({
-                              type: 'broadcast',
-                              event: 'settings-update',
-                              payload: { type: 'showCorrectAnswers', value: checked },
-                            });
-                          }
-                        }}
-                      />
+                      <span className='text-sm text-gray-400'>60s</span>
                     </div>
                   </div>
                   <div className='space-y-4'>
@@ -667,12 +610,12 @@ export default function Lobby() {
                           disabled={!isCreator}
                           onValueChange={(value: SupportedLanguages) => {
                             setLanguage(value);
-                            debouncedUpdateSettings("language", value);
+                            debouncedUpdateSettings('language', value);
                           }}
                           value={language}
                         >
-                          <SelectTrigger className="w-full bg-black border-gray-800">
-                            <SelectValue placeholder="Select Language" />
+                          <SelectTrigger className='w-full bg-black border-gray-800'>
+                            <SelectValue placeholder='Select Language' />
                           </SelectTrigger>
                           <SelectContent>
                             {languages.map((lang) => (
@@ -686,15 +629,15 @@ export default function Lobby() {
                     </div>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className='space-y-4'>
                     <Label>Topic</Label>
                     <Input
                       disabled={!isCreator}
-                      placeholder="Formula One"
-                      className="bg-transparent border-gray-800"
+                      placeholder='Formula One'
+                      className='bg-transparent border-gray-800'
                       value={topic}
                       onChange={(e) => {
-                        debouncedUpdateSettings("topic", e.target.value);
+                        debouncedUpdateSettings('topic', e.target.value);
                         setTopic(e.target.value);
                       }}
                     />
@@ -704,12 +647,12 @@ export default function Lobby() {
             </div>
           </div>
           {/* Action Buttons */}
-          <div className="flex gap-4 justify-center">
+          <div className='flex gap-4 justify-center'>
             <InviteButton />
             {isCreator && (
               <Button
                 onClick={startQuiz}
-                className="bg-primary text-primary-foreground hover:bg-primary/90 min-w-[120px]"
+                className='bg-primary text-primary-foreground hover:bg-primary/90 min-w-[120px]'
               >
                 START
               </Button>
@@ -727,9 +670,7 @@ export default function Lobby() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => router.push("/")}>
-              OK
-            </AlertDialogCancel>
+            <AlertDialogCancel onClick={() => router.push('/')}>OK</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
