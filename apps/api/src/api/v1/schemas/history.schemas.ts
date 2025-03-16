@@ -26,7 +26,7 @@ export const historyQuerySchema = z.object({
             ? tags
             : [tags];
       // Remove empty strings and duplicates
-      return [...new Set(tagArray.filter(Boolean))];
+      return Array.from(new Set(tagArray.filter(Boolean)));
     }),
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(100).default(10),
