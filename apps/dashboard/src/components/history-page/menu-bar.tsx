@@ -81,6 +81,7 @@ interface MenuBarProps {
     tag: string;
     count: number;
   }[];
+  onSearch: (e: React.FormEvent) => Promise<void>;
 }
 
 export function MenuBar({
@@ -89,6 +90,7 @@ export function MenuBar({
   searchQuery,
   setSearchQuery,
   availableTags,
+  onSearch,
 }: MenuBarProps) {
   const [open, setOpen] = React.useState(false);
   const [selectedView, setSelectedView] = React.useState<FilterTypeEnum | null>(
@@ -105,12 +107,12 @@ export function MenuBar({
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
-    console.log("Search input changed:", e.target.value);
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Search submitted:", searchQuery);
+    onSearch(e);
+
     // Focus back on the input after submission
     const searchInput = e.currentTarget.querySelector("input");
     if (searchInput) {

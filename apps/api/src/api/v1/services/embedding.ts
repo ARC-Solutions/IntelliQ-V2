@@ -9,16 +9,26 @@ import { createDb } from "../../../db/index";
 export const generateQuizEmbedding = async (c: Context, quizId: string) => {
   try {
     const db = await createDb(c);
-    const [quiz] = await db
-      .select({
-        id: quizzes.id,
-        title: quizzes.title,
-        description: quizzes.description,
-        topic: quizzes.topic,
-        tags: quizzes.tags,
-      })
-      .from(quizzes)
-      .where(eq(quizzes.id, quizId));
+
+    // Query the quiz with its questions
+    const quiz = await db.query.quizzes.findFirst({
+      where: eq(quizzes.id, quizId),
+      columns: {
+        id: true,
+        title: true,
+        description: true,
+        topic: true,
+        tags: true,
+      },
+      with: {
+        questions: {
+          columns: {
+            text: true,
+            correctAnswer: true,
+          },
+        },
+      },
+    });
 
     if (!quiz) {
       throw new HTTPException(404, {
@@ -26,11 +36,17 @@ export const generateQuizEmbedding = async (c: Context, quizId: string) => {
       });
     }
 
+    // Include questions in the text to embed
+    const questionTexts = quiz.questions
+      .map((q) => `${q.text} ${q.correctAnswer}`)
+      .join(" ");
+
     const textToEmbed = [
       quiz.title,
       quiz.description || "",
       quiz.topic.join(" "),
       (quiz.tags || []).join(" "),
+      questionTexts, // Add the questions text
     ].join(" ");
 
     const openai = createOpenAI({

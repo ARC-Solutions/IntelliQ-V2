@@ -1,13 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
 
-import { MenuBar } from "@/components/history-page/menu-bar";
 import { HistoryCard } from "@/components/history-page/history-card";
+import { MenuBar } from "@/components/history-page/menu-bar";
 import { Pagination } from "@/components/history-page/pagination";
 import { SkeletonCard } from "@/components/history-page/skeleton-card";
-import { createApiClient } from "@/utils/api-client";
+import { Button } from "@/components/ui/button";
 import type { Filter } from "@/components/ui/filters";
 import { FilterType } from "@/components/ui/filters";
+import { toast } from "@/components/ui/use-toast";
+import { createApiClient } from "@/utils/api-client";
 
 interface QuizHistory {
   id: string;
@@ -37,6 +39,7 @@ export default function HistoryPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isSearching, setIsSearching] = useState(false);
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,
     limit: 10,
@@ -173,6 +176,70 @@ export default function HistoryPage() {
     fetchQuizHistory(newPage);
   };
 
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) {
+      fetchQuizHistory();
+      return;
+    }
+
+    setIsSearching(true);
+    setIsLoading(true);
+
+    try {
+      const client = createApiClient();
+      const response = await client.api.v1.history.search.$post({
+        json: {
+          query: searchQuery,
+          page: pagination.page,
+          limit: pagination.limit,
+        },
+      });
+
+      const responseData = await response.json();
+      setQuizHistory(responseData.data);
+      setPagination(responseData.pagination);
+    } catch (error) {
+      console.error("Search error:", error);
+      toast({
+        title: "Search failed",
+        description: "Could not search quizzes. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePageChangeWithSearch = async (page: number) => {
+    if (isSearching && searchQuery) {
+      setIsLoading(true);
+      try {
+        const client = createApiClient();
+        const response = await client.api.v1.history.search.$post({
+          json: {
+            query: searchQuery,
+            page,
+            limit: pagination.limit,
+          },
+        });
+
+        const responseData = await response.json();
+        setQuizHistory(responseData.data);
+        setPagination({
+          ...responseData.pagination,
+          page,
+        });
+      } catch (error) {
+        console.error("Search pagination error:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      handlePageChange(page);
+    }
+  };
+
   const skeletonCards = Array.from({ length: 6 }, (_, i) => (
     <SkeletonCard key={i} />
   ));
@@ -180,12 +247,17 @@ export default function HistoryPage() {
   return (
     <div className="min-h-screen flex flex-col items-center py-8 px-4">
       <div className="w-full max-w-4xl space-y-8">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Quiz History</h1>
+        </div>
+
         <MenuBar
           filters={filters}
           setFilters={setFilters}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           availableTags={availableTags}
+          onSearch={handleSearch}
         />
 
         {error && (
@@ -200,6 +272,24 @@ export default function HistoryPage() {
           </div>
         ) : (
           <>
+            {isSearching && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>Search results for: "{searchQuery}"</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setIsSearching(false);
+                    setSearchQuery("");
+                    fetchQuizHistory();
+                  }}
+                  className="h-6 px-2"
+                >
+                  Clear
+                </Button>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {quizHistory.map((item) => (
                 <HistoryCard key={item.id} {...item} />
@@ -210,7 +300,7 @@ export default function HistoryPage() {
               <Pagination
                 currentPage={pagination.page}
                 totalPages={pagination.totalPages}
-                onPageChange={handlePageChange}
+                onPageChange={handlePageChangeWithSearch}
                 hasNextPage={pagination.hasNextPage}
                 hasPreviousPage={pagination.hasPreviousPage}
               />
