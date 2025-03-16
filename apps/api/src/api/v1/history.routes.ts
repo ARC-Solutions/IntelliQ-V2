@@ -36,11 +36,9 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>().get(
     historyQuerySchema.transform((data) => ({
       ...data,
       tags: data.tags
-        ? typeof data.tags === "string"
-          ? data.tags.split(",").map((tag) => tag.trim())
-          : Array.isArray(data.tags)
-            ? data.tags
-            : [data.tags]
+        ? Array.isArray(data.tags)
+          ? data.tags
+          : [data.tags]
         : undefined,
     })),
   ),
