@@ -26,6 +26,18 @@ import { useSupabase } from "@/contexts/supabase-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PartyPopperIcon } from "./ui/party-popper";
 import { useLocalStorage } from "usehooks-ts";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -46,6 +58,20 @@ interface SettingsDialogProps {
   }) => void;
 }
 
+// Define the form schema
+const settingsFormSchema = z.object({
+  name: z
+    .string()
+    .min(3, {
+      message: "Display name must be at least 2 characters.",
+    })
+    .max(100, {
+      message: "Display name cannot exceed 100 characters.",
+    }),
+});
+
+type SettingsFormValues = z.infer<typeof settingsFormSchema>;
+
 export function SettingsDialog({
   open,
   onOpenChange,
@@ -54,7 +80,6 @@ export function SettingsDialog({
   onSave,
 }: SettingsDialogProps) {
   const { supabase } = useSupabase();
-  const [name, setName] = useState(user.name);
   const [avatar, setAvatar] = useState(user.avatar);
   const [isSoundEnabled, setIsSoundEnabled] = useState(soundEnabled);
   const [isParticlesEnabled, setIsParticlesEnabled] = useState(false);
@@ -84,6 +109,13 @@ export function SettingsDialog({
   const volumeIconRef = useRef<React.ElementRef<typeof VolumeIcon>>(null);
   const sunIconRef = useRef<React.ElementRef<typeof SunIcon>>(null);
   const moonIconRef = useRef<React.ElementRef<typeof MoonIcon>>(null);
+
+  const form = useForm<z.infer<typeof settingsFormSchema>>({
+    resolver: zodResolver(settingsFormSchema),
+    defaultValues: {
+      name: user.name,
+    },
+  });
 
   const fetchAvatarsByFolder = async (folder: string) => {
     const { data, error } = await supabase.storage.from("avatars").list(folder);
@@ -128,7 +160,7 @@ export function SettingsDialog({
   // Reset form when dialog opens
   useEffect(() => {
     if (open) {
-      setName(user.name);
+      form.reset({ name: user.name });
       setAvatar(user.avatar);
       setIsSoundEnabled(soundEnabledStorage);
       setIsParticlesEnabled(particlesEnabledStorage);
@@ -150,13 +182,12 @@ export function SettingsDialog({
     }
   }, [open, user, soundEnabledStorage, particlesEnabledStorage, isDarkMode]);
 
-  const handleSave = async () => {
+  const handleSave = async (formData: SettingsFormValues) => {
     setSoundEnabledStorage(isSoundEnabled);
     setParticlesEnabledStorage(isParticlesEnabled);
 
-    // Call the existing onSave handler
     onSave({
-      name,
+      name: formData.name,
       avatar,
       theme: theme!,
       sound: isSoundEnabled,
@@ -208,138 +239,146 @@ export function SettingsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
-          {/* Username field with larger avatar preview */}
-          <div className="space-y-4">
-            <div className="flex justify-center">
-              <Avatar className="h-24 w-24 border-2 border-primary/20">
-                <AvatarImage src={avatar} alt="Selected avatar" />
-                <AvatarFallback>
-                  {name.substring(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+        <Form {...form}>
+          <form className="space-y-6 py-4">
+            <div className="space-y-4">
+              <div className="flex justify-center">
+                <Avatar className="h-24 w-24 border-2 border-primary/20">
+                  <AvatarImage src={avatar} alt="Selected avatar" />
+                  <AvatarFallback>
+                    {form.watch("name").substring(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Display Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Your display name" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      This is your public display name.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
+
+            {/* Avatar selection with tabs */}
             <div className="space-y-2">
-              <Label htmlFor="name">Display Name</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Your display name"
-              />
-            </div>
-          </div>
-
-          {/* Avatar selection with tabs */}
-          <div className="space-y-2">
-            <Label>Choose Avatar</Label>
-            <Tabs
-              value={activeAvatarCategory}
-              onValueChange={setActiveAvatarCategory}
-              className="w-full"
-            >
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="Vercel">Vercel</TabsTrigger>
-                <TabsTrigger value="Notion Style">Notion</TabsTrigger>
-                <TabsTrigger value="Emoji">Emoji</TabsTrigger>
-              </TabsList>
-              {Object.entries(avatarsByCategory).map(([category, urls]) => (
-                <TabsContent key={category} value={category} className="pt-4">
-                  <div className="flex justify-center">
-                    {isLoading ? (
-                      <div className="grid grid-cols-4 gap-4 w-full max-w-md">
-                        {Array.from({ length: 4 }).map((_, i) => (
-                          <div
-                            key={i}
-                            className="flex justify-center items-center"
-                          >
-                            <Skeleton className="h-16 w-16 rounded-full" />
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-4 gap-4 w-full max-w-md">
-                        {urls.map((url) => {
-                          const isSelected = avatar === url;
-                          return (
+              <Label>Choose Avatar</Label>
+              <Tabs
+                value={activeAvatarCategory}
+                onValueChange={setActiveAvatarCategory}
+                className="w-full"
+              >
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="Vercel">Vercel</TabsTrigger>
+                  <TabsTrigger value="Notion Style">Notion</TabsTrigger>
+                  <TabsTrigger value="Emoji">Emoji</TabsTrigger>
+                </TabsList>
+                {Object.entries(avatarsByCategory).map(([category, urls]) => (
+                  <TabsContent key={category} value={category} className="pt-4">
+                    <div className="flex justify-center">
+                      {isLoading ? (
+                        <div className="grid grid-cols-4 gap-4 w-full max-w-md">
+                          {Array.from({ length: 4 }).map((_, i) => (
                             <div
-                              key={url}
-                              className="flex justify-center items-center cursor-pointer"
-                              onClick={() => setAvatar(url)}
+                              key={i}
+                              className="flex justify-center items-center"
                             >
-                              <Avatar
-                                className={`h-16 w-16 transition-all ${
-                                  isSelected
-                                    ? "ring-4 ring-primary ring-offset-2"
-                                    : "hover:ring-2 hover:ring-muted-foreground/20"
-                                }`}
-                              >
-                                <AvatarImage src={url} alt="Avatar option" />
-                                <AvatarFallback>AV</AvatarFallback>
-                              </Avatar>
+                              <Skeleton className="h-16 w-16 rounded-full" />
                             </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                </TabsContent>
-              ))}
-            </Tabs>
-          </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-4 gap-4 w-full max-w-md">
+                          {urls.map((url) => {
+                            const isSelected = avatar === url;
+                            return (
+                              <div
+                                key={url}
+                                className="flex justify-center items-center cursor-pointer"
+                                onClick={() => setAvatar(url)}
+                              >
+                                <Avatar
+                                  className={`h-16 w-16 transition-all ${
+                                    isSelected
+                                      ? "ring-4 ring-primary ring-offset-2"
+                                      : "hover:ring-2 hover:ring-muted-foreground/20"
+                                  }`}
+                                >
+                                  <AvatarImage src={url} alt="Avatar option" />
+                                  <AvatarFallback>AV</AvatarFallback>
+                                </Avatar>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </TabsContent>
+                ))}
+              </Tabs>
+            </div>
 
-          {/* Theme toggle with custom icons */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="theme-mode">Theme</Label>
-              <div className="text-sm text-muted-foreground">
-                Choose your preferred theme
+            {/* Theme toggle with custom icons */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="theme-mode">Theme</Label>
+                <div className="text-sm text-muted-foreground">
+                  Choose your preferred theme
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <SunIcon
+                  ref={sunIconRef}
+                  size={24}
+                  className={`${isDarkMode ? "opacity-50" : "text-amber-500"} pointer-events-none`}
+                />
+                <Switch
+                  id="theme-mode"
+                  checked={isDarkMode}
+                  onCheckedChange={handleThemeToggle}
+                />
+                <MoonIcon
+                  ref={moonIconRef}
+                  size={24}
+                  className={`${!isDarkMode ? "opacity-50" : "text-blue-400"} pointer-events-none`}
+                />
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <SunIcon
-                ref={sunIconRef}
-                size={24}
-                className={`${isDarkMode ? "opacity-50" : "text-amber-500"} pointer-events-none`}
-              />
-              <Switch
-                id="theme-mode"
-                checked={isDarkMode}
-                onCheckedChange={handleThemeToggle}
-              />
-              <MoonIcon
-                ref={moonIconRef}
-                size={24}
-                className={`${!isDarkMode ? "opacity-50" : "text-blue-400"} pointer-events-none`}
-              />
-            </div>
-          </div>
 
-          {/* Sound toggle with VolumeIcon */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="sound">Sound</Label>
-              <div className="text-sm text-muted-foreground">
-                Enable or disable notification sounds
+            {/* Sound toggle with VolumeIcon */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="sound">Sound</Label>
+                <div className="text-sm text-muted-foreground">
+                  Enable or disable notification sounds
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <VolumeIcon
+                  size={24}
+                  isMuted={!isSoundEnabled}
+                  onMutedChange={(muted) => setIsSoundEnabled(!muted)}
+                  mutedColor="rgb(248 113 113)" // text-red-400
+                  unmutedColor="rgb(34 197 94)" // text-green-500
+                  className="pointer-events-none"
+                />
+                <Switch
+                  id="sound"
+                  checked={isSoundEnabled}
+                  onCheckedChange={handleSoundToggle}
+                />
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <VolumeIcon
-                size={24}
-                isMuted={!isSoundEnabled}
-                onMutedChange={(muted) => setIsSoundEnabled(!muted)}
-                mutedColor="rgb(248 113 113)" // text-red-400
-                unmutedColor="rgb(34 197 94)" // text-green-500
-                className="pointer-events-none"
-              />
-              <Switch
-                id="sound"
-                checked={isSoundEnabled}
-                onCheckedChange={handleSoundToggle}
-              />
-            </div>
-          </div>
-        </div>
+          </form>
+        </Form>
 
         {/* Particles/Confetti with Party-Popper Icon */}
         <div className="flex items-center justify-between">
@@ -374,7 +413,7 @@ export function SettingsDialog({
               Cancel
             </Button>
           </DialogClose>
-          <Button onClick={handleSave}>Save changes</Button>
+          <Button onClick={form.handleSubmit(handleSave)}>Save changes</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

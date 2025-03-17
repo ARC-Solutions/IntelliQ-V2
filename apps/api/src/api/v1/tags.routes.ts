@@ -50,9 +50,7 @@ const userAnalysisRoutes = new Hono<{ Bindings: CloudflareEnv }>()
 
       if (!analysis) {
         return c.json({
-          generatedTags: [],
-          generatedCategories: [],
-          userTags: [],
+          tags: [],
         });
       }
 

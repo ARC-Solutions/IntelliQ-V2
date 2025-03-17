@@ -75,6 +75,10 @@
       "pages": ["tag-analysis-flow"]
     },
     {
+      "group": "Hybrid Search",
+      "pages": ["hybrid-search"]
+    },
+    {
       "group": "Essentials",
       "pages": [
         "essentials/markdown",

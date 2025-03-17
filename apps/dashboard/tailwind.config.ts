@@ -108,12 +108,17 @@ const config: Config = {
           },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        "line-shadow": {
+          "0%": { "background-position": "0 0" },
+          "100%": { "background-position": "100% -100%" },
+        },
       },
       animation: {
         marquee: "marquee var(--duration) infinite linear",
         "marquee-vertical": "marquee-vertical var(--duration) linear infinite",
         "caret-blink": "caret-blink 1.25s ease-out infinite",
         "fade-in-down": "fade-in-down 1s ease-out forwards",
+        "line-shadow": "line-shadow 5s ease-in-out infinite",
       },
     },
   },
