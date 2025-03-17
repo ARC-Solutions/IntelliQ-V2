@@ -106,6 +106,14 @@ export const documents = pgTable("documents", {
 	metadata: jsonb().notNull(),
 	embedding: vector({ dimensions: 1536 }),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	fileName: text("file_name").notNull(),
+	fileType: text("file_type").notNull(),
+	fileSize: smallint("file_size").notNull(),
+	pageCount: smallint("page_count").notNull(),
+	processingStatus: text("processing_status").default('pending').notNull(),
+	lastAccessed: timestamp("last_accessed", { withTimezone: true, mode: 'string' }).notNull(),
+	quizCount: smallint("quiz_count").notNull(),
+	documentId: uuid("document_id").defaultRandom().notNull(),
 }, (table) => [
 	foreignKey({
 			columns: [table.userId],
