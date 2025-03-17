@@ -26,6 +26,8 @@ const Summary = () => {
   const { formValues } = useQuizCreation();
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const [replay, setReplay] = useState<boolean>(false);
+   const [soundEnabled] = useLocalStorage<boolean>("soundEnabled", true);
+  const [particlesEnabled] = useLocalStorage<boolean>("particlesEnabled", true);
 
   const successSound =
   typeof window !== "undefined" ? new Audio("/success.mp3") : null;
