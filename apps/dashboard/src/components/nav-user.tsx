@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  ChevronsUpDown,
-  LogOut,
-  Settings
-} from "lucide-react";
+import { ChevronsUpDown, LifeBuoy, LogOut, Settings } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -130,12 +126,19 @@ export function NavUser({
                 {/* <DropdownMenuItem>
                   <BadgeCheck />
                   Account
-                </DropdownMenuItem>
-
-                <DropdownMenuItem>
-                  <Bell />
-                  Notifications
                 </DropdownMenuItem> */}
+
+                <DropdownMenuItem
+                  asChild
+                  onSelect={(e) => {
+                    e.preventDefault();
+                  }}
+                >
+                  <a href="mailto:support@intelliq.dev">
+                    <LifeBuoy />
+                    Support
+                  </a>
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={(e) => {
                     e.preventDefault();
