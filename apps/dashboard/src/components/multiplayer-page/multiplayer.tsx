@@ -28,22 +28,19 @@ const Quiz = () => {
     selectedAnswer,
     dispatch,
     correctAnswer,
-    wrongAnswer,
-    userAnswer,
     setProgressValue,
     progressValue,
     setShowCorrectAnswer,
     showCorrectAnswer,
-    isMultiplayer,
+
     setIsMultiplayer,
   } = useQuizLogic();
-  const { players, setPlayers, isCreator, setIsCreator, channel, setChannel, timeLimit, roomId } =
-    useMultiplayer();
+  const { setPlayers, isCreator, channel, setChannel, timeLimit, roomId } = useMultiplayer();
 
   const { currentUser } = useAuth();
   const routerParams = useParams();
   const router = useRouter();
-  const roomCode = routerParams['roomCode'] as string;
+  const roomCode = routerParams.roomCode as string;
   const [timer, setTimer] = useState(timeLimit);
   const [quizFinished, setQuizFinished] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -114,7 +111,7 @@ const Quiz = () => {
         payload: { questionNumber },
       });
     }
-    setProgressValue((questionNumber / currentQuiz.quiz.length) * 100);
+    setProgressValue(((questionNumber + 1) / currentQuiz.quiz.length) * 100);
   }, [questionNumber]);
 
   const submitAnswerToBackend = async (answer: string | null) => {

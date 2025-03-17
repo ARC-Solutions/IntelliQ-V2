@@ -573,42 +573,42 @@ const initialState: QuizContextValue = {
   //     },
   //   ],
   // },
-
   summaryQuiz: null,
   // summaryQuiz: {
-  //   quiz_id: '123',
-  //   rawQuestions: {
-  //     timeTaken: 123,
-  //     quiz_title: 'HEHE QUIZ',
-  //     correctAnswersCount: 3,
-  //     questions: [
-  //       {
-  //         text: 'Which of the following is NOT a primitive data type in C#?',
-  //         correctAnswer: 'string',
-  //         userAnswer: 'hehe',
-  //       },
-  //       {
-  //         text: 'What is the purpose of the using directive in C#?',
-  //         correctAnswer: 'To import a namespace',
-  //         userAnswer: 'To import a namespace',
-  //       },
-  //       {
-  //         text: 'Which keyword is used to define a class in C#?',
-  //         correctAnswer: 'class',
-  //         userAnswer: 'hehe',
-  //       },
-  //       {
-  //         text: 'Which keyword is used to define a class in C#?',
-  //         correctAnswer: 'class',
-  //         userAnswer: 'class',
-  //       },
-  //       {
-  //         text: 'Which keyword is used to define a class in C#?',
-  //         correctAnswer: 'class',
-  //         userAnswer: 'hehe',
-  //       },
-  //     ],
-  //   },
+  //   quizId: '3c90c3cc-0d44-4b50-8888-8dd25736052a',
+  //   quizTitle: 'HEHE QUIZ',
+  //   quizScore: 124,
+  //   totalTime: 1230,
+  //   correctAnswersCount: 4,
+  //   totalQuestions: 5,
+  //   questions: [
+  //     {
+  //       text: 'Which of the following is NOT a primitive data type in C#?',
+  //       correctAnswer: 'string',
+  //       userAnswer: 'hehe',
+  //     },
+  //     {
+  //       text: 'What is the purpose of the using directive in C#?',
+  //       correctAnswer: 'To import a namespace',
+  //       userAnswer: 'To import a namespace',
+  //     },
+  //     {
+  //       text: 'Which keyword is used to define a class in C#?',
+  //       correctAnswer: 'class',
+  //       userAnswer: 'hehe',
+  //     },
+  //     {
+  //       text: 'Which keyword is used to define a class in C#?',
+  //       correctAnswer: 'class',
+  //       userAnswer: 'class',
+  //     },
+  //     {
+  //       text: 'Which keyword is used to define a class in C#?',
+  //       correctAnswer: 'class',
+  //       userAnswer: 'hehe',
+  //     },
+  //   ],
+  //   passingScore: 80,
   // },
   quizzes: null,
 };
@@ -729,7 +729,6 @@ export const QuizProvider = ({ children }: Props) => {
         },
       });
       const data = (await response.json()) as QuizHistory;
-      console.log(data);
 
       dispatch({ type: 'SUBMIT_QUIZ_SUCESS', payload: data });
     } catch (error: any) {

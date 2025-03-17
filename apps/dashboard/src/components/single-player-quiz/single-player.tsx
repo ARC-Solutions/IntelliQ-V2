@@ -1,7 +1,7 @@
 'use client';
 import { useQuiz } from '@/contexts/quiz-context';
 import { redirect } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { showToast } from '@/utils/show-toast';
 import { useQuizLogic } from '@/contexts/quiz-logic-context';
@@ -17,7 +17,7 @@ import { useQuizCreation } from '@/contexts/quiz-creation-context';
 import { useLocalStorage } from 'usehooks-ts';
 
 const Quiz = () => {
-  const { currentQuiz, submitSinglePlayerQuiz, summaryQuiz, dispatch: dispatchQuiz } = useQuiz();
+  const { currentQuiz, submitSinglePlayerQuiz, summaryQuiz } = useQuiz();
   const [soundEnabled] = useLocalStorage<boolean>('soundEnabled', true);
   const {
     questionNumber,
@@ -32,6 +32,8 @@ const Quiz = () => {
     setShowCorrectAnswer,
     showCorrectAnswer,
   } = useQuizLogic();
+  console.log(currentQuiz);
+  
   const { formValues } = useQuizCreation();
   const [time, setTime] = useState({ minutes: 0, seconds: 0 });
   const [quizFinished, setQuizFinished] = useState(false);
@@ -55,17 +57,21 @@ const Quiz = () => {
 
     return () => clearInterval(timer);
   }, [quizFinished]);
+
   if (!currentQuiz) {
     redirect('/');
   }
-  if (summaryQuiz) {
-    setQuizFinished(false);
-    setShowCorrectAnswer(false);
-    setTime({ minutes: 0, seconds: 0 });
-    dispatch({ type: 'RESET_GAME_LOGIC' });
-    setQuestionNumber(0);
-    redirect(`/single-player/summary/${summaryQuiz.quizId}`);
-  }
+
+  useEffect(() => {
+    if (summaryQuiz) {
+      setQuizFinished(false);
+      setShowCorrectAnswer(false);
+      setTime({ minutes: 0, seconds: 0 });
+      dispatch({ type: 'RESET_GAME_LOGIC' });
+      setQuestionNumber(0);
+      redirect(`/single-player/summary/${summaryQuiz.quizId}`);
+    }
+  }, [summaryQuiz]);
 
   useEffect(() => {
     if (quizFinished) {

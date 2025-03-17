@@ -14,7 +14,7 @@ const successSound = typeof window !== 'undefined' ? new Audio('/success.mp3') :
 const QuizLeaderboard = () => {
   const [selectedPlayer, setSelectedPlayer] = useState<Leaderboard | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const hasPlayedRef = useRef(false); // Use ref instead of state
+  const hasPlayedRef = useRef(false);
   const { leaderboard } = useQuiz();
   const router = useRouter();
   const topThree = leaderboard?.slice(0, 3) ?? [];
@@ -94,7 +94,7 @@ const QuizLeaderboard = () => {
         <div className='flex justify-center items-end gap-2 sm:gap-3 md:gap-4 mb-6 sm:mb-8'>
           {topThree.map((player, i) => (
             <div
-              key={i}
+              key={player.userId}
               className='flex flex-col items-center'
               onClick={() => handlePlayerClick(player)}
             >
@@ -113,8 +113,8 @@ const QuizLeaderboard = () => {
                   <p className='text-lg sm:text-xl font-bold'>{player.score}</p>
                 </div>
               </div>
-              <div className='w-full h-1 bg-gradient-to-r from-transparent via-gray-700 to-transparent'></div>
-              <div className={`w-full h-1.5 ${getBarColor(i + 1)}`}></div>
+              <div className='w-full h-1 bg-gradient-to-r from-transparent via-gray-700 to-transparent' />
+              <div className={`w-full h-1.5 ${getBarColor(i + 1)}`} />
               <div
                 className={`w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full ${
                   i + 1 === 1 ? 'bg-purple-200' : 'bg-purple-300'
@@ -130,7 +130,7 @@ const QuizLeaderboard = () => {
         <div className='w-full border border-gray-700 rounded-lg overflow-hidden'>
           {restOfPlayers.map((player, i) => (
             <div
-              key={i}
+              key={player.userId}
               className='flex justify-between items-center px-3 sm:px-4 md:px-6 py-2 sm:py-3 border-b border-gray-800 last:border-b-0 cursor-pointer hover:bg-gray-900'
               onClick={() => handlePlayerClick(player)}
             >
@@ -148,7 +148,7 @@ const QuizLeaderboard = () => {
       {/* Player Details Modal using shadcn Dialog */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className='text-purple-200 max-w-[95%] sm:max-w-lg md:max-w-2xl p-4 sm:p-6'>
-          <DialogClose className='absolute top-2 sm:top-4 right-2 sm:right-4 text-gray-400 hover:text-white'></DialogClose>
+          <DialogClose className='absolute top-2 sm:top-4 right-2 sm:right-4 text-gray-400 hover:text-white' />
 
           {selectedPlayer && (
             <div className='pt-1 sm:pt-2'>
@@ -176,7 +176,7 @@ const QuizLeaderboard = () => {
                             selectedPlayer.correctAnswers
                           ).toFixed(2)}%`,
                         }}
-                      ></div>
+                      />
                     </div>
                     <span className='text-white text-sm sm:text-base font-medium'>
                       {(
