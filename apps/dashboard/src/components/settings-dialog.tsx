@@ -118,7 +118,9 @@ export function SettingsDialog({
   });
 
   const fetchAvatarsByFolder = async (folder: string) => {
-    const { data, error } = await supabase.storage.from("avatars").list(folder);
+    const { data, error } = await supabase.storage
+      .from("avatars")
+      .list(folder, { limit: 4 });
 
     if (error) {
       console.error(`Error fetching avatars from ${folder}:`, error);
@@ -313,7 +315,9 @@ export function SettingsDialog({
                                   }`}
                                 >
                                   <AvatarImage src={url} alt="Avatar option" />
-                                  <AvatarFallback>AV</AvatarFallback>
+                                  <AvatarFallback>
+                                    {category.charAt(0).toUpperCase()}
+                                  </AvatarFallback>
                                 </Avatar>
                               </div>
                             );

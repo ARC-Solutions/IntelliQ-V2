@@ -41,7 +41,7 @@ import { RoomResponse, RoomDetailsResponse, QuizType } from "@intelliq/api";
 import { useDebouncedCallback } from "use-debounce";
 import { SupportedLanguages, useQuiz } from "@/contexts/quiz-context";
 import { languages, QuizData } from "../../contexts/quiz-creation-context";
-import { LineShadowText } from "../magicui/line-shadow-text";
+import { SparklesText } from "../magicui/sparkles-text";
 import { useTheme } from "next-themes";
 
 interface PresenceData {
@@ -479,9 +479,12 @@ export default function Lobby() {
                   <span className="text-balance font-semibold leading-none tracking-tighter">
                     Room:
                   </span>
-                  <LineShadowText className="italic" shadowColor={shadowColor}>
-                    {roomCode}
-                  </LineShadowText>
+                  <SparklesText
+                    className="italic text-xl font-thin"
+                    text={roomCode}
+                    sparklesCount={3}
+                    colors={{ first: "#c8b6ff", second: "#a799e0" }}
+                  />
                 </div>
               </div>
 
