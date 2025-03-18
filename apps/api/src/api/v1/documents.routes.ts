@@ -147,7 +147,6 @@ const documentsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
       url: `${c.env.API_URL}/api/v1/admin/documents/process`,
       body: {
         documentId: document.id,
-        fileName: document.fileName,
         fileType: document.fileType,
       },
       headers: {
