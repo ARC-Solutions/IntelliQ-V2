@@ -1,28 +1,26 @@
+import {
+  TranslateClient,
+  TranslateTextCommand,
+} from "@aws-sdk/client-translate";
 import { RedisStore } from "@hono-rate-limiter/redis";
 import { Redis } from "@upstash/redis/cloudflare";
+import { eq } from "drizzle-orm/expressions";
 import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { rateLimiter } from "hono-rate-limiter";
+import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
 import { documents, userUsageData } from "../../../drizzle/schema";
 import { createDb } from "../../db/index";
 import { getSupabase } from "./middleware/auth.middleware";
 import {
+  documentQuizSchema,
   quizGenerationRequestSchema,
   quizResponseSchema,
 } from "./schemas/quiz.schemas";
+import { generateQuizFromDocument } from "./services/documents-quiz-generator.service";
 import { generateQuiz } from "./services/quiz-generator.service";
-import {
-  TranslateClient,
-  TranslateTextCommand,
-} from "@aws-sdk/client-translate";
-import { HTTPException } from "hono/http-exception";
-import { eq } from "drizzle-orm/expressions";
-
-const documentQuizSchema = z.object({
-  documentId: z.coerce.number(),
-});
 
 const generate = new Hono<{ Bindings: CloudflareEnv }>()
   .use((c, next) =>
@@ -196,6 +194,7 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
       summary: "Generate a quiz from a document",
       description:
         "Automatically generate a quiz based on the content of a stored document",
+      validateResponse: true,
       responses: {
         200: {
           description: "Quiz generated successfully",
@@ -215,7 +214,8 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
     }),
     zValidator("query", documentQuizSchema),
     async (c) => {
-      const { documentId } = c.req.valid("query");
+      const { documentId, numberOfQuestions, language, quizType } =
+        c.req.valid("query");
 
       const db = await createDb(c);
 
@@ -251,20 +251,11 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
         chunks.length > 0 ? chunks.join("\n\n") : document.content;
 
       // Generate quiz with automatic parameters
-      const { quiz, metrics } = await generateQuiz(
+      const { quiz, metrics } = await generateQuizFromDocument(
         c,
-        document.fileName, // Use filename as quiz topic
-        5, // Default to 5 questions
-        ["document"], // Default tags
-        contextContent, // Document content
+        contextContent,
+        numberOfQuestions,
       );
-
-      // Create complete quiz object
-      const completeQuiz = {
-        ...quiz,
-        documentId,
-        type: "document" as const,
-      };
 
       // Store usage data
       await db.insert(userUsageData).values({
@@ -273,14 +264,99 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
         completionTokens: metrics.usage.completionTokens,
         totalTokens: metrics.usage.totalTokens,
         usedModel: c.env.GPT_MODEL,
-        countQuestions: 5,
+        countQuestions: numberOfQuestions,
         responseTimeTaken: metrics.durationInSeconds,
         prompt: document.fileName,
-        language: "en",
-        quizType: "document",
+        language: language,
+        quizType: quizType,
       });
 
-      return c.json({ quiz: completeQuiz } as const);
+      if (language && language !== "en") {
+        const translateClient = new TranslateClient({
+          region: "eu-north-1",
+          credentials: {
+            accessKeyId: c.env.AWS_ACCESS_KEY_ID!,
+            secretAccessKey: c.env.AWS_SECRET_ACCESS_KEY!,
+          },
+        });
+
+        // Translate quiz description, topic, and title
+        const [descriptionResponse, topicResponse, titleResponse] =
+          await Promise.all([
+            translateClient.send(
+              new TranslateTextCommand({
+                SourceLanguageCode: "en",
+                TargetLanguageCode: language,
+                Text: quiz.quizDescription,
+              }),
+            ),
+            translateClient.send(
+              new TranslateTextCommand({
+                SourceLanguageCode: "en",
+                TargetLanguageCode: language,
+                Text: quiz.quizTopic,
+              }),
+            ),
+            translateClient.send(
+              new TranslateTextCommand({
+                SourceLanguageCode: "en",
+                TargetLanguageCode: language,
+                Text: quiz.quizTitle,
+              }),
+            ),
+          ]);
+
+        quiz.quizDescription =
+          descriptionResponse.TranslatedText || quiz.quizDescription;
+        quiz.quizTopic = topicResponse.TranslatedText || quiz.quizTopic;
+        quiz.quizTitle = titleResponse.TranslatedText || quiz.quizTitle;
+
+        // Translate each question
+        for (const question of quiz.questions) {
+          const [questionTitleRes, textRes, optionsRes, correctAnswerRes] =
+            await Promise.all([
+              translateClient.send(
+                new TranslateTextCommand({
+                  SourceLanguageCode: "en",
+                  TargetLanguageCode: language,
+                  Text: question.questionTitle,
+                }),
+              ),
+              translateClient.send(
+                new TranslateTextCommand({
+                  SourceLanguageCode: "en",
+                  TargetLanguageCode: language,
+                  Text: question.text,
+                }),
+              ),
+              translateClient.send(
+                new TranslateTextCommand({
+                  SourceLanguageCode: "en",
+                  TargetLanguageCode: language,
+                  Text: question.options.join("\n"),
+                }),
+              ),
+              translateClient.send(
+                new TranslateTextCommand({
+                  SourceLanguageCode: "en",
+                  TargetLanguageCode: language,
+                  Text: question.correctAnswer,
+                }),
+              ),
+            ]);
+
+          question.questionTitle =
+            questionTitleRes.TranslatedText || question.questionTitle;
+          question.text = textRes.TranslatedText || question.text;
+          if (optionsRes.TranslatedText) {
+            question.options = optionsRes.TranslatedText.split("\n");
+          }
+          question.correctAnswer =
+            correctAnswerRes.TranslatedText || question.correctAnswer;
+        }
+      }
+
+      return c.json({ quiz });
     },
   );
 

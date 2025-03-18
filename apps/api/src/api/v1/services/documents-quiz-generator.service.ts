@@ -1,11 +1,10 @@
-import { createOpenAI } from '@ai-sdk/openai';
-import { generateObject } from 'ai';
-import { quizSchema } from '../schemas/quiz.schemas';
-import { generateQuizPrompt } from './prompts';
-import type { z } from 'zod';
-import { OPTION_PREFIXES } from '../schemas/quiz.schemas';
+import { createOpenAI } from "@ai-sdk/openai";
+import { generateObject } from "ai";
+import type { z } from "zod";
+import { OPTION_PREFIXES, documentsQuizSchema } from "../schemas/quiz.schemas";
+import { generateQuizPromptDocument } from "./prompts";
 // Use the quiz schema to infer the type
-type Quiz = z.infer<typeof quizSchema>;
+type Quiz = z.infer<typeof documentsQuizSchema>;
 
 export interface QuizGenerationResult {
   quiz: Quiz;
@@ -19,12 +18,10 @@ export interface QuizGenerationResult {
   };
 }
 
-export async function generateQuiz(
+export async function generateQuizFromDocument(
   c: { env: { GPT_MODEL: string; OPENAI_API_KEY: string } },
-  quizTopic: string,
+  documentContent: string,
   numberOfQuestions: number,
-  quizTags?: string[],
-  quizDescription?: string,
 ): Promise<QuizGenerationResult> {
   try {
     const GPT_MODEL = c.env.GPT_MODEL;
@@ -37,10 +34,11 @@ export async function generateQuiz(
       model: openai(GPT_MODEL, {
         structuredOutputs: true,
       }),
-      schemaName: 'quiz',
-      schemaDescription: `A quiz with multiple-choice questions. Each question must have exactly 4 options.`,
-      schema: quizSchema,
-      prompt: `${generateQuizPrompt(quizTopic, quizDescription ?? '', numberOfQuestions, quizTags)}
+      schemaName: "document_quiz",
+      schemaDescription:
+        "A quiz with multiple-choice questions. Each question must have exactly 4 options.",
+      schema: documentsQuizSchema,
+      prompt: `${generateQuizPromptDocument(documentContent, numberOfQuestions)}
        
        IMPORTANT: For each question's options array, you MUST:
        1. Include exactly 4 options
@@ -63,13 +61,14 @@ export async function generateQuiz(
         Important: Always provide exactly 4 options for each question.`,
     });
 
-    // Additional validation to ensure the format is correct
-    const validatedQuiz = quizSchema.parse(generatedQuiz.object);
+    const validatedQuiz = documentsQuizSchema.parse(generatedQuiz.object);
 
     // Validate option prefixes
     for (const question of validatedQuiz.questions) {
-      if (!question.options.every((opt, i) => opt.startsWith(OPTION_PREFIXES[i]))) {
-        throw new Error('Invalid option format');
+      if (
+        !question.options.every((opt, i) => opt.startsWith(OPTION_PREFIXES[i]))
+      ) {
+        throw new Error("Invalid option format");
       }
     }
 
@@ -85,19 +84,17 @@ export async function generateQuiz(
   } catch (error) {
     // Create a structured error object
     const errorDetails = {
-      name: error instanceof Error ? error.name : 'Unknown Error',
+      name: error instanceof Error ? error.name : "Unknown Error",
       message: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
       cause: error instanceof Error ? error.cause : undefined,
       context: {
-        topic: quizTopic,
-        description: quizDescription,
+        documentContent,
         numberOfQuestions,
-        tags: quizTags,
       },
     };
 
-    console.error('Quiz generation error:', JSON.stringify(errorDetails));
+    console.error("Quiz generation error:", JSON.stringify(errorDetails));
 
     throw new Error(JSON.stringify(errorDetails), { cause: error });
   }
