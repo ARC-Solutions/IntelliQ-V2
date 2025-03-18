@@ -1,16 +1,16 @@
+import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
+import { OpenAIEmbeddings } from "@langchain/openai";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
+import { createClient } from "@supabase/supabase-js";
+import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
-import { getSupabase } from "../middleware/auth.middleware";
 import { bearerAuth } from "hono/bearer-auth";
-import { createDb } from "../../../db/index";
-import { documents } from "../../../../drizzle/schema";
-import { eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
-import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
-import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
 import { TextLoader } from "langchain/document_loaders/fs/text";
-import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
-import { OpenAIEmbeddings } from "@langchain/openai";
+import { extractText, getDocumentProxy } from "unpdf";
+import { documents } from "../../../../drizzle/schema";
+import { createDb } from "../../../db/index";
 
 const adminDocumentsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
   "/process",
@@ -24,6 +24,20 @@ const adminDocumentsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
     const { documentId, fileName, fileType } = await c.req.json();
 
     const db = await createDb(c);
+    const document = await db.query.documents.findFirst({
+      where: eq(documents.id, documentId),
+      columns: {
+        userId: true,
+        metadata: true,
+      },
+    });
+
+    if (!document) {
+      throw new HTTPException(404, { message: "Document not found" });
+    }
+
+    const filePath = (document.metadata as { storagePath: string }).storagePath;
+
     await db
       .update(documents)
       .set({
@@ -31,13 +45,29 @@ const adminDocumentsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
       })
       .where(eq(documents.id, documentId));
 
-    const supabase = getSupabase(c);
+    const supabase = createClient(
+      c.env.SUPABASE_URL,
+      c.env.SUPABASE_SERVICE_ROLE_KEY,
+      {
+        auth: {
+          persistSession: false,
+        },
+      },
+    );
+
     const { data: fileData, error: fileError } = await supabase.storage
       .from("documents")
-      .download(fileName);
+      .download(filePath);
 
     if (fileError) {
-      console.error("File download error:", fileError);
+      console.error("File download error:", {
+        error: fileError,
+        message: fileError.message,
+        filePath,
+        storedPath: (document.metadata as { storagePath: string }).storagePath,
+        documentId,
+        userId: document.userId,
+      });
       await db
         .update(documents)
         .set({ processingStatus: "failed" })
@@ -49,14 +79,19 @@ const adminDocumentsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
     let pageCount = 0;
 
     try {
-      const blob = new Blob([fileData], { type: `application/${fileType}` });
+      const blob = new Blob([fileData], {
+        type: `application/${fileType.toLowerCase()}`,
+      });
 
-      switch (fileType) {
+      switch (fileType.toLowerCase()) {
         case "pdf": {
-          const pdf = new PDFLoader(blob);
-          const docs = await pdf.load();
-          documentText = docs.map((doc) => doc.pageContent).join("\n");
-          pageCount = docs.length;
+          const buffer = await blob.arrayBuffer();
+          const pdf = await getDocumentProxy(new Uint8Array(buffer));
+          const { totalPages, text } = await extractText(pdf, {
+            mergePages: true,
+          });
+          documentText = text;
+          pageCount = totalPages;
           break;
         }
         case "docx": {
@@ -107,7 +142,6 @@ const adminDocumentsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
         .set({
           processingStatus: "embedding",
           metadata: {
-            // Get existing metadata
             ...((
               await db.query.documents.findFirst({
                 where: eq(documents.id, documentId),
