@@ -92,6 +92,7 @@ export function FileUpload({
           accept={accept}
           onChange={handleChange}
           disabled={isLoading}
+          name="fileName"
         />
 
         {selectedFile ? (
