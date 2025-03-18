@@ -61,11 +61,11 @@ const documentsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
       throw new HTTPException(500, { message: error.message });
     }
 
-    const {
-      data: { signedUrl },
-    } = await supabase.storage
+    const signedUrlResponse = await supabase.storage
       .from("documents")
       .createSignedUrl(filePath, 3600);
+
+    const { signedUrl } = signedUrlResponse.data!;
 
     const db = await createDb(c);
     const [document] = await db
