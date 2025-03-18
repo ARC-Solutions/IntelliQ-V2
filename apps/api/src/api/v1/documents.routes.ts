@@ -5,15 +5,17 @@ import { getSupabase } from "./middleware/auth.middleware";
 import { documents } from "../../../drizzle/schema";
 import { createDb } from "../../db/index";
 import { Client } from "@upstash/qstash";
+import { z } from "zod";
+import { resolver } from "hono-openapi/zod";
 
 const ALLOWED_TYPES = new Map([
   ["pdf", "application/pdf"],
-  ["doc", "application/msword"],
-  [
-    "docx",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  ],
-  ["txt", "text/plain"],
+  //   ["doc", "application/msword"],
+  //   [
+  //     "docx",
+  //     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  //   ],
+  //   ["txt", "text/plain"],
 ]);
 
 const documentsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
@@ -22,6 +24,44 @@ const documentsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
     tags: ["Documents"],
     summary: "Upload a document",
     description: "Upload a document to the database",
+    validateResponse: true,
+    responses: {
+      201: {
+        description: "Document uploaded successfully",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                success: z.boolean(),
+                message: z.string(),
+                data: z.object({
+                  id: z.number(),
+                  fileName: z.string(),
+                  fileType: z.string(),
+                  uploadDate: z.string(),
+                  size: z.string(),
+                  status: z.string(),
+                  metadata: z.object({
+                    size: z.number(),
+                    mimeType: z.string(),
+                    sizeInKb: z.number(),
+                    extension: z.string(),
+                    uploadedBy: z.string(),
+                    contentType: z.string(),
+                    storagePath: z.string(),
+                    lastModified: z.string(),
+                    originalName: z.string(),
+                    signedUrlExpiry: z.string(),
+                    uploadTimestamp: z.string(),
+                    processingStatus: z.string(),
+                  }),
+                }),
+              }),
+            ),
+          },
+        },
+      },
+    },
   }),
   async (c) => {
     const supabase = getSupabase(c);
@@ -99,7 +139,6 @@ const documentsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
       })
       .returning();
 
-    //TODO: Add background processing
     const client = new Client({
       token: c.env.QSTASH_TOKEN,
     });
