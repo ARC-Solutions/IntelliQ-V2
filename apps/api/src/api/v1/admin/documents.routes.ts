@@ -1,16 +1,19 @@
+import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
+import { OpenAIEmbeddings } from "@langchain/openai";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
+import { createClient } from "@supabase/supabase-js";
+import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
-import { getSupabase } from "../middleware/auth.middleware";
 import { bearerAuth } from "hono/bearer-auth";
-import { createDb } from "../../../db/index";
-import { documents } from "../../../../drizzle/schema";
-import { eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
-import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
-import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
 import { TextLoader } from "langchain/document_loaders/fs/text";
-import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
-import { OpenAIEmbeddings } from "@langchain/openai";
+import { extractText, getDocumentProxy } from "unpdf";
+import { documents } from "../../../../drizzle/schema";
+import { createDb } from "../../../db/index";
+import { z } from "zod";
+import { resolver } from "hono-openapi/zod";
+import { zValidator } from "@hono/zod-validator";
 
 const adminDocumentsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
   "/process",
@@ -19,11 +22,53 @@ const adminDocumentsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
     tags: ["Documents"],
     summary: "Process a document",
     description: "Process a document",
+    validateResponse: true,
+    responses: {
+      200: {
+        description: "Document processed successfully",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                success: z.boolean(),
+                message: z.string(),
+                documentId: z.number(),
+                pageCount: z.number(),
+                textLength: z.number(),
+                chunkCount: z.number(),
+                embeddingType: z.string(),
+              }),
+            ),
+          },
+        },
+      },
+    },
   }),
+  zValidator(
+    "json",
+    z.object({
+      documentId: z.number(),
+      fileType: z.string(),
+    }),
+  ),
   async (c) => {
-    const { documentId, fileName, fileType } = await c.req.json();
+    const { documentId, fileType } = c.req.valid("json");
 
     const db = await createDb(c);
+    const document = await db.query.documents.findFirst({
+      where: eq(documents.id, documentId),
+      columns: {
+        userId: true,
+        metadata: true,
+      },
+    });
+
+    if (!document) {
+      throw new HTTPException(404, { message: "Document not found" });
+    }
+
+    const filePath = (document.metadata as { storagePath: string }).storagePath;
+
     await db
       .update(documents)
       .set({
@@ -31,13 +76,29 @@ const adminDocumentsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
       })
       .where(eq(documents.id, documentId));
 
-    const supabase = getSupabase(c);
+    const supabase = createClient(
+      c.env.SUPABASE_URL,
+      c.env.SUPABASE_SERVICE_ROLE_KEY,
+      {
+        auth: {
+          persistSession: false,
+        },
+      },
+    );
+
     const { data: fileData, error: fileError } = await supabase.storage
       .from("documents")
-      .download(fileName);
+      .download(filePath);
 
     if (fileError) {
-      console.error("File download error:", fileError);
+      console.error("File download error:", {
+        error: fileError,
+        message: fileError.message,
+        filePath,
+        storedPath: (document.metadata as { storagePath: string }).storagePath,
+        documentId,
+        userId: document.userId,
+      });
       await db
         .update(documents)
         .set({ processingStatus: "failed" })
@@ -49,14 +110,19 @@ const adminDocumentsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
     let pageCount = 0;
 
     try {
-      const blob = new Blob([fileData], { type: `application/${fileType}` });
+      const blob = new Blob([fileData], {
+        type: `application/${fileType.toLowerCase()}`,
+      });
 
-      switch (fileType) {
+      switch (fileType.toLowerCase()) {
         case "pdf": {
-          const pdf = new PDFLoader(blob);
-          const docs = await pdf.load();
-          documentText = docs.map((doc) => doc.pageContent).join("\n");
-          pageCount = docs.length;
+          const buffer = await blob.arrayBuffer();
+          const pdf = await getDocumentProxy(new Uint8Array(buffer));
+          const { totalPages, text } = await extractText(pdf, {
+            mergePages: true,
+          });
+          documentText = text;
+          pageCount = totalPages;
           break;
         }
         case "docx": {
@@ -101,43 +167,73 @@ const adminDocumentsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
         separators: ["\n\n", "\n", " ", ""],
       });
       const chunks = await textSplitter.splitText(documentText);
+      const documentSizeKB = Buffer.from(documentText).length / 1024;
 
-      await db
-        .update(documents)
-        .set({
-          processingStatus: "embedding",
-          metadata: {
-            // Get existing metadata
-            ...((
-              await db.query.documents.findFirst({
-                where: eq(documents.id, documentId),
-                columns: { metadata: true },
-              })
-            )?.metadata || {}),
-            chunkCount: chunks.length,
-            chunking: {
-              chunkSize: 1000,
-              chunkOverlap: 200,
-              totalChunks: chunks.length,
-            },
-          },
-        })
-        .where(eq(documents.id, documentId));
-
-      // Generate embedding for document indexing
-      // We'll use the first chunk as a representative embedding for the document
+      //   Generate embedding for document indexing
+      //   use the first chunk as a representative embedding for the document
       const embeddings = new OpenAIEmbeddings({
         openAIApiKey: c.env.OPENAI_API_KEY,
         modelName: "text-embedding-3-small",
       });
 
-      const embedding = await embeddings.embedQuery(chunks[0]);
+      let documentEmbeddings: number[];
 
-      // Store all chunks in document metadata for quiz generation
+      if (documentSizeKB <= 50) {
+        documentEmbeddings = await embeddings.embedQuery(chunks[0]);
+      } else {
+        // For larger documents, get embeddings from start, middle, and end
+        const startChunk = chunks[0];
+        const middleChunk = chunks[Math.floor(chunks.length / 2)];
+        const endChunk = chunks[chunks.length - 1];
+
+        const [startEmbedding, middleEmbedding, endEmbedding] =
+          await Promise.all([
+            embeddings.embedQuery(startChunk),
+            embeddings.embedQuery(middleChunk),
+            embeddings.embedQuery(endChunk),
+          ]);
+
+        // Store the position information in metadata instead
+        await db
+          .update(documents)
+          .set({
+            processingStatus: "embedding",
+            metadata: {
+              ...((
+                await db.query.documents.findFirst({
+                  where: eq(documents.id, documentId),
+                  columns: { metadata: true },
+                })
+              )?.metadata || {}),
+              chunkCount: chunks.length,
+              chunking: {
+                chunkSize: 1000,
+                chunkOverlap: 200,
+                totalChunks: chunks.length,
+              },
+              chunks: documentSizeKB <= 50 ? chunks : chunks.slice(0, 20),
+              documentSizeKB,
+              embeddingPositions: {
+                start: 0,
+                middle: startEmbedding.length,
+                end: startEmbedding.length + middleEmbedding.length,
+              },
+            },
+          })
+          .where(eq(documents.id, documentId));
+
+        // Concatenate the embeddings
+        documentEmbeddings = [
+          ...startEmbedding,
+          ...middleEmbedding,
+          ...endEmbedding,
+        ];
+      }
+
       await db
         .update(documents)
         .set({
-          embedding,
+          embedding: documentEmbeddings,
           processingStatus: "completed",
           metadata: {
             ...((
@@ -146,7 +242,6 @@ const adminDocumentsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
                 columns: { metadata: true },
               })
             )?.metadata || {}),
-            chunks: chunks.slice(0, 20), // Store up to 20 chunks for quiz generation
             processingCompleted: new Date().toISOString(),
           },
         })
@@ -160,6 +255,7 @@ const adminDocumentsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
           pageCount,
           textLength: documentText.length,
           chunkCount: chunks.length,
+          embeddingType: documentSizeKB <= 50 ? "single" : "multiple",
         },
         200,
       );
