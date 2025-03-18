@@ -11,6 +11,9 @@ import { TextLoader } from "langchain/document_loaders/fs/text";
 import { extractText, getDocumentProxy } from "unpdf";
 import { documents } from "../../../../drizzle/schema";
 import { createDb } from "../../../db/index";
+import { z } from "zod";
+import { resolver } from "hono-openapi/zod";
+import { zValidator } from "@hono/zod-validator";
 
 const adminDocumentsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
   "/process",
@@ -19,9 +22,37 @@ const adminDocumentsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
     tags: ["Documents"],
     summary: "Process a document",
     description: "Process a document",
+    validateResponse: true,
+    responses: {
+      200: {
+        description: "Document processed successfully",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                success: z.boolean(),
+                message: z.string(),
+                documentId: z.number(),
+                pageCount: z.number(),
+                textLength: z.number(),
+                chunkCount: z.number(),
+                embeddingType: z.string(),
+              }),
+            ),
+          },
+        },
+      },
+    },
   }),
+  zValidator(
+    "json",
+    z.object({
+      documentId: z.number(),
+      fileType: z.string(),
+    }),
+  ),
   async (c) => {
-    const { documentId, fileName, fileType } = await c.req.json();
+    const { documentId, fileType } = c.req.valid("json");
 
     const db = await createDb(c);
     const document = await db.query.documents.findFirst({
@@ -136,42 +167,73 @@ const adminDocumentsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
         separators: ["\n\n", "\n", " ", ""],
       });
       const chunks = await textSplitter.splitText(documentText);
+      const documentSizeKB = Buffer.from(documentText).length / 1024;
 
-      await db
-        .update(documents)
-        .set({
-          processingStatus: "embedding",
-          metadata: {
-            ...((
-              await db.query.documents.findFirst({
-                where: eq(documents.id, documentId),
-                columns: { metadata: true },
-              })
-            )?.metadata || {}),
-            chunkCount: chunks.length,
-            chunking: {
-              chunkSize: 1000,
-              chunkOverlap: 200,
-              totalChunks: chunks.length,
-            },
-          },
-        })
-        .where(eq(documents.id, documentId));
-
-      // Generate embedding for document indexing
-      // We'll use the first chunk as a representative embedding for the document
+      //   Generate embedding for document indexing
+      //   use the first chunk as a representative embedding for the document
       const embeddings = new OpenAIEmbeddings({
         openAIApiKey: c.env.OPENAI_API_KEY,
         modelName: "text-embedding-3-small",
       });
 
-      const embedding = await embeddings.embedQuery(chunks[0]);
+      let documentEmbeddings: number[];
 
-      // Store all chunks in document metadata for quiz generation
+      if (documentSizeKB <= 50) {
+        documentEmbeddings = await embeddings.embedQuery(chunks[0]);
+      } else {
+        // For larger documents, get embeddings from start, middle, and end
+        const startChunk = chunks[0];
+        const middleChunk = chunks[Math.floor(chunks.length / 2)];
+        const endChunk = chunks[chunks.length - 1];
+
+        const [startEmbedding, middleEmbedding, endEmbedding] =
+          await Promise.all([
+            embeddings.embedQuery(startChunk),
+            embeddings.embedQuery(middleChunk),
+            embeddings.embedQuery(endChunk),
+          ]);
+
+        // Store the position information in metadata instead
+        await db
+          .update(documents)
+          .set({
+            processingStatus: "embedding",
+            metadata: {
+              ...((
+                await db.query.documents.findFirst({
+                  where: eq(documents.id, documentId),
+                  columns: { metadata: true },
+                })
+              )?.metadata || {}),
+              chunkCount: chunks.length,
+              chunking: {
+                chunkSize: 1000,
+                chunkOverlap: 200,
+                totalChunks: chunks.length,
+              },
+              chunks: documentSizeKB <= 50 ? chunks : chunks.slice(0, 20),
+              documentSizeKB,
+              embeddingPositions: {
+                start: 0,
+                middle: startEmbedding.length,
+                end: startEmbedding.length + middleEmbedding.length,
+              },
+            },
+          })
+          .where(eq(documents.id, documentId));
+
+        // Concatenate the embeddings
+        documentEmbeddings = [
+          ...startEmbedding,
+          ...middleEmbedding,
+          ...endEmbedding,
+        ];
+      }
+
       await db
         .update(documents)
         .set({
-          embedding,
+          embedding: documentEmbeddings,
           processingStatus: "completed",
           metadata: {
             ...((
@@ -180,7 +242,6 @@ const adminDocumentsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
                 columns: { metadata: true },
               })
             )?.metadata || {}),
-            chunks: chunks.slice(0, 20), // Store up to 20 chunks for quiz generation
             processingCompleted: new Date().toISOString(),
           },
         })
@@ -194,6 +255,7 @@ const adminDocumentsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
           pageCount,
           textLength: documentText.length,
           chunkCount: chunks.length,
+          embeddingType: documentSizeKB <= 50 ? "single" : "multiple",
         },
         200,
       );

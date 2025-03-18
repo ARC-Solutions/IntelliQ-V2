@@ -3,7 +3,6 @@ import { generateObject } from 'ai';
 import { quizSchema } from '../schemas/quiz.schemas';
 import { generateQuizPrompt } from './prompts';
 import type { z } from 'zod';
-import { shuffle } from 'lodash';
 import { OPTION_PREFIXES } from '../schemas/quiz.schemas';
 // Use the quiz schema to infer the type
 type Quiz = z.infer<typeof quizSchema>;
