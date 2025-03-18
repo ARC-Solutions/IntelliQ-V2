@@ -32,7 +32,7 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
         }),
       }),
       handler: (c) => c.json({ error: "Too many requests" }, 429),
-    })(c, next)
+    })(c, next),
   )
   .get(
     "/generate",
@@ -54,9 +54,11 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
           description: "Bad Request",
           content: {
             "application/json": {
-              schema: z.object({
-                error: z.string(),
-              }),
+              schema: resolver(
+                z.object({
+                  error: z.string(),
+                }),
+              ),
             },
           },
         },
@@ -64,9 +66,11 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
           description: "Too many requests",
           content: {
             "application/json": {
-              schema: z.object({
-                error: z.string(),
-              }),
+              schema: resolver(
+                z.object({
+                  error: z.string(),
+                }),
+              ),
             },
           },
         },
@@ -118,9 +122,8 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
             TargetLanguageCode: language,
             Text: question.questionTitle,
           });
-          const questionTitleResponse = await translateClient.send(
-            questionTitleCommand
-          );
+          const questionTitleResponse =
+            await translateClient.send(questionTitleCommand);
           question.questionTitle =
             questionTitleResponse.TranslatedText || question.questionTitle;
 
@@ -151,9 +154,8 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
             TargetLanguageCode: language,
             Text: question.correctAnswer,
           });
-          const correctAnswerResponse = await translateClient.send(
-            correctAnswerCommand
-          );
+          const correctAnswerResponse =
+            await translateClient.send(correctAnswerCommand);
           question.correctAnswer =
             correctAnswerResponse.TranslatedText || question.correctAnswer;
         }
@@ -179,7 +181,7 @@ const generate = new Hono<{ Bindings: CloudflareEnv }>()
       });
 
       return c.json({ quiz: quiz } as const);
-    }
+    },
   );
 
 export default generate;
