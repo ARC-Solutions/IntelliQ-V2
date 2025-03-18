@@ -104,24 +104,28 @@ export function DocumentDashboard() {
 
     // In a real app, you would fetch the quiz from your backend
     // For now, we'll just dispatch an action to start a quiz
-    dispatch({
-      type: "START_QUIZ",
-      payload: {
-        title: `Quiz on ${document.title}`,
-        questions: [
-          {
-            id: "1",
-            question: `What is the main topic of ${document.title}?`,
-            options: ["Option A", "Option B", "Option C", "Option D"],
-            correctAnswer: "Option A",
-          },
-          // More questions would be generated based on the document
-        ],
-      },
-    });
+    // dispatch({
+    //   type: "START_QUIZ",
+    //   payload: {
+    //     title: `Quiz on ${document.title}`,
+    //     questions: [
+    //       {
+    //         id: "1",
+    //         question: `What is the main topic of ${document.title}?`,
+    //         options: ["Option A", "Option B", "Option C", "Option D"],
+    //         correctAnswer: "Option A",
+    //       },
+    //       // More questions would be generated based on the document
+    //     ],
+    //   },
+    // });
 
     // Navigate to the quiz page
     router.push("/single-player/quiz/play");
+  };
+
+  const handleDeleteDocument = (id: string) => {
+    setDocuments(documents.filter((doc) => doc.id !== id));
   };
 
   return (
@@ -201,6 +205,7 @@ export function DocumentDashboard() {
                       key={doc.id}
                       document={doc}
                       onQuiz={() => startQuizOnDocument(doc.id)}
+                      onDelete={handleDeleteDocument}
                     />
                   ))}
                 </div>
@@ -214,6 +219,7 @@ export function DocumentDashboard() {
                     key={doc.id}
                     document={doc}
                     onQuiz={() => startQuizOnDocument(doc.id)}
+                    onDelete={handleDeleteDocument}
                   />
                 ))}
               </div>
@@ -228,6 +234,7 @@ export function DocumentDashboard() {
                       key={doc.id}
                       document={doc}
                       onQuiz={() => startQuizOnDocument(doc.id)}
+                      onDelete={handleDeleteDocument}
                     />
                   ))}
               </div>
