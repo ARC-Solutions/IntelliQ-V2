@@ -37,9 +37,9 @@ const app = new Hono<{ Bindings: CloudflareEnv }>()
           description: 'Bad Request',
           content: {
             'application/json': {
-              schema: z.object({
+              schema: resolver(z.object({
                 error: z.string(),
-              }),
+              })),
             },
           },
         },
@@ -108,7 +108,7 @@ const app = new Hono<{ Bindings: CloudflareEnv }>()
           description: 'Bad Request',
           content: {
             'application/json': {
-              schema: z.object({ error: z.string() }),
+              schema: resolver(z.object({ error: z.string() })),
             },
           },
         },
@@ -165,7 +165,7 @@ const app = new Hono<{ Bindings: CloudflareEnv }>()
           description: 'Bad Request',
           content: {
             'application/json': {
-              schema: z.object({ error: z.string() }),
+              schema: resolver(z.object({ error: z.string() })),
             },
           },
         },
