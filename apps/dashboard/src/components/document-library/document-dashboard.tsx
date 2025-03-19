@@ -290,7 +290,9 @@ export function DocumentDashboard() {
   const handleDeleteDocument = async (documentId: number) => {
     try {
       const client = createApiClient();
-      const response = await client.api.v1.documents[documentId].$delete();
+      const response = await client.api.v1.documents[":id"].$delete({
+        param: { id: documentId.toString() },
+      });
 
       if (!response.ok) {
         throw new Error(`Delete failed: ${response.status}`);
@@ -321,7 +323,11 @@ export function DocumentDashboard() {
   const renderSkeletons = () => {
     return Array(6)
       .fill(0)
-      .map((_, index) => <DocumentCardSkeleton key={`skeleton-${index}`} />);
+      .map((_, index) => (
+        <DocumentCardSkeleton
+          key={`document-skeleton-${index}-${Math.random()}`}
+        />
+      ));
   };
 
   // Modified to fetch recent documents
@@ -649,7 +655,10 @@ export function DocumentDashboard() {
                   {filteredDocuments.map((doc) => (
                     <DocumentCard
                       key={doc.id}
-                      document={doc}
+                      document={{
+                        ...doc,
+                        id: doc.id.toString(),
+                      }}
                       onQuiz={() => startQuizOnDocument(doc.id.toString())}
                       onDelete={() => handleDeleteDocument(doc.id)}
                     />
@@ -681,7 +690,10 @@ export function DocumentDashboard() {
                     {documents.map((doc) => (
                       <DocumentCard
                         key={doc.id}
-                        document={doc}
+                        document={{
+                          ...doc,
+                          id: doc.id.toString(),
+                        }}
                         onQuiz={() => startQuizOnDocument(doc.id.toString())}
                         onDelete={() => handleDeleteDocument(doc.id)}
                       />
@@ -721,7 +733,10 @@ export function DocumentDashboard() {
                   {mostQuizzedDocs.map((doc) => (
                     <DocumentCard
                       key={doc.id}
-                      document={doc}
+                      document={{
+                        ...doc,
+                        id: doc.id.toString(),
+                      }}
                       onQuiz={() => startQuizOnDocument(doc.id.toString())}
                       onDelete={() => handleDeleteDocument(doc.id)}
                     />
