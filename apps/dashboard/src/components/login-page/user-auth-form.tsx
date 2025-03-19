@@ -91,7 +91,8 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   return (
     <>
       <div className='flex flex-col space-y-2 text-center'>
-        <h1 className='text-2xl font-semibold tracking-tight'>
+        
+        <h1 className='text-2xl font-semibold tracking-tight mt-8'>
           {' '}
           {isNewUser ? 'Create an account' : 'Sign in to your account'}
         </h1>
@@ -102,7 +103,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         </p>
       </div>
 
-      <div className={cn('grid gap-6', className)} {...props}>
+      <div className={cn('grid gap-6 w-full max-w-md mx-auto', className)} {...props}>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)}>
             <div className='grid gap-4 flex-col'>
