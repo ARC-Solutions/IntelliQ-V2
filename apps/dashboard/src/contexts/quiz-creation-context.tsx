@@ -28,6 +28,7 @@ const QuizDataSchema = z.object({
     invalid_type_error: 'Language must be selected from the options',
   }),
   quizType: z.nativeEnum(QuizType.Enum),
+  documentId: z.string().optional(),
 });
 
 export type QuizData = z.infer<typeof QuizDataSchema>;

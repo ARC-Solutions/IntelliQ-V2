@@ -32,7 +32,7 @@ export const historyQuerySchema = z.object({
   limit: z.coerce.number().min(1).max(100).default(10),
 });
 
-// Base fields that both types share
+// Base fields that all types share
 const baseQuizHistoryItem = z.object({
   id: z.string(),
   title: z.string(),
@@ -50,6 +50,13 @@ const singleplayerQuizHistoryItem = baseQuizHistoryItem.extend({
   type: z.literal(quizType.Enum.singleplayer),
 });
 
+// Document quiz specific fields
+const documentQuizHistoryItem = baseQuizHistoryItem.extend({
+  totalTime: z.string(),
+  passed: z.boolean().optional(),
+  type: z.literal(quizType.Enum.document),
+});
+
 // Multiplayer specific fields (only includes base fields)
 const multiplayerQuizHistoryItem = baseQuizHistoryItem.extend({
   type: z.literal(quizType.Enum.multiplayer),
@@ -58,6 +65,7 @@ const multiplayerQuizHistoryItem = baseQuizHistoryItem.extend({
 // Union type for quiz history items
 const quizHistoryItem = z.discriminatedUnion("type", [
   singleplayerQuizHistoryItem,
+  documentQuizHistoryItem,
   multiplayerQuizHistoryItem,
 ]);
 

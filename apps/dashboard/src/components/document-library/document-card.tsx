@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, Clock, ArrowUpRight, Trash2 } from "lucide-react";
+import {
+  FileText,
+  Clock,
+  ArrowUpRight,
+  Trash2,
+  Loader2,
+  Settings,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -22,6 +29,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useRouter } from "next/navigation";
 
 interface Document {
   id: string;
@@ -30,6 +38,13 @@ interface Document {
   uploadDate: string;
   size: string;
   quizCount: number;
+  processingStatus?:
+    | "failed"
+    | "completed"
+    | "chunking"
+    | "embedding"
+    | "extracting_text"
+    | "pending";
 }
 
 interface DocumentCardProps {
@@ -44,6 +59,7 @@ export function DocumentCard({
   onDelete,
 }: DocumentCardProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const router = useRouter();
 
   // Format the date to be more readable
   const formatDate = (dateString: string) => {
@@ -60,14 +76,76 @@ export function DocumentCard({
     setShowDeleteDialog(false);
   };
 
+  // Determine if the document is ready for quiz
+  const isQuizReady =
+    !document.processingStatus || document.processingStatus === "completed";
+
+  // Add handleCustomizeQuiz function
+  const handleCustomizeQuiz = () => {
+    router.push(`/documents/customize-quiz/${document.id}`);
+  };
+
+  // Get the processing status text and variant for the button
+  const getProcessingButton = () => {
+    if (
+      !document.processingStatus ||
+      document.processingStatus === "completed"
+    ) {
+      return {
+        text: (
+          <>
+            Start Quiz
+            <ArrowUpRight className="ml-2 h-4 w-4" />
+          </>
+        ),
+        variant: "default",
+        disabled: false,
+      };
+    }
+
+    if (document.processingStatus === "failed") {
+      return {
+        text: "Failed",
+        variant: "destructive",
+        disabled: true,
+        className:
+          "bg-destructive text-destructive-foreground dark:bg-red-700 dark:text-white hover:bg-destructive/90 dark:hover:bg-red-800",
+      };
+    }
+
+    const statusText = {
+      pending: "Processing",
+      extracting_text: "Extracting Text",
+      chunking: "Chunking",
+      embedding: "Embedding",
+    };
+
+    return {
+      text: (
+        <>
+          {statusText[document.processingStatus]}
+          <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+        </>
+      ),
+      variant: "outline",
+      disabled: true,
+      className:
+        "bg-muted text-muted-foreground dark:bg-zinc-800 dark:text-zinc-300 cursor-not-allowed",
+    };
+  };
+
+  const buttonConfig = getProcessingButton();
+
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-md">
+    <Card className="overflow-hidden transition-all hover:shadow-md bg-card text-card-foreground">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg font-semibold line-clamp-1">
             {document.title}
           </CardTitle>
-          <Badge variant="outline">{document.type}</Badge>
+          <Badge variant="outline" className="bg-card text-card-foreground">
+            {document.type}
+          </Badge>
         </div>
       </CardHeader>
       <CardContent className="pb-2">
@@ -90,10 +168,34 @@ export function DocumentCard({
         </div>
       </CardContent>
       <CardFooter className="pt-2 flex gap-2">
-        <Button onClick={onQuiz} className="flex-1" variant="default">
-          Start Quiz
-          <ArrowUpRight className="ml-2 h-4 w-4" />
-        </Button>
+        {isQuizReady ? (
+          <div className="flex gap-2 flex-1">
+            <Button
+              onClick={onQuiz}
+              className={`flex-1 ${buttonConfig.className || ""}`}
+              variant={buttonConfig.variant as any}
+              disabled={buttonConfig.disabled}
+            >
+              {buttonConfig.text}
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleCustomizeQuiz}
+              title="Customize Quiz"
+            >
+              <Settings className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : (
+          <Button
+            className={`flex-1 ${buttonConfig.className || ""}`}
+            variant={buttonConfig.variant as any}
+            disabled={buttonConfig.disabled}
+          >
+            {buttonConfig.text}
+          </Button>
+        )}
 
         <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
           <AlertDialogTrigger asChild>
@@ -124,4 +226,3 @@ export function DocumentCard({
     </Card>
   );
 }
-

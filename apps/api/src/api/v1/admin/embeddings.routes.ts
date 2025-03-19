@@ -5,7 +5,8 @@ import { describeRoute } from "hono-openapi";
 import { z } from "zod";
 import { resolver } from "hono-openapi/zod";
 
-const adminEmbeddingsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
+const adminEmbeddingsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
+.post(
   "/",
   bearerAuth({ verifyToken: (token, c) => token === c.env.ADMIN_TOKEN }),
   describeRoute({

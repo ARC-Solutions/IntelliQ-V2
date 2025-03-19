@@ -50,7 +50,7 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           : undefined,
       })),
     ),
-    createCacheMiddleware("quiz-history", MEDIUM_CACHE),  
+    createCacheMiddleware("quiz-history", MEDIUM_CACHE),
     async (c) => {
       const { tags, type, status, page, limit } = c.req.valid("query");
 
@@ -118,6 +118,23 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
               correct: quiz.multiplayerCorrect,
               incorrect: quiz.questionsCount - quiz.multiplayerCorrect!,
               date: format(quiz.date, "dd/MM/yyyy"),
+              type: quiz.type,
+            };
+          }
+
+          if (quiz.type === quizType.Enum.document) {
+            return {
+              id: quiz.id,
+              title: quiz.title,
+              score: quiz.score! * 10,
+              totalTime: `${prettyMilliseconds(quiz.totalTime! * 1000, {
+                colonNotation: true,
+                secondsDecimalDigits: 0,
+              })} min`,
+              date: format(quiz.date, "dd/MM/yyyy"),
+              correct: quiz.correct,
+              incorrect: quiz.incorrect,
+              passed: quiz.passed,
               type: quiz.type,
             };
           }
@@ -243,6 +260,24 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
                 (quiz.questions_count as number) -
                 (quiz.multiplayerCorrect as number),
               date: format(new Date(quiz.created_at as string), "dd/MM/yyyy"),
+              type: quiz.type,
+            };
+          } else if (quiz.type === quizType.Enum.document) {
+            return {
+              id: quiz.id,
+              title: quiz.title,
+              score: (quiz.user_score as number) * 10,
+              totalTime: `${prettyMilliseconds(
+                ((quiz.total_time_taken || 0) as number) * 1000,
+                {
+                  colonNotation: true,
+                  secondsDecimalDigits: 0,
+                },
+              )} min`,
+              date: format(new Date(quiz.created_at as string), "dd/MM/yyyy"),
+              correct: quiz.correct_answers_count,
+              incorrect: quiz.incorrect,
+              passed: quiz.passed,
               type: quiz.type,
             };
           }
