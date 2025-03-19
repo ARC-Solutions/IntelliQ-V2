@@ -144,7 +144,7 @@ export function DocumentDashboard() {
       formData.append("file", files[0]);
 
       const response = await fetch(
-        "http://localhost:8787/api/v1/documents/upload",
+        "/api/v1/documents/upload",
         {
           method: "POST",
           body: formData,
