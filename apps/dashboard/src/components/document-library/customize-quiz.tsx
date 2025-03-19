@@ -2,26 +2,27 @@
 
 import { Button } from "@/components/ui/button";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
-import { SupportedLanguages, useQuiz } from "@/contexts/quiz-context";
+import { useQuiz } from "@/contexts/quiz-context";
+import type { SupportedLanguages } from "@/contexts/quiz-context";
 import { languages, useQuizCreation } from "@/contexts/quiz-creation-context";
 import { useQuizLogic } from "@/contexts/quiz-logic-context";
 import { createApiClient } from "@/utils/api-client";
@@ -31,6 +32,19 @@ import { ArrowLeft, BookOpen } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Loading from "../../../public/Loading.json";
+
+interface Document {
+  id: string;
+  title: string;
+  description?: string;
+  processingStatus:
+    | "pending"
+    | "extracting_text"
+    | "chunking"
+    | "embedding"
+    | "completed"
+    | "failed";
+}
 
 export function CustomizeQuiz({ documentId }: { documentId: string }) {
   const router = useRouter();
@@ -47,7 +61,7 @@ export function CustomizeQuiz({ documentId }: { documentId: string }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [document, setDocument] = useState<any>(null);
+  const [document, setDocument] = useState<Document | null>(null);
   const [quizSettings, setQuizSettings] = useState({
     questionCount: 5,
     passingScore: 70,
@@ -60,13 +74,15 @@ export function CustomizeQuiz({ documentId }: { documentId: string }) {
       try {
         setIsLoading(true);
         const client = createApiClient();
-        const response = await client.api.v1.documents[documentId].$get();
+        const response = await client.api.v1.documents[":id"].$get({
+          param: { id: documentId.toString() },
+        });
 
         if (!response.ok) {
           throw new Error("Document not found");
         }
 
-        const doc = await response.json();
+        const doc = (await response.json()) as Document;
         if (doc.processingStatus !== "completed") {
           toast({
             title: "Document not ready",
@@ -117,8 +133,8 @@ export function CustomizeQuiz({ documentId }: { documentId: string }) {
         passingScore: quizSettings.passingScore,
         quizType: "document",
         questions: [],
-        topic: document.title || "Document Quiz",
-        description: document.description || "Quiz generated from document",
+        topic: document?.title || "Document Quiz",
+        description: document?.description || "Quiz generated from document",
         tags: ["document"],
       });
 
