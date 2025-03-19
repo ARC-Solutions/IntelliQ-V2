@@ -1,11 +1,11 @@
 "use client";
+import { useQuiz } from "@/contexts/quiz-context";
 import { cn } from "@/lib/utils";
-import React, { useEffect } from "react";
-import { BentoGridItem } from "../ui/bento-grid";
-import { UserRound, UsersRound, Paperclip, Dices } from "lucide-react";
+import { Dices, Paperclip, UserRound, UsersRound } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { useQuiz } from "@/contexts/quiz-context";
+import { useEffect } from "react";
+import { BentoGridItem } from "../ui/bento-grid";
 
 export function DashboardFeatures() {
   const {

@@ -259,3 +259,14 @@ export type Quiz = {
     }[];
   };
 };
+
+// Schema for document quiz submission request
+export const documentQuizSubmissionRequestSchema = z.object({
+  documentId: z.coerce.number(),
+  quizTitle: z.string(),
+  language: z.string(),
+  passingScore: z.number(),
+  userScore: z.number(),
+  questions: z.array(singlePlayerQuizSubmissionQuestionSchema),
+  timeTaken: z.number(),
+});

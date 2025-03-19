@@ -1,26 +1,26 @@
-'use client';
+"use client";
 
-import type React from 'react';
-import { createContext, useContext, useReducer, useState } from 'react';
-import { toast } from 'react-toastify';
-import { quizReducer } from '@/utils/reducers/quiz-reducer';
-import type { UserAnswer } from '@/contexts/quiz-logic-context';
-import type { QuizData } from './quiz-creation-context';
-import { createApiClient } from '@/utils/api-client';
+import type React from "react";
+import { createContext, useContext, useReducer, useState } from "react";
+import { toast } from "react-toastify";
+import { quizReducer } from "@/utils/reducers/quiz-reducer";
+import type { UserAnswer } from "@/contexts/quiz-logic-context";
+import type { QuizData } from "./quiz-creation-context";
+import { createApiClient } from "@/utils/api-client";
 
 type Props = {
   children: React.ReactNode;
 };
 export enum SupportedLanguages {
-  English = 'en',
-  German = 'de',
-  French = 'fr',
-  Spanish = 'es',
-  Italian = 'it',
-  Romanian = 'ro',
-  Serbian = 'sr',
-  Tagalog = 'tl',
-  Polish = 'pl',
+  English = "en",
+  German = "de",
+  French = "fr",
+  Spanish = "es",
+  Italian = "it",
+  Romanian = "ro",
+  Serbian = "sr",
+  Tagalog = "tl",
+  Polish = "pl",
 }
 export interface Quiz {
   correctAnswer?: string;
@@ -39,6 +39,9 @@ interface CurrentQuiz {
   quiz: Quiz[];
   topic: string;
   showCorrectAnswers: boolean;
+  documentId?: string;
+  language?: SupportedLanguages;
+  passingScore?: number;
 }
 
 export interface QuizHistory {
@@ -86,19 +89,20 @@ export interface QuizHistories {
   tags: string[];
 }
 export type QuizAction =
-  | { type: 'FETCH_QUIZ_REQUEST' }
-  | { type: 'FETCH_QUIZ_ERROR' }
-  | { type: 'RESET_QUIZ' }
-  | { type: 'RESET_ALL' }
-  | { type: 'FETCH_QUIZ_SUCCESS'; payload: CurrentQuiz }
-  | { type: 'SUBMIT_QUIZ_SUCESS'; payload: QuizHistory }
-  | { type: 'STORE_QUIZZES'; payload: QuizHistories[] }
-  | { type: 'FETCH_MORE_QUIZZES'; payload: QuizHistories[] }
-  | { type: 'FETCH_LEADERBOARD_SUCCESS'; payload: Leaderboard[] };
+  | { type: "FETCH_QUIZ_REQUEST" }
+  | { type: "FETCH_QUIZ_ERROR" }
+  | { type: "RESET_QUIZ" }
+  | { type: "RESET_ALL" }
+  | { type: "FETCH_QUIZ_SUCCESS"; payload: CurrentQuiz }
+  | { type: "SUBMIT_QUIZ_SUCESS"; payload: QuizHistory }
+  | { type: "STORE_QUIZZES"; payload: QuizHistories[] }
+  | { type: "FETCH_MORE_QUIZZES"; payload: QuizHistories[] }
+  | { type: "FETCH_LEADERBOARD_SUCCESS"; payload: Leaderboard[] };
 
 export interface QuizContextValues extends QuizContextValue {
   dispatch: React.Dispatch<QuizAction>;
   fetchQuestions: (userQuizData: QuizData, roomId?: string) => void;
+  fetchDocumentQuestions: (userQuizData: QuizData) => void;
   submitSinglePlayerQuiz: (
     userAnswer: UserAnswer[],
     timeTaken: number,
@@ -110,10 +114,21 @@ export interface QuizContextValues extends QuizContextValue {
     passingScore: number,
     tags: string[],
   ) => void;
+  submitDocumentQuiz: (
+    userAnswer: UserAnswer[],
+    timeTaken: number,
+    currentQuiz: CurrentQuiz,
+    userScore: number,
+    documentId: string,
+    language: SupportedLanguages,
+    passingScore: number,
+  ) => void;
   getMultiplayerQuizForPlayers: (roomId: string, quiz: CurrentQuiz) => void;
   isMultiplayerMode: boolean;
   setIsMultiplayerMode: (mode: boolean) => void;
   getLeaderboard: (roomId: string) => void;
+  isDocumentQuiz: boolean;
+  setIsDocumentQuiz: (value: boolean) => void;
 }
 const initialState: QuizContextValue = {
   isLoading: false,
@@ -618,9 +633,10 @@ const QuizContext = createContext<QuizContextValues | null>(null);
 export const QuizProvider = ({ children }: Props) => {
   const [state, dispatch] = useReducer(quizReducer, initialState);
   const [isMultiplayerMode, setIsMultiplayerMode] = useState(false);
+  const [isDocumentQuiz, setIsDocumentQuiz] = useState(false);
   const fetchQuestions = async (userQuizData: QuizData, roomId?: string) => {
     try {
-      console.log('generating...');
+      console.log("generating...");
 
       const {
         topic: interests,
@@ -630,10 +646,10 @@ export const QuizProvider = ({ children }: Props) => {
       } = userQuizData;
 
       const client = createApiClient();
-      dispatch({ type: 'FETCH_QUIZ_REQUEST' });
+      dispatch({ type: "FETCH_QUIZ_REQUEST" });
 
       const query =
-        quizType === 'multiplayer'
+        quizType === "multiplayer"
           ? {
               quizTopic: interests,
               numberOfQuestions: numberOfQuestions.toString(),
@@ -678,16 +694,78 @@ export const QuizProvider = ({ children }: Props) => {
         showCorrectAnswers: userQuizData.showCorrectAnswers,
       };
 
-      if (quizType === 'multiplayer' && roomId) {
-        const multiplayerQuiz = await submitMultiplayerQuiz(roomId, quiz, interests, language);
-        if (multiplayerQuiz && 'questions' in multiplayerQuiz) {
+      if (quizType === "multiplayer" && roomId) {
+        const multiplayerQuiz = await submitMultiplayerQuiz(
+          roomId,
+          quiz,
+          interests,
+          language,
+        );
+        if (multiplayerQuiz && "questions" in multiplayerQuiz) {
           quiz.quiz = multiplayerQuiz.questions as Quiz[];
           quiz.quizId = multiplayerQuiz.quizId;
         }
       }
-      dispatch({ type: 'FETCH_QUIZ_SUCCESS', payload: quiz });
+      dispatch({ type: "FETCH_QUIZ_SUCCESS", payload: quiz });
     } catch (error: any) {
-      dispatch({ type: 'FETCH_QUIZ_ERROR' });
+      dispatch({ type: "FETCH_QUIZ_ERROR" });
+      toast.error(error);
+    }
+  };
+  const fetchDocumentQuestions = async (userQuizData: QuizData) => {
+    try {
+      setIsDocumentQuiz(true);
+
+      const {
+        documentId,
+        number: numberOfQuestions,
+        quizLanguage: language,
+        passingScore,
+        quizType,
+      } = userQuizData;
+
+      const client = createApiClient();
+      dispatch({ type: "FETCH_QUIZ_REQUEST" });
+      const response = await client.api.v1.quizzes.documents.$get({
+        query: {
+          documentId: documentId!,
+          numberOfQuestions: numberOfQuestions.toString(),
+          language,
+          quizType,
+        },
+      });
+
+      interface QuizApiResponse {
+        quiz: {
+          quizTitle: string;
+          questions: Quiz[];
+        };
+      }
+
+      const data = (await response.json()) as QuizApiResponse;
+      const { quizTitle: topic, questions } = data.quiz;
+
+      const userQuizQuestions = userQuizData.questions.map((question) => {
+        return {
+          correctAnswer: question.answer!,
+          options: question.options!,
+          questionTitle: question.text,
+          text: question.text,
+        };
+      });
+      questions.push(...userQuizQuestions);
+      const quiz: CurrentQuiz = {
+        quiz: questions,
+        topic,
+        showCorrectAnswers: userQuizData.showCorrectAnswers,
+        documentId,
+        language: language,
+        passingScore: passingScore,
+      };
+
+      dispatch({ type: "FETCH_QUIZ_SUCCESS", payload: quiz });
+    } catch (error: any) {
+      dispatch({ type: "FETCH_QUIZ_ERROR" });
       toast.error(error);
     }
   };
@@ -710,12 +788,14 @@ export const QuizProvider = ({ children }: Props) => {
         const { correctAnswer, question, userAnswer } = ans;
         const options = currentQuiz.quiz[i].options.map((opt) => opt.slice(3));
         if (!userAnswer) {
-          throw new Error('Missing user answer');
+          throw new Error("Missing user answer");
         }
         return { text: question, correctAnswer, userAnswer, options };
       });
 
-      const response = await client.api.v1['quiz-submissions'].singleplayer.submit.$post({
+      const response = await client.api.v1[
+        "quiz-submissions"
+      ].singleplayer.submit.$post({
         json: {
           timeTaken,
           quizTitle,
@@ -730,32 +810,35 @@ export const QuizProvider = ({ children }: Props) => {
       });
       const data = (await response.json()) as QuizHistory;
 
-      dispatch({ type: 'SUBMIT_QUIZ_SUCESS', payload: data });
+      dispatch({ type: "SUBMIT_QUIZ_SUCESS", payload: data });
     } catch (error: any) {
       toast(error.message);
       console.log(error);
     }
   };
 
-  const getMultiplayerQuizForPlayers = async (roomId: string, quiz: CurrentQuiz) => {
+  const getMultiplayerQuizForPlayers = async (
+    roomId: string,
+    quiz: CurrentQuiz,
+  ) => {
     try {
       const client = createApiClient();
 
-      const response = await client.api.v1['quiz-submissions'].multiplayer[
-        ':roomId'
+      const response = await client.api.v1["quiz-submissions"].multiplayer[
+        ":roomId"
       ].questions.$get({
         param: { roomId },
       });
       const data = await response.json();
 
-      if ('error' in data) {
+      if ("error" in data) {
         throw new Error(data.error);
       }
 
       const currentQuiz = { ...quiz, quiz: data.questions } as CurrentQuiz;
-      console.log('player', currentQuiz);
+      console.log("player", currentQuiz);
 
-      dispatch({ type: 'FETCH_QUIZ_SUCCESS', payload: currentQuiz });
+      dispatch({ type: "FETCH_QUIZ_SUCCESS", payload: currentQuiz });
     } catch (error: any) {
       toast(error.message);
       console.log(error);
@@ -773,16 +856,23 @@ export const QuizProvider = ({ children }: Props) => {
       const { quiz: questions, topic: quizTitle } = currentQuiz;
       const formattedQuestions = questions.map((q) => ({
         ...q,
-        correctAnswer: q.correctAnswer || '', // Provide default empty string
+        correctAnswer: q.correctAnswer || "", // Provide default empty string
       }));
 
-      const response = await client.api.v1['quiz-submissions'].multiplayer[':roomId'].quiz.$post({
+      const response = await client.api.v1["quiz-submissions"].multiplayer[
+        ":roomId"
+      ].quiz.$post({
         param: { roomId },
-        json: { language, questions: formattedQuestions, quizTitle, quizTopics: [quizTopics] },
+        json: {
+          language,
+          questions: formattedQuestions,
+          quizTitle,
+          quizTopics: [quizTopics],
+        },
       });
 
       const data = await response.json();
-      console.log('succesfull', data);
+      console.log("succesfull", data);
 
       return data;
     } catch (error: any) {
@@ -794,30 +884,84 @@ export const QuizProvider = ({ children }: Props) => {
   const getLeaderboard = async (roomId: string) => {
     try {
       const client = createApiClient();
-      const response = await client.api.v1['quiz-submissions'].multiplayer[
-        ':roomId'
+      const response = await client.api.v1["quiz-submissions"].multiplayer[
+        ":roomId"
       ].leaderboard.$get({
         param: { roomId },
       });
 
       const data = await response.json();
-      dispatch({ type: 'FETCH_LEADERBOARD_SUCCESS', payload: data.leaderboard });
+      dispatch({
+        type: "FETCH_LEADERBOARD_SUCCESS",
+        payload: data.leaderboard,
+      });
     } catch (error: any) {
       toast(error.message);
       console.log(error);
     }
   };
+
+  const submitDocumentQuiz = async (
+    userAnswer: UserAnswer[],
+    timeTaken: number,
+    currentQuiz: CurrentQuiz,
+    userScore: number,
+    documentId: string,
+    language: SupportedLanguages,
+    passingScore: number,
+  ) => {
+    try {
+      const client = createApiClient();
+
+      const quizTitle = currentQuiz.topic;
+      const questions = userAnswer.map((ans, i) => {
+        const { correctAnswer, question, userAnswer } = ans;
+        const options = currentQuiz.quiz[i].options.map((opt) => opt.slice(3));
+        if (!userAnswer) {
+          throw new Error("Missing user answer");
+        }
+        return { text: question, correctAnswer, userAnswer, options };
+      });
+
+      const quizLanguage = language || (currentQuiz as any).language || "en";
+
+      const response = await client.api.v1[
+        "quiz-submissions"
+      ].singleplayer.document.submit.$post({
+        json: {
+          documentId: Number.parseInt(documentId),
+          quizTitle,
+          language: quizLanguage,
+          passingScore,
+          userScore,
+          timeTaken,
+          questions,
+        },
+      });
+
+      const data = (await response.json()) as QuizHistory;
+      dispatch({ type: "SUBMIT_QUIZ_SUCESS", payload: data });
+    } catch (error: any) {
+      toast(error.message);
+      console.log(error);
+    }
+  };
+
   return (
     <QuizContext.Provider
       value={{
         ...state,
         dispatch,
         fetchQuestions,
+        fetchDocumentQuestions,
         submitSinglePlayerQuiz,
+        submitDocumentQuiz,
         getMultiplayerQuizForPlayers,
         setIsMultiplayerMode,
         isMultiplayerMode,
         getLeaderboard,
+        isDocumentQuiz,
+        setIsDocumentQuiz,
       }}
     >
       {children}
@@ -828,7 +972,7 @@ export const QuizProvider = ({ children }: Props) => {
 export const useQuiz = (): QuizContextValues => {
   const quizContext = useContext(QuizContext);
   if (quizContext === undefined) {
-    throw new Error('useQuiz must be used within an QuizProvider');
+    throw new Error("useQuiz must be used within an QuizProvider");
   }
   return quizContext as QuizContextValues;
 };
