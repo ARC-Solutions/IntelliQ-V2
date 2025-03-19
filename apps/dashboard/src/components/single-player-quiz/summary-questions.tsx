@@ -14,7 +14,7 @@ const QuestionsList = ({ questions }: { questions: HistoryQuestions[] }) => {
           <p className='mt-2 text-base'>{question.text}</p>
           <div className='mt-4'>
             <p className='text-base flex gap-2'>
-              <span className='font-semibold'>Your Answer: </span>
+              <span className='font-semibold hidden sm:block'>Your Answer: </span>
               <span
                 className={`${
                   question.userAnswer === question.correctAnswer ? 'text-green-500' : 'text-red-500'
@@ -30,6 +30,7 @@ const QuestionsList = ({ questions }: { questions: HistoryQuestions[] }) => {
                 )}
               </span>
             </p>
+            <br />
             {question.userAnswer !== question.correctAnswer && (
               <p className='text-base mt-1'>
                 <span className='font-semibold'>Correct Answer: </span>
