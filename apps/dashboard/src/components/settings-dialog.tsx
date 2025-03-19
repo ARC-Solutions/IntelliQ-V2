@@ -233,8 +233,8 @@ export function SettingsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
+<DialogContent className="sm:max-w-[500px] sm:h-auto h-[650px] overflow-auto">
+<DialogHeader>
           <DialogTitle>Settings</DialogTitle>
           <DialogDescription>
             Customize your profile and preferences.
@@ -413,11 +413,12 @@ export function SettingsDialog({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              className="my-2"
             >
               Cancel
             </Button>
           </DialogClose>
-          <Button onClick={form.handleSubmit(handleSave)}>Save changes</Button>
+          <Button onClick={form.handleSubmit(handleSave)} className="my-2">Save changes</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
