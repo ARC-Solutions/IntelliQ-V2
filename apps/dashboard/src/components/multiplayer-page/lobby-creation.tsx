@@ -81,9 +81,9 @@ export default function LobbyScreen() {
     router.push(`/multiplayer/${roomCode}`);
   };
   return (
-    <div className='min-h-screen w-full bg-black text-white relative overflow-hidden flex flex-col items-center justify-center'>
+    <div className="min-h-screen w-full bg-black text-white relative overflow-hidden flex flex-col items-center justify-between sm:justify-center">
       {/* Content */}
-      <div className='relative z-10 w-full px-4 py-8 flex flex-col items-center'>
+      <div className='relative z-10 w-full px-4 py-4 sm:py-8 flex flex-col items-center'>
         {/* Logo */}
         <div className='mb-10 justify-self-start'>
           <Image src='/logo-dark.svg' alt='IntelliQ' width={250} height={250} />
@@ -91,10 +91,10 @@ export default function LobbyScreen() {
 
         <div className='w-full max-w-6xl grid md:grid-cols-2 gap-10'>
           {/* Left Side - Join with Code */}
-          <div className='space-y-6 text-center'>
-            <h1 className='text-3xl text-white'>Join with invite code</h1>
-            <div className='flex justify-center'>
-              <Mail className='w-12 h-12 text-purple-300' />
+          <div className="space-y-4 sm:space-y-6 text-center">
+            <h1 className="text-2xl sm:text-3xl text-white">Join with invite code</h1>
+            <div className="flex justify-center">
+              <Mail className="w-12 h-12 text-purple-300" />
             </div>
 
             <div className='flex justify-center'>
@@ -126,7 +126,7 @@ export default function LobbyScreen() {
             </div>
             <Button
               onClick={joinLobby}
-              className='w-full max-w-xs bg-purple-300 text-black hover:bg-purple-400'
+              className='w-[250px] sm:w-full max-w-xs bg-purple-300 text-black hover:bg-purple-400'
             >
               Join
             </Button>
@@ -134,15 +134,12 @@ export default function LobbyScreen() {
           </div>
 
           {/* Right Side - Create Private Lobby */}
-          <div className='flex flex-col items-center justify-between space-y-6 text-center h-full'>
-            <h1 className='text-3xl'>Create a Lobby</h1>
-            <div className='flex-grow flex items-center justify-center'>
-              <Plus className='w-16 h-16 text-purple-300' />
+          <div className="flex flex-col items-center justify-between space-y-2 sm:space-y-6 text-center h-full">
+            <h1 className="text-2xl sm:text-3xl">Create a Lobby</h1>
+            <div className="flex flex-grow items-center justify-center">
+              <Plus className="w-14 h-14 sm:w-16 sm:h-16 text-purple-300" />
             </div>
-            <Button
-              onClick={createLobby}
-              className='w-full max-w-xs bg-purple-300 text-black hover:bg-purple-400'
-            >
+            <Button onClick={createLobby} className="w-[250px] sm:w-full max-w-xs bg-purple-300 text-black hover:bg-purple-400">
               Create
             </Button>
             <p className='text-gray-400 text-sm'>Create a lobby and invite your friends</p>
@@ -150,7 +147,7 @@ export default function LobbyScreen() {
         </div>
 
         {/* Back Link */}
-        <div className='mt-16'>
+        <div className='mt-4 sm:mt-16'>
           <Link href='/' className='text-purple-300 hover:text-purple-400 text-sm'>
             ← Back to start
           </Link>
