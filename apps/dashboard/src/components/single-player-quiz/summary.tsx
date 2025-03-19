@@ -1,4 +1,3 @@
-
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { useQuiz } from '@/contexts/quiz-context';
@@ -107,11 +106,11 @@ const Summary = () => {
         </h1>
       </header>
 
-      <Card className='w-full border-b-[0.5px] border-white border-opacity-[.15] p-4'>
+      <Card className='w-full border-b border-white border-opacity-15 p-4 rounded-lg shadow-lg'>
         <CardHeader>
-          <div className='flex items-center justify-between'>
-            <div className='flex items-center justify-center gap-2'>
-              <Award size={35} className='text-primary' />
+          <div className='flex flex-col md:flex-row items-center justify-between'>
+            <div className='flex items-center justify-center gap-4'>
+              <Award size={40} className='text-primary' />
               <div className='flex flex-col justify-center text-5xl mb-2'>
                 <span className='text-xl'>Your Score</span>
                 <span className='text-primary text-4xl font-bold'>
@@ -119,7 +118,7 @@ const Summary = () => {
                 </span>
               </div>
             </div>
-            <div className='flex items-center justify-center gap-6'>
+            <div className='flex flex-col md:flex-row items-start justify-center gap-6 mt-4 md:mt-0'>
               <div className='flex items-center justify-center gap-2'>
                 <Clock className='text-primary' />
                 <div className='flex flex-col justify-center'>
@@ -155,7 +154,7 @@ const Summary = () => {
               </h4>
             </>
           )}
-          <span className='text-lg text-white'>{descriptionText}</span>
+          <span className='text-lg text-white text-center'>{descriptionText}</span>
         </CardDescription>
       </Card>
 
