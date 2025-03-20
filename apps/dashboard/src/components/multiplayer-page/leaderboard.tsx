@@ -79,7 +79,7 @@ const QuizLeaderboard = () => {
   }, [leaderboard, soundEnabled, router]);
 
   return (
-    <div className='flex flex-col items-center min-h-screen bg-black text-purple-200 p-3 sm:p-4 md:p-6'>
+    <div className='flex flex-col items-center min-h-screen text-purple-200 p-3 sm:p-4 md:p-6'>
       {particlesEnabled && <ReactConfetti recycle={false} numberOfPieces={200} gravity={0.2} />}
       <h1 className='text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2 text-purple-300 text-center'>
         Quiz Leaderboard

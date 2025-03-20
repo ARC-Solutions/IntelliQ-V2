@@ -136,7 +136,7 @@ const Quiz = () => {
   }
 
   return (
-    <div className="mx-auto flex w-[400] flex-col items-center justify-center p-4 text-white sm:w-[800px] ">
+    <div className="mx-auto flex w-[400] flex-col items-center justify-center p-4 dark:text-white sm:w-[800px] ">
       <header className="mb-4 text-center text-2xl font-bold sm:text-4xl">
         {currentQuiz.quiz[questionNumber].questionTitle}
       </header>
