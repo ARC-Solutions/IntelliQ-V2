@@ -1,29 +1,32 @@
-import { eq, and } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
+import { HTTPException } from "hono/http-exception";
+import prettyMilliseconds from "pretty-ms";
 import { z } from "zod";
 import {
   questions as questionsTable,
   quizzes,
   userResponses,
+  documents,
 } from "../../../drizzle/schema";
 import { createDb } from "../../db/index";
+import { incrementUserCacheVersion } from "../../utils/kv-user-version";
 import { getSupabase } from "./middleware/auth.middleware";
+import {
+  MEDIUM_CACHE,
+  createCacheMiddleware,
+} from "./middleware/cache.middleware";
 import { quizType } from "./schemas/common.schemas";
 import {
   filterQuerySchema,
   filteredQuizResponseSchema,
   singlePlayerQuizSubmissionRequestSchema,
   singlePlayerQuizSubmissionResponseSchema,
+  documentQuizSubmissionRequestSchema,
 } from "./schemas/quiz.schemas";
-import {
-  MEDIUM_CACHE,
-  createCacheMiddleware,
-} from "./middleware/cache.middleware";
-import { incrementUserCacheVersion } from "../../utils/kv-user-version";
-import prettyMilliseconds from "pretty-ms";
-import { HTTPException } from "hono/http-exception";
+import { queueEmbeddings } from "./services/queue-embeddings";
 import { queueTagAnalysis } from "./services/queue-tag-analysis";
 
 const singleplayerQuizSubmissionsRoutes = new Hono<{
@@ -178,7 +181,7 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
             questionsCount: questions.length,
             totalTimeTaken: timeTaken,
             userScore,
-            passed: userScore >= passingScore,
+            passed: userScore * 10 >= passingScore,
           })
           .returning();
 
@@ -217,6 +220,129 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
           .where(eq(quizzes.id, createdQuiz.id));
 
         await queueTagAnalysis(c, createdQuiz.id, quizType.enum.singleplayer);
+        await queueEmbeddings(c, createdQuiz.id);
+
+        return {
+          quizId: createdQuiz.id,
+          quizTitle: quizTitle,
+          quizScore: createdQuiz.userScore,
+          totalTime: createdQuiz.totalTimeTaken,
+          correctAnswersCount,
+          totalQuestions: createdQuiz.questionsCount,
+          passingScore: createdQuiz.passingScore,
+          questions: questions.map((question) => ({
+            text: question.text,
+            correctAnswer: question.correctAnswer,
+            userAnswer: question.userAnswer,
+          })),
+        };
+      });
+
+      await incrementUserCacheVersion(c.env.IntelliQ_CACHE_VERSION, user!.id);
+
+      return c.json(result, 201);
+    },
+  )
+  .post(
+    "/document/submit",
+    describeRoute({
+      tags: ["Quiz Submissions Singleplayer"],
+      summary: "Submit a document-based quiz",
+      description: "Submit a quiz generated from a document",
+      validateResponse: true,
+      responses: {
+        201: {
+          description: "Document quiz submission successful",
+          content: {
+            "application/json": {
+              schema: resolver(singlePlayerQuizSubmissionResponseSchema),
+            },
+          },
+        },
+      },
+    }),
+    zValidator("json", documentQuizSubmissionRequestSchema),
+    async (c) => {
+      const {
+        documentId,
+        quizTitle,
+        language,
+        passingScore,
+        userScore,
+        questions,
+        timeTaken,
+      } = c.req.valid("json");
+
+      const supabase = getSupabase(c);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      const db = await createDb(c);
+
+      const result = await db.transaction(async (tx) => {
+        const [createdQuiz] = await tx
+          .insert(quizzes)
+          .values({
+            userId: user!.id,
+            title: quizTitle,
+            documentId,
+            passingScore,
+            language,
+            type: quizType.enum.document,
+            questionsCount: questions.length,
+            totalTimeTaken: timeTaken,
+            userScore,
+            passed: userScore * 10 >= passingScore,
+          })
+          .returning();
+
+        const correctAnswersCount = questions.reduce(
+          (count, question) =>
+            count + (question.userAnswer === question.correctAnswer ? 1 : 0),
+          0,
+        );
+
+        for (const question of questions) {
+          const [createdQuestion] = await tx
+            .insert(questionsTable)
+            .values({
+              quizId: createdQuiz.id,
+              text: question.text,
+              options: question.options,
+              correctAnswer: question.correctAnswer,
+            })
+            .returning();
+
+          await tx.insert(userResponses).values({
+            userId: user!.id,
+            quizId: createdQuiz.id,
+            questionId: createdQuestion.id,
+            answer: question.userAnswer,
+            isCorrect: question.userAnswer === question.correctAnswer,
+          });
+        }
+
+        await tx
+          .update(quizzes)
+          .set({
+            correctAnswersCount,
+            userScore,
+          })
+          .where(eq(quizzes.id, createdQuiz.id));
+
+        // Increment the document's quizCount
+        await tx
+          .update(documents)
+          .set({
+            quizCount: sql`${documents.quizCount} + 1`,
+          })
+          .where(eq(documents.id, documentId));
+
+        // Analysis for document quizzes too
+        await queueTagAnalysis(c, createdQuiz.id, quizType.enum.document);
+        await queueEmbeddings(c, createdQuiz.id);
+
         return {
           quizId: createdQuiz.id,
           quizTitle: quizTitle,

@@ -1,27 +1,46 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useQuiz } from "@/contexts/quiz-context";
+import type { HistoryQuestions } from "@/contexts/quiz-context";
 import { redirect } from "next/navigation";
 import { Card, CardHeader, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatTime } from "@/lib/format-time";
 import QuestionsList from "./summary-questions";
 import Image from "next/image";
-import { Award, Clock } from "lucide-react";
+import { Award, Clock, RefreshCw, CheckCircle2 } from "lucide-react";
 import { Progress } from "../ui/progress";
+import { useQuizCreation } from "@/contexts/quiz-creation-context";
+import type { QuizData } from "@/contexts/quiz-creation-context";
+import { QuizType } from "@intelliq/api";
+import Lottie from "lottie-react";
+import Loading from "../../../public/Loading.json";
+import { useLocalStorage } from "usehooks-ts";
+import ReactConfetti from "react-confetti";
+import { useRouter } from "next/navigation";
 
 const Summary = () => {
-  const { dispatch, summaryQuiz } = useQuiz();
-  const [isMounted, setIsMounted] = useState(false); // State to track if component has mounted
-  const successAudioRef = useRef<HTMLAudioElement | null>(null);
+  const { dispatch, summaryQuiz, fetchQuestions, isLoading, currentQuiz } =
+    useQuiz();
+  const { formValues } = useQuizCreation();
+  const [isMounted, setIsMounted] = useState<boolean>(false);
+  const [replay, setReplay] = useState<boolean>(false);
+  const [soundEnabled] = useLocalStorage<boolean>("soundEnabled", true);
+  const [particlesEnabled] = useLocalStorage<boolean>("particlesEnabled", true);
+  const router = useRouter();
+
+  const successSound =
+    typeof window !== "undefined" ? new Audio("/success.mp3") : null;
 
   useEffect(() => {
     setIsMounted(true);
-    dispatch({ type: "RESET_QUIZ" });
-
-    // Create audio element when component mounts
-    successAudioRef.current = new Audio("/success.mp3");
+    // Only reset quiz if summary data exists to prevent redirect loops
+    if (summaryQuiz) {
+      dispatch({ type: "RESET_QUIZ" });
+    }
+    setReplay(false);
   }, []);
 
   useEffect(() => {
@@ -31,14 +50,32 @@ const Summary = () => {
       summaryQuiz &&
       (correctAnswersCount / totalQuestions) * 100 >= summaryQuiz.passingScore
     ) {
-      successAudioRef.current?.play().catch((err) => {
-        console.error("Error playing success sound:", err);
-      });
+      if (soundEnabled) {
+        successSound!.play().catch((err) => {
+          console.error("Error playing success sound:", err);
+        });
+      }
     }
   }, [isMounted]);
 
+  // Move redirect to useEffect to prevent render-time redirects
+  useEffect(() => {
+    // Check if component is mounted before redirecting
+    if (isMounted && !summaryQuiz) {
+      router.push("/", { scroll: false }); // Add scroll: false to prevent animation
+    }
+  }, [isMounted, summaryQuiz, router]);
+
+  if (isLoading) {
+    return (
+      <div className="absolute left-1/2 top-1/2 flex w-[40] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[30vw]">
+        <Lottie animationData={Loading} />
+      </div>
+    );
+  }
+
   if (!summaryQuiz) {
-    redirect("/");
+    return null; // Return null instead of showing loading animation
   }
 
   const correctAnswersCount = summaryQuiz.correctAnswersCount;
@@ -58,16 +95,19 @@ const Summary = () => {
   }
 
   // Filter questions
-  const allQuestions = summaryQuiz.questions;
+  const allQuestions = summaryQuiz?.questions || [];
   const correctQuestions = allQuestions.filter(
-    (q) => q.userAnswer === q.correctAnswer,
+    (q: HistoryQuestions) => q.userAnswer === q.correctAnswer,
   );
   const incorrectQuestions = allQuestions.filter(
-    (q) => q.userAnswer !== q.correctAnswer,
+    (q: HistoryQuestions) => q.userAnswer !== q.correctAnswer,
   );
 
   return (
     <div className="mx-auto flex w-full flex-col px-6 py-3 text-white sm:w-10/12">
+      {particlesEnabled && (
+        <ReactConfetti recycle={false} numberOfPieces={200} gravity={0.2} />
+      )}
       <header className="mb-14 flex w-full flex-col items-center justify-center">
         <Image src="/logo-dark.svg" alt="IntelliQ" width={250} height={250} />
         <h1 className="text-2xl font-bold sm:text-4xl text-primary">
@@ -98,11 +138,11 @@ const Summary = () => {
                 </div>
               </div>
               <div className="flex items-center justify-center gap-2">
-                <Clock className="text-primary" />
+                <CheckCircle2 className="text-primary" />
                 <div className="flex flex-col justify-center">
                   <span className="text-lg">Correct Answers</span>
                   <span className="text-primary text-2xl font-semibold">
-                    {correctAnswersCount}/{totalQuestions}
+                    {summaryQuiz.quizScore}/{totalQuestions}
                   </span>
                 </div>
               </div>
@@ -157,6 +197,31 @@ const Summary = () => {
               <QuestionsList questions={incorrectQuestions} />
             </ScrollArea>
           </TabsContent>
+          {formValues.topic && (
+            <div className="flex justify-center mt-2">
+              <Button
+                onClick={() => {
+                  const quizCreation = {
+                    topic: formValues.topic,
+                    number: formValues.number,
+                    description: formValues.description,
+                    tags: formValues.tags,
+                    showCorrectAnswers: true,
+                    passingScore: formValues.passingScore,
+                    questions: formValues.questions,
+                    quizLanguage: formValues.quizLanguage,
+                    quizType: QuizType.Enum.singleplayer,
+                  } as QuizData;
+                  fetchQuestions(quizCreation);
+
+                  setReplay(true);
+                }}
+              >
+                <RefreshCw className="h-4 w-4" />
+                Replay Quiz
+              </Button>
+            </div>
+          )}
         </Tabs>
       </div>
     </div>

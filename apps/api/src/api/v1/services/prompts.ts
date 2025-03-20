@@ -24,7 +24,7 @@ think of something very special for each individual question.`;
 export const analyzeQuizPromptMultiplayer = (quiz: Quiz) => `
 Analyze this multiplayer quiz and generate normalized tags:
            Title: ${quiz.title}
-           Topics: ${quiz.topic.join(", ")}
+           Topics: ${quiz.topic?.join(", ") || ""}
            Description: ${quiz.description || ""}
            Questions Count: ${quiz.questionsCount}
            Player Count: ${quiz.room?.multiplayerQuizSubmissions.length}
@@ -39,7 +39,7 @@ Analyze this multiplayer quiz and generate normalized tags:
 
 export const analyzeQuizPromptSingleplayer = (quiz: Quiz) => `Analyze this singleplayer quiz and generate normalized tags:
            Title: ${quiz.title}
-           Topics: ${quiz.topic.join(", ")}
+           Topics: ${quiz.topic?.join(", ") || ""}
            Description: ${quiz.description || ""}
            User Tags: ${quiz.tags?.join(", ") || ""}
            Questions Count: ${quiz.questionsCount}
@@ -50,3 +50,16 @@ export const analyzeQuizPromptSingleplayer = (quiz: Quiz) => `Analyze this singl
            Generate 3-5 normalized, hierarchical tags.
            Tags should be lowercase with underscores.
            Include broader categories for better organization.`;
+
+export const generateQuizPromptDocument = (
+  documentContent: string,
+  numberOfQuestions: number,
+) => `
+Generate a quiz JSON Object based on the content of this document: ${documentContent}.
+Create ${numberOfQuestions} questions.
+
+Once the quizTitle is set, it should not change. Each question should have a unique questionTitle. 
+The questions must have exactly four options labeled a), b), c), and d).
+The correctAnswer pattern can not be recognizable by the user and you can not use the same pattern for all the questions.
+The Contextual questionTitle is not allowed to contain 'Question Number' or 'Interest Question Number', 
+think of something very special for each individual question.`;

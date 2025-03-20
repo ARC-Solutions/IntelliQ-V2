@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { DocumentUpload } from '../dashboard/document-upload';
 
 export const BentoGrid = ({
   className,
@@ -25,12 +26,14 @@ export const BentoGridItem = ({
   description,
   header,
   icon,
+  url,
 }: {
   className?: string;
   title?: string | React.ReactNode;
   description?: string | React.ReactNode;
   header?: React.ReactNode;
   icon?: React.ReactNode;
+  url?: string;
 }) => {
   return (
     <div
@@ -39,10 +42,16 @@ export const BentoGridItem = ({
         className,
       )}
     >
-      {header}
+      {url && header}
+      {!url && (
+        <div className='flex flex-1 items-center justify-center w-full h-full min-h-[6rem]'>
+          <DocumentUpload />
+        </div>
+      )}
+
       <div className='group-hover/bento:translate-x-2 transition duration-200'>
         {icon}
-        <div className='font-sans font-bold text-neutral-600 dark:text-neutral-200 mb-2 mt-2'>
+        <div className='font-sans font-bold text-neutral-600 dark:text-neutral-200 mb-2 '>
           {title}
         </div>
         <div className='font-sans font-normal text-neutral-600 text-xs dark:text-neutral-300'>

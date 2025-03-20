@@ -7,6 +7,7 @@ import historyRoutes from "./history.routes";
 import shareRoutes from "./share.routes";
 import admin from "./admin";
 import userAnalysisRoutes from "./tags.routes";
+import documentsRoutes from "./documents.routes";
 
 const v1 = new Hono<{ Bindings: CloudflareEnv }>()
   .route("/quizzes", quizzes)
@@ -16,6 +17,7 @@ const v1 = new Hono<{ Bindings: CloudflareEnv }>()
   .route("/history", historyRoutes)
   .route("/share", shareRoutes)
   .route("/admin", admin)
-  .route("/analysis", userAnalysisRoutes);
+  .route("/analysis", userAnalysisRoutes)
+  .route("/documents", documentsRoutes);
 
-export default v1;
+  export default v1;

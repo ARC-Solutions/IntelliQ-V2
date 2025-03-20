@@ -19,14 +19,12 @@ import {
 } from "@/components/ui/select";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/components/ui/use-toast";
@@ -44,14 +42,8 @@ import { RoomResponse, RoomDetailsResponse, QuizType } from "@intelliq/api";
 import { useDebouncedCallback } from "use-debounce";
 import { SupportedLanguages, useQuiz } from "@/contexts/quiz-context";
 import { languages, QuizData } from "../../contexts/quiz-creation-context";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Switch } from "@/components/ui/switch";
-import { HelpCircle } from "lucide-react";
+
+import { SparklesText } from "../magicui/sparkles-text";
 import { useTheme } from "next-themes";
 
 interface PresenceData {
@@ -103,7 +95,8 @@ export default function Lobby() {
   const [isRoomFull, setIsRoomFull] = useState(false);
   const supabase = createClient();
   const { toast } = useToast();
-  const { resolvedTheme } = useTheme();
+  const theme = useTheme();
+  const shadowColor = theme.resolvedTheme === "dark" ? "white" : "black";
 
   const checkAndJoinRoom = async (channel: RealtimeChannel) => {
     try {
@@ -466,23 +459,36 @@ export default function Lobby() {
           <div className="grid lg:grid-cols-[300px_1fr] gap-8 max-w-7xl mx-auto w-full">
             {/* Player List */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-primary">
-                <UsersRound />
-                <div className="flex items-center gap-1">
-                  <h2 className="text-xl font-semibold uppercase flex items-center">
-                    <NumberFlow
-                      willChange
-                      plugins={[continuous]}
-                      value={players.length}
-                      prefix="players "
-                    />
-                    /
-                    <NumberFlow
-                      willChange
-                      plugins={[continuous]}
-                      value={maxPlayers}
-                    />
-                  </h2>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-primary">
+                  <UsersRound />
+                  <div className="flex items-center gap-1">
+                    <h2 className="text-xl font-semibold uppercase flex items-center">
+                      <NumberFlow
+                        willChange
+                        plugins={[continuous]}
+                        value={players.length}
+                        prefix="players "
+                      />
+                      /
+                      <NumberFlow
+                        willChange
+                        plugins={[continuous]}
+                        value={maxPlayers}
+                      />
+                    </h2>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-xl text-primary">
+                  <span className="text-balance font-semibold leading-none tracking-tighter">
+                    Room:
+                  </span>
+                  <SparklesText
+                    className="italic text-xl font-thin"
+                    text={roomCode}
+                    sparklesCount={3}
+                    colors={{ first: "#c8b6ff", second: "#a799e0" }}
+                  />
                 </div>
               </div>
 

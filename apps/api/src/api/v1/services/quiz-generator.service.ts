@@ -3,7 +3,6 @@ import { generateObject } from 'ai';
 import { quizSchema } from '../schemas/quiz.schemas';
 import { generateQuizPrompt } from './prompts';
 import type { z } from 'zod';
-import { shuffle } from 'lodash';
 import { OPTION_PREFIXES } from '../schemas/quiz.schemas';
 // Use the quiz schema to infer the type
 type Quiz = z.infer<typeof quizSchema>;
@@ -73,41 +72,6 @@ export async function generateQuiz(
         throw new Error('Invalid option format');
       }
     }
-
-    // Add letters to options and correct answers
-    // const processedQuiz = {
-    //   ...generatedQuiz.object,
-    //   questions: generatedQuiz.object.questions.map((question) => {
-    //     if (question.options.length !== 4) {
-    //       throw new Error(`Question "${question.questionTitle}" does not have exactly 4 options`);
-    //     }
-
-    //     // Create pairs of options and letters
-    //     const optionPairs = question.options.map((opt, idx) => ({
-    //       option: opt,
-    //       letter: ['a', 'b', 'c', 'd'][idx],
-    //       isCorrect: opt === question.correctAnswer,
-    //     }));
-
-    //     // Shuffle the pairs together
-    //     // uses Lodash (using a version of the Fisher-Yates shuffle)
-    //     const shuffledPairs = shuffle(optionPairs);
-
-    //     // Find the correct answer pair
-    //     const correctPair = shuffledPairs.find((pair) => pair.isCorrect);
-    //     if (!correctPair) {
-    //       throw new Error(
-    //         `Correct answer "${question.correctAnswer}" not found in options for question "${question.questionTitle}"`,
-    //       );
-    //     }
-
-    //     return {
-    //       ...question,
-    //       options: shuffledPairs.map((pair) => `${pair.letter}) ${pair.option}`),
-    //       correctAnswer: `${correctPair.letter}) ${question.correctAnswer}`,
-    //     };
-    //   }),
-    // };
 
     const durationInSeconds = (performance.now() - startTime) / 1000;
 

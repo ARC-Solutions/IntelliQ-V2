@@ -1,37 +1,33 @@
-"use client";
-import { useEffect, useState } from "react";
-import { Controller } from "react-hook-form";
-import Lottie from "lottie-react";
-import Loading from "@/assets/loading.json";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { languages } from "@/contexts/quiz-creation-context";
+'use client';
+import { useState } from 'react';
+import { Controller } from 'react-hook-form';
+import Lottie from 'lottie-react';
+import Loading from '../../../public/Loading.json';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { languages } from '@/contexts/quiz-creation-context';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { BookOpen, HelpCircle, Plus, Trash2, Tag, Hash } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useQuizCreation, Question } from "@/contexts/quiz-creation-context";
-import { useQuiz } from "@/contexts/quiz-context";
-import { redirect } from "next/navigation";
-import { useQueryState } from "nuqs";
-import NumberFlow from "@number-flow/react";
+} from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { BookOpen, HelpCircle, Plus, Trash2, Tag, Hash } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useQuizCreation } from '@/contexts/quiz-creation-context';
+import type { Question } from '@/contexts/quiz-creation-context';
+import { useQuiz } from '@/contexts/quiz-context';
+import { redirect } from 'next/navigation';
+import { useQueryState } from 'nuqs';
+import NumberFlow from '@number-flow/react';
 
 export default function QuizCreator() {
   const {
@@ -45,13 +41,11 @@ export default function QuizCreator() {
     register,
     errors,
     control,
-    resetValues,
     setTopicValue,
     setDescriptionValue,
     setNumberValue,
     setPassingScoreValue,
     setShowCorrectAnswersValue,
-    setTagsValue,
     setQuizLanguageValue,
   } = useQuizCreation();
   const { isLoading, fetchingFinished, currentQuiz, isMultiplayerMode } = useQuiz();
@@ -139,13 +133,13 @@ export default function QuizCreator() {
                   size={18}
                 />
                 <Input
-                  type="number"
-                  id="number"
-                  {...register("number")}
-                  onChange={(e) => setNumberValue(parseInt(e.target.value))}
-                  value={formValues.number || ""}
-                  placeholder="How many AI-generated questions?"
-                  className="pl-10"
+                  type='number'
+                  id='number'
+                  {...register('number')}
+                  onChange={(e) => setNumberValue(Number.parseInt(e.target.value))}
+                  value={formValues.number || ''}
+                  placeholder='How many AI-generated questions?'
+                  className='pl-10'
                   required
                 />
                 {errors.number && (
@@ -159,7 +153,7 @@ export default function QuizCreator() {
               <Controller
                 name="passingScore"
                 control={control}
-                render={({ field }) => (
+                render={() => (
                   <Slider
                     id="passingScore"
                     min={0} // Keep visual minimum at 0
@@ -206,7 +200,7 @@ export default function QuizCreator() {
                 <Controller
                   name="showCorrectAnswers"
                   control={control}
-                  render={({ field }) => (
+                  render={() => (
                     <Switch
                       id="showCorrectAnswers"
                       checked={formValues.showCorrectAnswers}
