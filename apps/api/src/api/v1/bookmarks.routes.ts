@@ -1,4 +1,3 @@
-import { incrementUserCacheVersion } from "../../utils/kv-user-version";
 import { createOpenAI } from "@ai-sdk/openai";
 import { embed } from "ai";
 import { format } from "date-fns";
@@ -9,21 +8,17 @@ import { resolver, validator as zValidator } from "hono-openapi/zod";
 import prettyMilliseconds from "pretty-ms";
 import { z } from "zod";
 import {
-  bookmarks,
-  multiplayerQuizSubmissions,
-  quizzes,
+    bookmarks,
+    multiplayerQuizSubmissions,
+    quizzes,
 } from "../../../drizzle/schema";
 import { createDb } from "../../db/index";
 import { getSupabase } from "./middleware/auth.middleware";
 import { quizType } from "./schemas/common.schemas";
 import {
-  historyQuerySchema,
-  quizHistoryResponseSchema,
+    historyQuerySchema,
+    quizHistoryResponseSchema,
 } from "./schemas/history.schemas";
-import {
-  MEDIUM_CACHE,
-  createCacheMiddleware,
-} from "./middleware/cache.middleware";
 
 const bookmarksRoutes = new Hono<{ Bindings: CloudflareEnv }>()
   .get(
@@ -55,7 +50,6 @@ const bookmarksRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           : undefined,
       })),
     ),
-    createCacheMiddleware("bookmarks", MEDIUM_CACHE),
     async (c) => {
       const { tags, type, status, page, limit } = c.req.valid("query");
 
@@ -425,7 +419,6 @@ const bookmarksRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           });
         });
 
-        await incrementUserCacheVersion(c.env.IntelliQ_CACHE_VERSION, user!.id);
         return c.json({
           success: true,
           message: "Quiz added to bookmarks successfully",
@@ -522,8 +515,6 @@ const bookmarksRoutes = new Hono<{ Bindings: CloudflareEnv }>()
               and(eq(bookmarks.userId, user!.id), eq(bookmarks.quizId, id)),
             );
         });
-
-        await incrementUserCacheVersion(c.env.IntelliQ_CACHE_VERSION, user!.id);
 
         return c.json({
           success: true,

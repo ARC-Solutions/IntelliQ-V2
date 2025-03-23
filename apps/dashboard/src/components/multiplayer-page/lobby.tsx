@@ -233,7 +233,6 @@ export default function Lobby() {
             },
             maxPlayers,
             settings: {
-              timeLimit,
               topic,
             },
           };
@@ -287,7 +286,6 @@ export default function Lobby() {
   useEffect(() => {
     if (isCreator) {
       updateGameSettings("topic", topic);
-      updateGameSettings("timeLimit", timeLimit);
     }
   }, [players]);
 
@@ -440,8 +438,8 @@ export default function Lobby() {
   }
   return (
     <>
-      <div className="min-h-screen w-full bg-black text-white relative flex flex-col">
-        <div className="relative z-10 w-full p-8 flex flex-col gap-8">
+      <div className="relative flex flex-col w-full min-h-screen text-white bg-black">
+        <div className="relative z-10 flex flex-col w-full gap-8 p-8">
           {/* Logo */}
           <div className="flex justify-center">
             <Image
@@ -459,7 +457,7 @@ export default function Lobby() {
                 <div className="flex items-center gap-2 text-primary">
                   <UsersRound />
                   <div className="flex items-center gap-1">
-                    <h2 className="text-xl font-semibold uppercase flex items-center">
+                    <h2 className="flex items-center text-xl font-semibold uppercase">
                       <NumberFlow
                         willChange
                         plugins={[continuous]}
@@ -476,11 +474,11 @@ export default function Lobby() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-xl text-primary">
-                  <span className="text-balance font-semibold leading-none tracking-tighter">
+                  <span className="font-semibold leading-none tracking-tighter text-balance">
                     Room:
                   </span>
                   <SparklesText
-                    className="italic text-xl font-thin"
+                    className="text-xl italic font-thin"
                     text={roomCode}
                     sparklesCount={3}
                     colors={{ first: "#c8b6ff", second: "#a799e0" }}
@@ -523,7 +521,7 @@ export default function Lobby() {
                           key={i}
                           className="flex items-center gap-2 p-4 rounded-lg bg-gray-900/50"
                         >
-                          <Avatar className="h-8 w-8">
+                          <Avatar className="w-8 h-8">
                             <AvatarImage src={leader?.avatar} />
                             <AvatarFallback className="bg-primary/20 text-primary">
                               {leader?.userName.charAt(0)}
@@ -550,7 +548,7 @@ export default function Lobby() {
                           key={i}
                           className="flex items-center gap-2 p-4 rounded-lg bg-gray-900/50"
                         >
-                          <Avatar className="h-8 w-8">
+                          <Avatar className="w-8 h-8">
                             <AvatarImage src={player?.avatar} />
                             <AvatarFallback className="bg-primary/20 text-primary">
                               {player?.userName.charAt(0)}
@@ -573,7 +571,7 @@ export default function Lobby() {
                         key={i}
                         className="flex items-center gap-2 p-4 rounded-lg bg-gray-900/50"
                       >
-                        <div className="h-8 w-8 rounded-full border border-gray-800" />
+                        <div className="w-8 h-8 border border-gray-800 rounded-full" />
                         <span className="text-gray-400">Empty</span>
                       </div>
                     );
@@ -584,16 +582,16 @@ export default function Lobby() {
 
             <div className="space-y-8">
               {/* Game Modes */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="bg-primary/10 border-primary/20 p-6 flex flex-col items-center justify-center gap-2">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <Card className="flex flex-col items-center justify-center gap-2 p-6 bg-primary/10 border-primary/20">
                   <Brain className="w-8 h-8 text-primary" />
                   <span>Default</span>
                 </Card>
-                <Card className="bg-black border-gray-800 p-6 flex flex-col items-center justify-center gap-2">
+                <Card className="flex flex-col items-center justify-center gap-2 p-6 bg-black border-gray-800">
                   <Zap className="w-8 h-8 text-primary" />
                   <span>Fast</span>
                 </Card>
-                <Card className="bg-black border-gray-800 p-6 flex flex-col items-center justify-center gap-2">
+                <Card className="flex flex-col items-center justify-center gap-2 p-6 bg-black border-gray-800">
                   <Sparkles className="w-8 h-8 text-primary" />
                   <span>Custom</span>
                 </Card>
@@ -691,7 +689,7 @@ export default function Lobby() {
             </div>
           </div>
           {/* Action Buttons */}
-          <div className="flex gap-4 justify-center">
+          <div className="flex justify-center gap-4">
             <InviteButton />
             {isCreator && (
               <Button

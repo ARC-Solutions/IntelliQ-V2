@@ -14,10 +14,6 @@ import {
 } from "../../../drizzle/schema";
 import { createDb } from "../../db/index";
 import { getSupabase } from "./middleware/auth.middleware";
-import {
-  MEDIUM_CACHE,
-  createCacheMiddleware,
-} from "./middleware/cache.middleware";
 import { quizType } from "./schemas/common.schemas";
 import {
   historyQuerySchema,
@@ -54,7 +50,6 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           : undefined,
       })),
     ),
-    createCacheMiddleware("quiz-history", MEDIUM_CACHE),
     async (c) => {
       const { tags, type, status, page, limit } = c.req.valid("query");
 
