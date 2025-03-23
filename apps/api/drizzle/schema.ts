@@ -157,7 +157,6 @@ export const bookmarks = pgTable("bookmarks", {
 			foreignColumns: [users.id],
 			name: "bookmarks_user_id_fkey"
 		}).onUpdate("cascade").onDelete("cascade"),
-	unique("bookmarks_user_id_key").on(table.userId),
 	unique("bookmarks_quiz_id_key").on(table.quizId),
 	pgPolicy("Users can view their own bookmarks", { as: "permissive", for: "select", to: ["authenticated"], using: sql`(( SELECT auth.uid() AS uid) = user_id)` }),
 	pgPolicy("Users can manage their own bookmarks", { as: "permissive", for: "insert", to: ["authenticated"] }),

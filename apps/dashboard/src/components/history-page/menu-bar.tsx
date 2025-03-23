@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { motion } from "framer-motion";
-import { Search, ListFilter } from "lucide-react";
-import Filters, { Filter } from "@/components/ui/filters";
+import { Search, ListFilter, CornerDownLeft } from "lucide-react";
+import Filters, { type Filter } from "@/components/ui/filters";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -23,14 +23,13 @@ import { nanoid } from "nanoid";
 import { AnimateChangeInHeight } from "@/components/ui/filters";
 import {
   DueDate,
-  type Filter as FilterType,
   FilterOperator,
   type FilterOption,
   FilterType as FilterTypeEnum,
   filterViewOptions,
   getFilterViewToFilterOptions,
 } from "@/components/ui/filters";
-import { Dispatch, SetStateAction } from "react";
+import type { Dispatch, SetStateAction } from "react";
 
 const itemVariants = {
   initial: { rotateX: 0, opacity: 1 },
@@ -85,12 +84,12 @@ interface MenuBarProps {
 }
 
 export function MenuBar({
-  filters,
-  setFilters,
-  searchQuery,
-  setSearchQuery,
-  availableTags,
-  onSearch,
+  filters = [],
+  setFilters = () => {},
+  searchQuery = "",
+  setSearchQuery = () => {},
+  availableTags = [],
+  onSearch = async () => {},
 }: MenuBarProps) {
   const [open, setOpen] = React.useState(false);
   const [selectedView, setSelectedView] = React.useState<FilterTypeEnum | null>(
@@ -98,10 +97,13 @@ export function MenuBar({
   );
   const [commandInput, setCommandInput] = React.useState("");
   const commandInputRef = React.useRef<HTMLInputElement>(null);
+  const [isFocused, setIsFocused] = React.useState(false);
+  const [isEnterPressed, setIsEnterPressed] = React.useState(false);
+  const formRef = React.useRef<HTMLFormElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
 
-  // Get the filter options with available tags
   const filterViewToFilterOptions = React.useMemo(
-    () => getFilterViewToFilterOptions(availableTags),
+    () => getFilterViewToFilterOptions(availableTags || []),
     [availableTags],
   );
 
@@ -113,16 +115,50 @@ export function MenuBar({
     e.preventDefault();
     onSearch(e);
 
-    // Focus back on the input after submission
     const searchInput = e.currentTarget.querySelector("input");
     if (searchInput) {
       searchInput.focus();
     }
   };
 
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && document.activeElement === inputRef.current) {
+        setIsEnterPressed(true);
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === "Enter") {
+        setIsEnterPressed(false);
+      }
+    };
+
+    const handleFormSubmit = () => {
+      setIsEnterPressed(true);
+      setTimeout(() => setIsEnterPressed(false), 150);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    const currentForm = formRef.current;
+    if (currentForm) {
+      currentForm.addEventListener("submit", handleFormSubmit);
+    }
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      if (currentForm) {
+        currentForm.removeEventListener("submit", handleFormSubmit);
+      }
+    };
+  }, []);
+
   return (
     <motion.nav
-      className="p-2 rounded-2xl bg-[#0c0d0d] backdrop-blur-lg border border-[#c8b6ff]/20 shadow-lg relative overflow-hidden w-full max-w-4xl"
+      className="p-2 rounded-2xl bg-[#faf9f6] dark:bg-[#0c0d0d] backdrop-blur-lg border border-[#c8b6ff]/20 shadow-lg relative overflow-hidden w-full max-w-4xl"
       initial="initial"
       whileHover="hover"
     >
@@ -131,20 +167,71 @@ export function MenuBar({
         variants={navGlowVariants}
       />
       <div className="flex items-center gap-4 relative z-10">
-        <form onSubmit={handleSearchSubmit} className="relative flex-1">
+        <form
+          ref={formRef}
+          onSubmit={handleSearchSubmit}
+          className="relative flex-1"
+        >
           <input
+            ref={inputRef}
             type="text"
             name="searchQuery"
             placeholder="Search history..."
-            className="w-full pl-10 pr-4 py-2 bg-[#040404] text-[#c8b6ff] placeholder-[#c8b6ff]/50 rounded-xl border border-[#c8b6ff]/20 focus:outline-none focus:border-[#c8b6ff]/50 transition-colors"
+            className="w-full pl-10 pr-16 py-2 bg-[#faf9f6] dark:bg-[#040404] text-[#c8b6ff] placeholder-[#c8b6ff]/50 rounded-xl border border-[#c8b6ff]/20 focus:outline-none focus:border-[#c8b6ff]/50 transition-colors"
             value={searchQuery}
             onChange={handleSearchChange}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
           />
-          <button
-            type="submit"
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 bg-transparent border-none p-0 cursor-pointer"
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#c8b6ff]/70" />
+
+          {/* Enter key button with animation */}
+          <div
+            className={`absolute right-3 top-1/2 transform -translate-y-1/2 transition-opacity ${isFocused || searchQuery ? "opacity-100" : "opacity-50"}`}
           >
-            <Search className="h-5 w-5 text-[#c8b6ff]/70" />
+            <div
+              className={`
+                relative flex items-center justify-center h-6 w-12 
+                bg-[#c8b6ff]/10 border border-[#c8b6ff]/40 rounded-md 
+                shadow-sm transition-all duration-75 
+                ${
+                  isEnterPressed
+                    ? "transform translate-y-[1px] shadow-none bg-[#c8b6ff]/20 border-[#c8b6ff]/60"
+                    : "shadow-[0_1px_2px_rgba(0,0,0,0.1)]"
+                }
+              `}
+            >
+              <CornerDownLeft
+                className={`h-3 w-3 text-[#c8b6ff] transition-transform duration-75 ${isEnterPressed ? "transform scale-95" : ""}`}
+              />
+              <span
+                className={`text-[9px] ml-0.5 text-[#c8b6ff] transition-transform duration-75 ${isEnterPressed ? "transform scale-95" : ""}`}
+              >
+                Enter
+              </span>
+
+              {/* Key highlight effect */}
+              <div
+                className={`
+                absolute inset-0 bg-gradient-to-b from-[#c8b6ff]/20 to-transparent 
+                opacity-50 rounded-md pointer-events-none transition-opacity duration-75
+                ${isEnterPressed ? "opacity-30" : "opacity-50"}
+              `}
+              />
+
+              {/* Bottom shadow for 3D effect - hidden when pressed */}
+              <div
+                className={`
+                absolute -bottom-[1px] left-0 right-0 h-[1px] 
+                bg-[#c8b6ff]/30 rounded-b-md transition-opacity duration-75
+                ${isEnterPressed ? "opacity-0" : "opacity-100"}
+              `}
+              />
+            </div>
+          </div>
+
+          <button type="submit" className="sr-only">
+            Search
           </button>
         </form>
         <div className="flex items-center gap-4">
@@ -154,8 +241,8 @@ export function MenuBar({
               setFilters={setFilters}
               availableTags={availableTags}
             />
-            {filters.filter((filter) => filter.value?.length > 0).length >
-              0 && (
+            {(filters || []).filter((filter) => filter.value?.length > 0)
+              .length > 0 && (
               <Button
                 variant="outline"
                 size="sm"
@@ -329,3 +416,4 @@ export function MenuBar({
     </motion.nav>
   );
 }
+

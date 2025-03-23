@@ -33,7 +33,7 @@ interface PaginationInfo {
   hasPreviousPage: boolean;
 }
 
-export default function HistoryPage() {
+export default function BookmarksPage() {
   const [filters, setFilters] = useState<Filter[]>([]);
   const [allQuizHistory, setAllQuizHistory] = useState<QuizHistory[]>([]);
   const [quizHistory, setQuizHistory] = useState<QuizHistory[]>([]);
@@ -115,7 +115,7 @@ export default function HistoryPage() {
       const tagsFilter = filters.find((f) => f.type === FilterType.TAGS)
         ?.value[0];
 
-      const response = await client.api.v1.history.$get({
+      const response = await client.api.v1.bookmarks.$get({
         query: {
           status:
             statusFilter === "Passed"
@@ -190,7 +190,7 @@ export default function HistoryPage() {
 
     try {
       const client = createApiClient();
-      const response = await client.api.v1.history.search.$post({
+      const response = await client.api.v1.bookmarks.search.$post({
         json: {
           query: searchQuery,
           page: pagination.page,
@@ -218,7 +218,7 @@ export default function HistoryPage() {
       setIsLoading(true);
       try {
         const client = createApiClient();
-        const response = await client.api.v1.history.search.$post({
+        const response = await client.api.v1.bookmarks.search.$post({
           json: {
             query: searchQuery,
             page,
@@ -250,7 +250,7 @@ export default function HistoryPage() {
     <div className="min-h-screen flex flex-col items-center py-8 px-4">
       <div className="w-full max-w-4xl space-y-8">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Quiz History</h1>
+          <h1 className="text-2xl font-bold">Bookmarks</h1>
         </div>
 
         <MenuBar
@@ -298,6 +298,9 @@ export default function HistoryPage() {
                   key={item.id}
                   {...item}
                   isBookmarked={item.isBookmarked}
+                  onBookmarkToggle={() => {
+                    fetchQuizHistory();
+                  }}
                 />
               ))}
             </div>

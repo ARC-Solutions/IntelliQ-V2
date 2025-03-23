@@ -41,6 +41,7 @@ const baseQuizHistoryItem = z.object({
   correct: z.number().nullable(),
   incorrect: z.number().nullable(),
   type: quizType,
+  isBookmarked: z.boolean(),
 });
 
 // Singleplayer specific fields
