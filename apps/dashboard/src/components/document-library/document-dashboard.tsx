@@ -17,9 +17,10 @@ import { createApiClient } from "@/utils/api-client";
 import { QuizType } from "@intelliq/api";
 import { debounce } from "lodash";
 import Lottie from "lottie-react";
-import { Paperclip, Plus, Search } from "lucide-react";
+import { CornerDownLeft, Paperclip, Plus, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useCallback, useEffect, useState } from "react";
+import type React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Loading from "../../../public/Loading.json";
 import { useToast } from "../ui/use-toast";
 import { DocumentCard } from "./document-card";
@@ -75,6 +76,10 @@ export function DocumentDashboard() {
   const [filteredDocuments, setFilteredDocuments] = useState<Document[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState("recent");
+  const [isFocused, setIsFocused] = useState(false);
+  const [isEnterPressed, setIsEnterPressed] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Use optional chaining to safely access the quiz context
   const quizContext = useQuiz();
@@ -143,14 +148,11 @@ export function DocumentDashboard() {
       const formData = new FormData();
       formData.append("file", files[0]);
 
-      const response = await fetch(
-        "/api/v1/documents/upload",
-        {
-          method: "POST",
-          body: formData,
-          credentials: "include",
-        },
-      );
+      const response = await fetch("/api/v1/documents/upload", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
 
       if (!response.ok) {
         throw new Error(`Upload failed: ${response.status}`);
@@ -498,6 +500,43 @@ export function DocumentDashboard() {
     }
   };
 
+  // Handle keyboard events to animate the Enter key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && document.activeElement === inputRef.current) {
+        setIsEnterPressed(true);
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === "Enter") {
+        setIsEnterPressed(false);
+      }
+    };
+
+    // Simulate Enter key press when form is submitted
+    const handleFormSubmit = () => {
+      setIsEnterPressed(true);
+      setTimeout(() => setIsEnterPressed(false), 150);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    const currentForm = formRef.current;
+    if (currentForm) {
+      currentForm.addEventListener("submit", handleFormSubmit);
+    }
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      if (currentForm) {
+        currentForm.removeEventListener("submit", handleFormSubmit);
+      }
+    };
+  }, []);
+
   // Modify handleSearch for server-side search
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -597,15 +636,71 @@ export function DocumentDashboard() {
           )}
 
           <div className="flex items-center gap-4">
-            <form onSubmit={handleSearch} className="relative flex-1">
+            <form
+              ref={formRef}
+              onSubmit={handleSearch}
+              className="relative flex-1"
+            >
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
+                ref={inputRef}
                 type="search"
-                placeholder="Search documents... (Press Enter to search)"
-                className="pl-8"
+                placeholder="Search documents..."
+                className="pl-8 pr-16"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
               />
+
+              {/* Enter key button with animation */}
+              <div
+                className={`absolute right-3 top-1/2 transform -translate-y-1/2 transition-opacity ${isFocused || searchQuery ? "opacity-100" : "opacity-50"}`}
+              >
+                <div
+                  className={`
+                    relative flex items-center justify-center h-6 w-12 
+                    bg-primary/10 border border-primary/40 rounded-md 
+                    shadow-sm transition-all duration-75 
+                    ${
+                      isEnterPressed
+                        ? "transform translate-y-[1px] shadow-none bg-primary/20 border-primary/60"
+                        : "shadow-[0_1px_2px_rgba(0,0,0,0.1)]"
+                    }
+                  `}
+                >
+                  <CornerDownLeft
+                    className={`h-3 w-3 text-primary transition-transform duration-75 ${isEnterPressed ? "transform scale-95" : ""}`}
+                  />
+                  <span
+                    className={`text-[9px] ml-0.5 text-primary transition-transform duration-75 ${isEnterPressed ? "transform scale-95" : ""}`}
+                  >
+                    Enter
+                  </span>
+
+                  {/* Key highlight effect */}
+                  <div
+                    className={`
+                    absolute inset-0 bg-gradient-to-b from-primary/20 to-transparent 
+                    opacity-50 rounded-md pointer-events-none transition-opacity duration-75
+                    ${isEnterPressed ? "opacity-30" : "opacity-50"}
+                  `}
+                  ></div>
+
+                  {/* Bottom shadow for 3D effect - hidden when pressed */}
+                  <div
+                    className={`
+                    absolute -bottom-[1px] left-0 right-0 h-[1px] 
+                    bg-primary/30 rounded-b-md transition-opacity duration-75
+                    ${isEnterPressed ? "opacity-0" : "opacity-100"}
+                  `}
+                  ></div>
+                </div>
+              </div>
+
+              <button type="submit" className="sr-only">
+                Search
+              </button>
             </form>
           </div>
 
@@ -750,3 +845,4 @@ export function DocumentDashboard() {
     </div>
   );
 }
+

@@ -8,6 +8,7 @@ import shareRoutes from "./share.routes";
 import admin from "./admin";
 import userAnalysisRoutes from "./tags.routes";
 import documentsRoutes from "./documents.routes";
+import bookmarksRoutes from "./bookmarks.routes";
 
 const v1 = new Hono<{ Bindings: CloudflareEnv }>()
   .route("/quizzes", quizzes)
@@ -18,6 +19,7 @@ const v1 = new Hono<{ Bindings: CloudflareEnv }>()
   .route("/share", shareRoutes)
   .route("/admin", admin)
   .route("/analysis", userAnalysisRoutes)
-  .route("/documents", documentsRoutes);
+  .route("/documents", documentsRoutes)
+  .route("/bookmarks", bookmarksRoutes);
 
   export default v1;
