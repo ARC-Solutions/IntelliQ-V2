@@ -57,7 +57,6 @@ export function DashboardFeatures() {
               )}
               icon={item.icon}
               isPdfUpload={item.isPdfUpload}
-              cta={item.cta}
             />
           </Link>
         </motion.div>
@@ -81,7 +80,7 @@ const QuizMeSkeleton = () => (
         <motion.div
           className="h-2 w-32 bg-gray-100/50 group-hover:bg-[hsl(var(--primary)/0.3)] rounded-full"
           animate={{ width: [40, 120, 40] }}
-          transition={{ duration: 2, repeat: Infinity }}
+          transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
         />
       </motion.div>
 
@@ -99,7 +98,7 @@ const QuizMeSkeleton = () => (
             animate={{
               width: [`${60 - i * 20}%`, `${100 - i * 20}%`, `${60 - i * 20}%`],
             }}
-            transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}
+            transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, delay: i * 0.2 }}
           />
         ))}
       </motion.div>
@@ -122,7 +121,7 @@ const MultiplayerSkeleton = () => (
             }}
             transition={{
               duration: 2,
-              repeat: Infinity,
+              repeat: Number.POSITIVE_INFINITY,
               delay: i * 0.2,
             }}
           >
@@ -148,7 +147,7 @@ const MultiplayerSkeleton = () => (
                   : "w-8 bg-gray-100/50 group-hover:bg-[hsl(var(--primary)/0.3)]",
               )}
               animate={{ width: ["60%", "100%", "60%"] }}
-              transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}
+              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, delay: i * 0.2 }}
             />
           </motion.div>
         ))}
@@ -164,7 +163,7 @@ const PdfSkeleton = () => (
         className="w-24 h-32 bg-gray-100/50 group-hover:bg-[hsl(var(--primary)/0.3)] border border-gray-200/50 group-hover:border-[hsl(var(--primary)/0.5)] rounded-lg flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300"
         whileHover={{ scale: 1.05 }}
         animate={{ y: [0, -5, 0] }}
-        transition={{ duration: 3, repeat: Infinity }}
+        transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY }}
       >
         <FileText className="w-10 h-10 mb-4 text-gray-400/50 group-hover:text-[hsl(var(--primary))]" />
         {[...Array(3)].map((_, i) => (
@@ -175,7 +174,11 @@ const PdfSkeleton = () => (
             animate={{
               width: [`${40 - i * 10}%`, `${60 - i * 10}%`, `${40 - i * 10}%`],
             }}
-            transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}
+            transition={{
+              duration: 2,
+              repeat: Number.POSITIVE_INFINITY,
+              delay: i * 0.2,
+            }}
           />
         ))}
       </motion.div>
@@ -183,13 +186,13 @@ const PdfSkeleton = () => (
       <motion.div
         className="flex items-center mt-4 space-x-2"
         animate={{ opacity: [0.5, 1, 0.5] }}
-        transition={{ duration: 2, repeat: Infinity }}
+        transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
       >
         <Paperclip className="w-4 h-4 text-gray-400/50 group-hover:text-[hsl(var(--primary))]" />
         <motion.div
           className="h-1 w-20 bg-gray-100/50 group-hover:bg-[hsl(var(--primary)/0.3)] rounded-full"
           animate={{ width: [40, 80, 40] }}
-          transition={{ duration: 2, repeat: Infinity }}
+          transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
         />
       </motion.div>
     </div>
@@ -218,7 +221,7 @@ const RandomSkeleton = () => {
           }}
           transition={{
             duration: 3,
-            repeat: Infinity,
+            repeat: Number.POSITIVE_INFINITY,
             repeatType: "reverse",
           }}
         >
@@ -237,7 +240,7 @@ const RandomSkeleton = () => {
               }}
               transition={{
                 duration: 2,
-                repeat: Infinity,
+                repeat: Number.POSITIVE_INFINITY,
                 delay: i * 0.2,
               }}
             >
