@@ -5,7 +5,7 @@ import { Dices, Paperclip, UserRound, UsersRound } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { useEffect } from "react";
-import { BentoGridItem } from "../ui/bento-grid";
+import { BentoGrid, BentoGridItem } from "../ui/bento-grid";
 
 export function DashboardFeatures() {
   const {
@@ -25,46 +25,22 @@ export function DashboardFeatures() {
   }, [currentQuiz, summaryQuiz, isMultiplayerMode]);
 
   return (
-    <div className="h-screen w-full overflow-hidden">
-      <div className="max-w-4xl mx-auto h-full overflow-y-auto px-4 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6">
-          {items.map((item, i) => (
-            <div key={i} className="h-[20rem]">
-              {item.url && !item.customRender ? (
-                <Link href={item.url} className="h-full block">
-                  <BentoGridItem
-                    title={item.title}
-                    description={item.description}
-                    header={item.header}
-                    className={cn("h-full", item.className)}
-                    icon={item.icon}
-                    url={item.url}
-                  />
-                </Link>
-              ) : item.customRender && item.url ? (
-                <Link href={item.url} className="h-full block">
-                  <BentoGridItem
-                    title={item.title}
-                    description={item.description}
-                    header={item.header}
-                    className={cn("h-full", item.className)}
-                    icon={item.icon}
-                  />
-                </Link>
-              ) : (
-                <BentoGridItem
-                  title={item.title}
-                  description={item.description}
-                  header={item.header}
-                  className={cn("h-full", item.className)}
-                  icon={item.icon}
-                />
-              )}
-            </div>
-          ))}
+    <BentoGrid className="max-w-4xl mx-auto md:auto-rows-[20rem] md:grid-cols-3">
+      {items.map((item, i) => (
+        <div key={i} className={cn("h-full", item.className)}>
+            <Link href={item.url} className="block h-full">
+              <BentoGridItem
+                title={item.title}
+                description={item.description}
+                header={item.header}
+                className="h-full"
+                icon={item.icon}
+                isPdfUpload={item.isPdfUpload}
+              />
+          </Link>
         </div>
-      </div>
-    </div>
+      ))}
+    </BentoGrid>
   );
 }
 const Skeleton = () => (
@@ -76,8 +52,8 @@ const items = [
     title: "Quiz Me",
     description: "Challenge yourself to a quiz with a topic of your choice.",
     header: <Skeleton />,
-    className: "md:col-span-1 h-full",
-    icon: <UserRound className="h-4 w-4 text-neutral-500" />,
+    className: "md:col-span-1 cursor-pointer",
+    icon: <UserRound className="w-4 h-4 text-neutral-500" />,
     url: "/single-player/quiz",
   },
   {
@@ -85,26 +61,27 @@ const items = [
     description:
       "Compete with friends as AI generates topic-based questions. Join or create a lobby and see who's the quickest to win!",
     header: <Skeleton />,
-    className: "md:col-span-1 h-full",
-    icon: <UsersRound className="h-4 w-4 text-neutral-500" />,
+    className: "md:col-span-2 cursor-pointer",
+    icon: <UsersRound className="w-4 h-4 text-neutral-500" />,
     url: "/multiplayer",
   },
   {
     title: "Get quizzed on your PDF",
     description:
       "Upload a file by dragging, dropping, or clicking, and let AI generate quiz questions based on the content.",
-    header: <Skeleton />,
-    className: "md:col-span-1",
-    icon: <Paperclip className="h-4 w-4 text-neutral-500" />,
+    className: "md:col-span-2",
+    icon: <Paperclip className="w-4 h-4 text-neutral-500" />,
     url: "/documents",
     customRender: true,
+    header: null,
+    isPdfUpload: true,
   },
   {
     title: "Random",
     description: "Get quizzed on completely random topics.",
     header: <Skeleton />,
-    className: "md:col-span-1",
-    icon: <Dices className="h-4 w-4 text-neutral-500" />,
+    className: "md:col-span-1 cursor-pointer",
+    icon: <Dices className="w-4 h-4 text-neutral-500" />,
     url: "/random-quiz",
   },
 ];
