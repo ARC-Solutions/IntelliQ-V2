@@ -6,13 +6,13 @@ import AnimatedGridPattern from "@/components/ui/animated-grid-pattern";
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-screen">
+      <div className="flex w-screen h-screen">
         {/* Sidebar */}
         <AppSidebar />
 
         {/* Main Content */}
         <div className="flex-1 overflow-auto">
-          <main className="relative flex h-full w-full items-start justify-center">
+          <main className="relative flex items-start justify-center w-full h-full">
             {children}
             {/* <AnimatedGridPattern
               numSquares={30}
