@@ -26,6 +26,7 @@ import { SettingsDialog } from "./settings-dialog";
 
 export function NavUser({
   user,
+  isNavbar = false,
 }: {
   user: {
     name: string;
@@ -33,6 +34,7 @@ export function NavUser({
     avatar: string;
     id: string;
   };
+  isNavbar?: boolean;
 }) {
   const { isMobile } = useSidebar();
   const { signout, updateUserProfile, currentUser } = useAuth();
@@ -80,7 +82,7 @@ export function NavUser({
         <SidebarMenuItem>
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
-              {isMobile ? (
+              {isNavbar ? (
                 <Avatar className="w-8 h-8 rounded-lg cursor-pointer">
                   <AvatarImage src={currentAvatar} alt={currentName} />
                   <AvatarFallback className="rounded-lg">

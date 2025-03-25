@@ -97,7 +97,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <NavUser user={data.user} />
+              <NavUser user={data.user} isNavbar={true} />
             </div>
           </div>
         </div>
@@ -135,7 +135,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           {state === "collapsed" && !isMobile && (
             <SidebarTrigger className="items-center w-8 h-8" />
           )}
-          <NavUser user={data.user} />
+          <NavUser user={data.user} isNavbar={false} />
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>
