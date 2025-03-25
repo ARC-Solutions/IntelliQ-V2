@@ -1,59 +1,62 @@
-import { z } from "zod";
-import { quizType, supportedLanguages } from "./common.schemas";
+import { z } from 'zod';
+import { quizType, supportedLanguages } from './common.schemas';
 
-export const OPTION_PREFIXES = ["a) ", "b) ", "c) ", "d) "] as const;
+export const OPTION_PREFIXES = ['a) ', 'b) ', 'c) ', 'd) '] as const;
 
 export const quizSchema = z.object({
   quizTitle: z.string(),
   questions: z.array(
     z.object({
-      questionTitle: z.string().describe("A brief title for the question"),
-      text: z.string().describe("The actual question text"),
+      questionTitle: z.string().describe('A brief title for the question'),
+      text: z.string().describe('The actual question text'),
       options: z
         .array(z.string())
         .describe(
-          `An array of 4 quiz options. Each option MUST use the exact prefix format: ${JSON.stringify(OPTION_PREFIXES)} followed by the option text.`,
+          `An array of 4 quiz options. Each option MUST use the exact prefix format: ${JSON.stringify(
+            OPTION_PREFIXES,
+          )} followed by the option text.`,
         ),
-      correctAnswer: z.string().describe("The correct answer text"),
+      correctAnswer: z.string().describe('The correct answer text'),
     }),
   ),
 });
 
 export const documentsQuizSchema = z.object({
-  quizDescription: z.string().describe("The description of the quiz"),
-  quizTopic: z.string().describe("The topic of the quiz"),
-  quizTitle: z.string().describe("The title of the quiz"),
+  quizDescription: z.string().describe('The description of the quiz'),
+  quizTopic: z.string().describe('The topic of the quiz'),
+  quizTitle: z.string().describe('The title of the quiz'),
   questions: z.array(
     z.object({
-      questionTitle: z.string().describe("A brief title for the question"),
-      text: z.string().describe("The actual question text"),
+      questionTitle: z.string().describe('A brief title for the question'),
+      text: z.string().describe('The actual question text'),
       options: z
         .array(z.string())
         .describe(
-          `An array of 4 quiz options. Each option MUST use the exact prefix format: ${JSON.stringify(OPTION_PREFIXES)} followed by the option text.`,
+          `An array of 4 quiz options. Each option MUST use the exact prefix format: ${JSON.stringify(
+            OPTION_PREFIXES,
+          )} followed by the option text.`,
         ),
-      correctAnswer: z.string().describe("The correct answer text"),
+      correctAnswer: z.string().describe('The correct answer text'),
     }),
   ),
 });
 
 export const quizGenerationRequestSchema = z.object({
-  quizTopic: z.string().min(1, "Quiz topic is required"),
-  quizDescription: z.string().min(1, "Quiz description is required").optional(),
+  quizTopic: z.string().min(1, 'Quiz topic is required'),
+  quizDescription: z.string().min(1, 'Quiz description is required').optional(),
   numberOfQuestions: z.coerce
     .number()
     .int()
-    .min(1, "Must generate at least 1 question")
-    .max(10, "Cannot generate more than 10 questions"),
+    .min(1, 'Must generate at least 1 question')
+    .max(10, 'Cannot generate more than 10 questions'),
   quizTags: z
     .preprocess(
-      (val) =>
-        typeof val === "string" ? val.split(",").map((tag) => tag.trim()) : val,
+      (val) => (typeof val === 'string' ? val.split(',').map((tag) => tag.trim()) : val),
       z.array(z.string()),
     )
     .optional(),
   language: supportedLanguages.default(supportedLanguages.Enum.en),
-  quizType: z.enum(["singleplayer", "multiplayer", "document", "random"]),
+  quizType: z.enum(['singleplayer', 'multiplayer', 'document', 'random']),
 });
 
 export const quizResponseSchema = z.object({
@@ -221,15 +224,16 @@ export const filteredQuizResponseSchema = z.object({
   quizId: z.string().uuid(),
   quizTitle: z.string(),
   quizScore: z.number(),
-  totalTime: z.string(),
+  totalTime: z.number(),
   correctAnswersCount: z.number(),
   totalQuestions: z.number(),
   questions: z.array(filteredQuizQuestionSchema),
+  passingScore: z.number(),
 });
 
 // Query parameter schema for filtering
 export const filterQuerySchema = z.object({
-  filter: z.enum(["all", "correct", "incorrect"]).default("all"),
+  filter: z.enum(['all', 'correct', 'incorrect']).default('all'),
 });
 
 export const documentQuizSchema = z.object({
@@ -245,7 +249,7 @@ export type Quiz = {
   topic: string[];
   description: string | null;
   tags: string[] | null;
-  type: "singleplayer" | "multiplayer" | "document" | "random";
+  type: 'singleplayer' | 'multiplayer' | 'document' | 'random';
   language: string;
   userId: string;
   roomId: string | null;
