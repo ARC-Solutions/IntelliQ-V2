@@ -233,7 +233,7 @@ export function SettingsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="max-h-[100svh] sm:max-h-[100svh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
           <DialogDescription>
@@ -242,10 +242,10 @@ export function SettingsDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form className="space-y-6 py-4">
+          <form className="py-4 space-y-6">
             <div className="space-y-4">
               <div className="flex justify-center">
-                <Avatar className="h-24 w-24 border-2 border-primary/20">
+                <Avatar className="w-24 h-24 border-2 border-primary/20">
                   <AvatarImage src={avatar} alt="Selected avatar" />
                   <AvatarFallback>
                     {form.watch("name").substring(0, 2).toUpperCase()}
@@ -287,24 +287,24 @@ export function SettingsDialog({
                   <TabsContent key={category} value={category} className="pt-4">
                     <div className="flex justify-center">
                       {isLoading ? (
-                        <div className="grid grid-cols-4 gap-4 w-full max-w-md">
+                        <div className="grid w-full max-w-md grid-cols-4 gap-4">
                           {Array.from({ length: 4 }).map((_, i) => (
                             <div
                               key={i}
-                              className="flex justify-center items-center"
+                              className="flex items-center justify-center"
                             >
-                              <Skeleton className="h-16 w-16 rounded-full" />
+                              <Skeleton className="w-16 h-16 rounded-full" />
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <div className="grid grid-cols-4 gap-4 w-full max-w-md">
+                        <div className="grid w-full max-w-md grid-cols-4 gap-4">
                           {urls.map((url) => {
                             const isSelected = avatar === url;
                             return (
                               <div
                                 key={url}
-                                className="flex justify-center items-center cursor-pointer"
+                                className="flex items-center justify-center cursor-pointer"
                                 onClick={() => setAvatar(url)}
                               >
                                 <Avatar
@@ -407,7 +407,7 @@ export function SettingsDialog({
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="gap-4">
           <DialogClose asChild>
             <Button
               type="button"
