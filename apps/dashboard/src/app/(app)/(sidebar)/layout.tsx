@@ -1,19 +1,18 @@
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/app-sidebar';
-import { cn } from '@/lib/utils';
-import AnimatedGridPattern from '@/components/ui/animated-grid-pattern';
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import { cn } from "@/lib/utils";
+import AnimatedGridPattern from "@/components/ui/animated-grid-pattern";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
-      <div className='flex h-screen w-screen'>
+      <div className="flex w-screen h-screen">
         {/* Sidebar */}
         <AppSidebar />
 
         {/* Main Content */}
-        <div className='flex-1 overflow-auto'>
-          <SidebarTrigger />
-          <main className='relative flex h-full w-full items-start justify-center'>
+        <div className="flex-1 overflow-auto">
+          <main className="relative flex items-start justify-center w-full h-full">
             {children}
             {/* <AnimatedGridPattern
               numSquares={30}

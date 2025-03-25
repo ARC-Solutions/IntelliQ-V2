@@ -141,12 +141,34 @@ export const questions = pgTable("questions", {
 	pgPolicy("Quiz owners can manage questions", { as: "permissive", for: "all", to: ["authenticated"] }),
 ]);
 
+export const bookmarks = pgTable("bookmarks", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	userId: uuid("user_id").notNull(),
+	quizId: uuid("quiz_id").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.quizId],
+			foreignColumns: [quizzes.id],
+			name: "bookmarks_quiz_id_fkey"
+		}).onUpdate("cascade").onDelete("cascade"),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "bookmarks_user_id_fkey"
+		}).onUpdate("cascade").onDelete("cascade"),
+	unique("bookmarks_quiz_id_key").on(table.quizId),
+	pgPolicy("Users can view their own bookmarks", { as: "permissive", for: "select", to: ["authenticated"], using: sql`(( SELECT auth.uid() AS uid) = user_id)` }),
+	pgPolicy("Users can manage their own bookmarks", { as: "permissive", for: "insert", to: ["authenticated"] }),
+	pgPolicy("Users can delete their own bookmarks", { as: "permissive", for: "delete", to: ["authenticated"] }),
+]);
+
 export const quizzes = pgTable("quizzes", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	userId: uuid("user_id").notNull(),
 	title: text().notNull(),
 	description: text(),
-	topic: text().array().notNull(),
+	topic: text().array(),
 	tags: text().array(),
 	passingScore: smallint("passing_score"),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
@@ -183,29 +205,6 @@ export const quizzes = pgTable("quizzes", {
 	pgPolicy("Users can create quizzes", { as: "permissive", for: "insert", to: ["authenticated"], withCheck: sql`(( SELECT auth.uid() AS uid) = user_id)`  }),
 	pgPolicy("Users can update their own quizzes", { as: "permissive", for: "update", to: ["authenticated"] }),
 	pgPolicy("Users can delete their own quizzes", { as: "permissive", for: "delete", to: ["authenticated"] }),
-]);
-
-export const bookmarks = pgTable("bookmarks", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	userId: uuid("user_id").notNull(),
-	quizId: uuid("quiz_id").notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.quizId],
-			foreignColumns: [quizzes.id],
-			name: "bookmarks_quiz_id_fkey"
-		}).onUpdate("cascade").onDelete("cascade"),
-	foreignKey({
-			columns: [table.userId],
-			foreignColumns: [users.id],
-			name: "bookmarks_user_id_fkey"
-		}).onUpdate("cascade").onDelete("cascade"),
-	unique("bookmarks_user_id_key").on(table.userId),
-	unique("bookmarks_quiz_id_key").on(table.quizId),
-	pgPolicy("Users can view their own bookmarks", { as: "permissive", for: "select", to: ["authenticated"], using: sql`(( SELECT auth.uid() AS uid) = user_id)` }),
-	pgPolicy("Users can manage their own bookmarks", { as: "permissive", for: "insert", to: ["authenticated"] }),
-	pgPolicy("Users can delete their own bookmarks", { as: "permissive", for: "delete", to: ["authenticated"] }),
 ]);
 
 export const rooms = pgTable("rooms", {

@@ -18,7 +18,8 @@ import {
 } from "../services/prompts";
 import { updateUserTagStats } from "../services/update-user-tag-stats";
 
-const adminTagsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
+const adminTagsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
+.post(
   "/analyze",
   bearerAuth({ verifyToken: (token, c) => token === c.env.ADMIN_TOKEN }),
   describeRoute({

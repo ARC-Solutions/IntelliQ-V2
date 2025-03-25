@@ -44,7 +44,7 @@ export const generateQuizEmbedding = async (c: Context, quizId: string) => {
     const textToEmbed = [
       quiz.title,
       quiz.description || "",
-      quiz.topic.join(" "),
+      quiz.topic || "",
       (quiz.tags || []).join(" "),
       questionTexts, // Add the questions text
     ].join(" ");

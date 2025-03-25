@@ -52,7 +52,7 @@ export const FileUpload = ({ onChange }: { onChange?: (files: File[]) => void })
       <motion.div
         onClick={handleClick}
         whileHover='animate'
-        className=' group/file block rounded-lg cursor-pointer w-full relative overflow-hidden'
+        className='relative block w-full overflow-hidden rounded-lg cursor-pointer  group/file'
       >
         <input
           ref={fileInputRef}
@@ -76,12 +76,12 @@ export const FileUpload = ({ onChange }: { onChange?: (files: File[]) => void })
                     'shadow-sm',
                   )}
                 >
-                  <div className='flex justify-between w-full items-center gap-4'>
+                  <div className='flex items-center justify-between w-full gap-4'>
                     <motion.p
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       layout
-                      className='text-base text-neutral-700 dark:text-neutral-300 truncate max-w-xs'
+                      className='max-w-xs text-base truncate text-neutral-700 dark:text-neutral-300'
                     >
                       {file.name}
                     </motion.p>
@@ -89,13 +89,13 @@ export const FileUpload = ({ onChange }: { onChange?: (files: File[]) => void })
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       layout
-                      className='rounded-lg px-2 py-1 w-fit shrink-0 text-sm text-neutral-600 dark:bg-neutral-800 dark:text-white shadow-input'
+                      className='px-2 py-1 text-sm rounded-lg w-fit shrink-0 text-neutral-600 dark:bg-neutral-800 dark:text-white shadow-input'
                     >
                       {(file.size / (1024 * 1024)).toFixed(2)} MB
                     </motion.p>
                   </div>
 
-                  <div className='flex text-sm md:flex-row flex-col items-start md:items-center w-full mt-2 justify-between text-neutral-600 dark:text-neutral-400'>
+                  <div className='flex flex-col items-start justify-between w-full mt-2 text-sm md:flex-row md:items-center text-neutral-600 dark:text-neutral-400'>
                     <motion.p
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -129,13 +129,13 @@ export const FileUpload = ({ onChange }: { onChange?: (files: File[]) => void })
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className='text-neutral-600 flex flex-col items-center'
+                    className='flex flex-col items-center text-neutral-600'
                   >
                     Drop it
-                    <IconUpload className='h-4 w-4 text-neutral-600 dark:text-neutral-400' />
+                    <IconUpload className='w-4 h-4 text-neutral-600 dark:text-neutral-400' />
                   </motion.p>
                 ) : (
-                  <IconUpload className='h-4 w-4 text-neutral-600 dark:text-neutral-300' />
+                  <IconUpload className='w-4 h-4 text-neutral-600 dark:text-neutral-300' />
                 )}
               </motion.div>
             )}
@@ -157,7 +157,7 @@ export function GridPattern() {
   const columns = 41;
   const rows = 11;
   return (
-    <div className='flex bg-gray-100 dark:bg-neutral-900 shrink-0 flex-wrap justify-center items-center gap-x-px gap-y-px  scale-105'>
+    <div className='flex flex-wrap items-center justify-center scale-105 bg-gray-100 dark:bg-neutral-900 shrink-0 gap-x-px gap-y-px'>
       {Array.from({ length: rows }).map((_, row) =>
         Array.from({ length: columns }).map((_, col) => {
           const index = row * columns + col;

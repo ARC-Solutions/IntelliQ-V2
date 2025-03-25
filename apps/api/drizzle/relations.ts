@@ -20,6 +20,7 @@ export const quizzesRelations = relations(quizzes, ({one, many}) => ({
 	multiplayerQuizSubmissions: many(multiplayerQuizSubmissions),
 	userResponses: many(userResponses),
 	questions: many(questions),
+	bookmarks: many(bookmarks),
 	document: one(documents, {
 		fields: [quizzes.documentId],
 		references: [documents.id]
@@ -32,7 +33,6 @@ export const quizzesRelations = relations(quizzes, ({one, many}) => ({
 		fields: [quizzes.userId],
 		references: [users.id]
 	}),
-	bookmarks: many(bookmarks),
 	sharedQuizzes: many(sharedQuizzes),
 }));
 
@@ -52,8 +52,8 @@ export const usersRelations = relations(users, ({many}) => ({
 	userResponses: many(userResponses),
 	userUsageData: many(userUsageData),
 	documents: many(documents),
-	quizzes: many(quizzes),
 	bookmarks: many(bookmarks),
+	quizzes: many(quizzes),
 	rooms: many(rooms),
 	sharedQuizzes: many(sharedQuizzes),
 	userAnalyses: many(userAnalysis),

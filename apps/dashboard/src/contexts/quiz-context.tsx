@@ -39,6 +39,9 @@ interface CurrentQuiz {
   quiz: Quiz[];
   topic: string;
   showCorrectAnswers: boolean;
+  documentId?: string;
+  language?: SupportedLanguages;
+  passingScore?: number;
 }
 
 export interface QuizHistory {
@@ -99,6 +102,7 @@ export type QuizAction =
 export interface QuizContextValues extends QuizContextValue {
   dispatch: React.Dispatch<QuizAction>;
   fetchQuestions: (userQuizData: QuizData, roomId?: string) => void;
+  fetchDocumentQuestions: (userQuizData: QuizData) => void;
   submitSinglePlayerQuiz: (
     userAnswer: UserAnswer[],
     timeTaken: number,
@@ -110,10 +114,22 @@ export interface QuizContextValues extends QuizContextValue {
     passingScore: number,
     tags: string[],
   ) => void;
+  submitDocumentQuiz: (
+    userAnswer: UserAnswer[],
+    timeTaken: number,
+    currentQuiz: CurrentQuiz,
+    userScore: number,
+    documentId: string,
+    language: SupportedLanguages,
+    passingScore: number,
+  ) => void;
   getMultiplayerQuizForPlayers: (roomId: string, quiz: CurrentQuiz) => void;
   isMultiplayerMode: boolean;
   setIsMultiplayerMode: (mode: boolean) => void;
   getLeaderboard: (roomId: string) => void;
+  isDocumentQuiz: boolean;
+  setIsDocumentQuiz: (value: boolean) => void;
+  getSinglePlayerSummary: (quizId: string) => void;
 }
 const initialState: QuizContextValue = {
   isLoading: false,
@@ -198,46 +214,6 @@ const initialState: QuizContextValue = {
   //         correctAnswer: 'c) 1:12.908',
   //         userAnswer: 'a) 1:14.260',
   //         timeTaken: 4147,
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     userName: 'arc admin',
-  //     userId: '0a63b60e-3c17-42b8-9924-8c337a43de1f',
-  //     score: 2467,
-  //     correctAnswers: 3,
-  //     avgTimeTaken: 7907.67,
-  //     totalQuestions: 5,
-  //     questions: [
-  //       {
-  //         text: 'In which year was the first Formula 1 World Championship held?',
-  //         correctAnswer: 'b) 1950',
-  //         userAnswer: 'b) 1950',
-  //         timeTaken: 10468,
-  //       },
-  //       {
-  //         text: 'Which driver holds the record for the most World Championships in Formula 1?',
-  //         correctAnswer: 'b) Lewis Hamilton',
-  //         userAnswer: 'b) Lewis Hamilton',
-  //         timeTaken: 6748,
-  //       },
-  //       {
-  //         text: "Which of the following circuits is known as 'The Temple of Speed'?",
-  //         correctAnswer: 'a) Monza',
-  //         userAnswer: 'a) Monza',
-  //         timeTaken: 6259,
-  //       },
-  //       {
-  //         text: "Which team has won the most Constructors' Championships in Formula 1 history?",
-  //         correctAnswer: 'a) Ferrari',
-  //         userAnswer: 'b) McLaren',
-  //         timeTaken: 4328,
-  //       },
-  //       {
-  //         text: 'What is the fastest recorded lap in Formula 1 history (as of 2023)?',
-  //         correctAnswer: 'c) 1:12.908',
-  //         userAnswer: 'b) 1:13.553',
-  //         timeTaken: 6122,
   //       },
   //     ],
   //   },
@@ -618,6 +594,7 @@ const QuizContext = createContext<QuizContextValues | null>(null);
 export const QuizProvider = ({ children }: Props) => {
   const [state, dispatch] = useReducer(quizReducer, initialState);
   const [isMultiplayerMode, setIsMultiplayerMode] = useState(false);
+  const [isDocumentQuiz, setIsDocumentQuiz] = useState(false);
   const fetchQuestions = async (userQuizData: QuizData, roomId?: string) => {
     try {
       console.log('generating...');
@@ -685,6 +662,63 @@ export const QuizProvider = ({ children }: Props) => {
           quiz.quizId = multiplayerQuiz.quizId;
         }
       }
+      dispatch({ type: 'FETCH_QUIZ_SUCCESS', payload: quiz });
+    } catch (error: any) {
+      dispatch({ type: 'FETCH_QUIZ_ERROR' });
+      toast.error(error);
+    }
+  };
+  const fetchDocumentQuestions = async (userQuizData: QuizData) => {
+    try {
+      setIsDocumentQuiz(true);
+
+      const {
+        documentId,
+        number: numberOfQuestions,
+        quizLanguage: language,
+        passingScore,
+        quizType,
+      } = userQuizData;
+
+      const client = createApiClient();
+      dispatch({ type: 'FETCH_QUIZ_REQUEST' });
+      const response = await client.api.v1.quizzes.documents.$get({
+        query: {
+          documentId: documentId!,
+          numberOfQuestions: numberOfQuestions.toString(),
+          language,
+          quizType,
+        },
+      });
+
+      interface QuizApiResponse {
+        quiz: {
+          quizTitle: string;
+          questions: Quiz[];
+        };
+      }
+
+      const data = (await response.json()) as QuizApiResponse;
+      const { quizTitle: topic, questions } = data.quiz;
+
+      const userQuizQuestions = userQuizData.questions.map((question) => {
+        return {
+          correctAnswer: question.answer!,
+          options: question.options!,
+          questionTitle: question.text,
+          text: question.text,
+        };
+      });
+      questions.push(...userQuizQuestions);
+      const quiz: CurrentQuiz = {
+        quiz: questions,
+        topic,
+        showCorrectAnswers: userQuizData.showCorrectAnswers,
+        documentId,
+        language: language,
+        passingScore: passingScore,
+      };
+
       dispatch({ type: 'FETCH_QUIZ_SUCCESS', payload: quiz });
     } catch (error: any) {
       dispatch({ type: 'FETCH_QUIZ_ERROR' });
@@ -778,7 +812,12 @@ export const QuizProvider = ({ children }: Props) => {
 
       const response = await client.api.v1['quiz-submissions'].multiplayer[':roomId'].quiz.$post({
         param: { roomId },
-        json: { language, questions: formattedQuestions, quizTitle, quizTopics: [quizTopics] },
+        json: {
+          language,
+          questions: formattedQuestions,
+          quizTitle,
+          quizTopics: [quizTopics],
+        },
       });
 
       const data = await response.json();
@@ -801,23 +840,97 @@ export const QuizProvider = ({ children }: Props) => {
       });
 
       const data = await response.json();
-      dispatch({ type: 'FETCH_LEADERBOARD_SUCCESS', payload: data.leaderboard });
+      dispatch({
+        type: 'FETCH_LEADERBOARD_SUCCESS',
+        payload: data.leaderboard,
+      });
     } catch (error: any) {
       toast(error.message);
       console.log(error);
     }
   };
+
+  const submitDocumentQuiz = async (
+    userAnswer: UserAnswer[],
+    timeTaken: number,
+    currentQuiz: CurrentQuiz,
+    userScore: number,
+    documentId: string,
+    language: SupportedLanguages,
+    passingScore: number,
+  ) => {
+    try {
+      const client = createApiClient();
+
+      const quizTitle = currentQuiz.topic;
+      const questions = userAnswer.map((ans, i) => {
+        const { correctAnswer, question, userAnswer } = ans;
+        const options = currentQuiz.quiz[i].options.map((opt) => opt.slice(3));
+        if (!userAnswer) {
+          throw new Error('Missing user answer');
+        }
+        return { text: question, correctAnswer, userAnswer, options };
+      });
+
+      const quizLanguage = language || (currentQuiz as any).language || 'en';
+
+      const response = await client.api.v1['quiz-submissions'].singleplayer.document.submit.$post({
+        json: {
+          documentId: Number.parseInt(documentId),
+          quizTitle,
+          language: quizLanguage,
+          passingScore,
+          userScore,
+          timeTaken,
+          questions,
+        },
+      });
+
+      const data = (await response.json()) as QuizHistory;
+
+      dispatch({ type: 'SUBMIT_QUIZ_SUCESS', payload: data });
+    } catch (error: any) {
+      toast(error.message);
+      console.log(error);
+    }
+  };
+
+  const getSinglePlayerSummary = async (quizId: string) => {
+    try {
+      const client = createApiClient();
+
+      const response = await client.api.v1['quiz-submissions'].singleplayer[
+        ':quizId'
+      ].questions.$get({
+        param: { quizId },
+        query: { filter: 'all' },
+      });
+
+      const data = (await response.json()) as QuizHistory;
+      console.log(data);
+      dispatch({ type: 'SUBMIT_QUIZ_SUCESS', payload: data });
+    } catch (error: any) {
+      toast(error.message);
+      console.log(error);
+    }
+  };
+
   return (
     <QuizContext.Provider
       value={{
         ...state,
         dispatch,
         fetchQuestions,
+        fetchDocumentQuestions,
         submitSinglePlayerQuiz,
+        submitDocumentQuiz,
         getMultiplayerQuizForPlayers,
         setIsMultiplayerMode,
         isMultiplayerMode,
         getLeaderboard,
+        isDocumentQuiz,
+        setIsDocumentQuiz,
+        getSinglePlayerSummary,
       }}
     >
       {children}

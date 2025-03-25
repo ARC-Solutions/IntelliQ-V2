@@ -92,7 +92,7 @@ export function FileUpload({
           accept={accept}
           onChange={handleChange}
           disabled={isLoading}
-          name="fileName"
+          name="file"
         />
 
         {selectedFile ? (
@@ -147,7 +147,7 @@ export function FileUpload({
               Select File
             </Button>
             <p className="text-xs text-muted-foreground mt-4">
-              Supported formats: PDF, DOC, DOCX, TXT
+              Supported format: PDF • Max file size: 150KB
             </p>
           </>
         )}

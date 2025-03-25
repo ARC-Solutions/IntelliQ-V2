@@ -15,7 +15,8 @@ import { z } from "zod";
 import { resolver } from "hono-openapi/zod";
 import { zValidator } from "@hono/zod-validator";
 
-const adminDocumentsRoutes = new Hono<{ Bindings: CloudflareEnv }>().post(
+const adminDocumentsRoutes = new Hono<{ Bindings: CloudflareEnv }>()
+.post(
   "/process",
   bearerAuth({ verifyToken: (token, c) => token === c.env.ADMIN_TOKEN }),
   describeRoute({

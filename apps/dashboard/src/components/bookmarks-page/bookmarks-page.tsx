@@ -33,7 +33,7 @@ interface PaginationInfo {
   hasPreviousPage: boolean;
 }
 
-export default function HistoryPage() {
+export default function BookmarksPage() {
   const [filters, setFilters] = useState<Filter[]>([]);
   const [allQuizHistory, setAllQuizHistory] = useState<QuizHistory[]>([]);
   const [quizHistory, setQuizHistory] = useState<QuizHistory[]>([]);
@@ -41,7 +41,6 @@ export default function HistoryPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isSearching, setIsSearching] = useState(false);
-
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,
     limit: 10,
@@ -109,7 +108,7 @@ export default function HistoryPage() {
       const statusFilter = filters.find((f) => f.type === FilterType.STATUS)?.value[0];
       const tagsFilter = filters.find((f) => f.type === FilterType.TAGS)?.value[0];
 
-      const response = await client.api.v1.history.$get({
+      const response = await client.api.v1.bookmarks.$get({
         query: {
           status:
             statusFilter === 'Passed' ? 'true' : statusFilter === 'Failed' ? 'false' : undefined,
@@ -179,7 +178,7 @@ export default function HistoryPage() {
 
     try {
       const client = createApiClient();
-      const response = await client.api.v1.history.search.$post({
+      const response = await client.api.v1.bookmarks.search.$post({
         json: {
           query: searchQuery,
           page: pagination.page,
@@ -207,7 +206,7 @@ export default function HistoryPage() {
       setIsLoading(true);
       try {
         const client = createApiClient();
-        const response = await client.api.v1.history.search.$post({
+        const response = await client.api.v1.bookmarks.search.$post({
           json: {
             query: searchQuery,
             page,
@@ -237,7 +236,7 @@ export default function HistoryPage() {
     <div className='min-h-screen flex flex-col items-center py-8 px-4'>
       <div className='w-full max-w-4xl space-y-8'>
         <div className='flex items-center justify-center'>
-          <h1 className='text-2xl font-bold'>Quiz History</h1>
+          <h1 className='text-2xl font-bold'>Bookmarks</h1>
         </div>
 
         <MenuBar
@@ -279,7 +278,14 @@ export default function HistoryPage() {
 
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               {quizHistory.map((item) => (
-                <HistoryCard key={item.id} {...item} isBookmarked={item.isBookmarked} />
+                <HistoryCard
+                  key={item.id}
+                  {...item}
+                  isBookmarked={item.isBookmarked}
+                  onBookmarkToggle={() => {
+                    fetchQuizHistory();
+                  }}
+                />
               ))}
             </div>
 

@@ -24,7 +24,7 @@ think of something very special for each individual question.`;
 export const analyzeQuizPromptMultiplayer = (quiz: Quiz) => `
 Analyze this multiplayer quiz and generate normalized tags:
            Title: ${quiz.title}
-           Topics: ${quiz.topic.join(", ")}
+           Topics: ${quiz.topic?.join(", ") || ""}
            Description: ${quiz.description || ""}
            Questions Count: ${quiz.questionsCount}
            Player Count: ${quiz.room?.multiplayerQuizSubmissions.length}
@@ -39,7 +39,7 @@ Analyze this multiplayer quiz and generate normalized tags:
 
 export const analyzeQuizPromptSingleplayer = (quiz: Quiz) => `Analyze this singleplayer quiz and generate normalized tags:
            Title: ${quiz.title}
-           Topics: ${quiz.topic.join(", ")}
+           Topics: ${quiz.topic?.join(", ") || ""}
            Description: ${quiz.description || ""}
            User Tags: ${quiz.tags?.join(", ") || ""}
            Questions Count: ${quiz.questionsCount}
