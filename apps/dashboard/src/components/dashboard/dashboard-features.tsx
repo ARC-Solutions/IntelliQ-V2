@@ -35,7 +35,7 @@ export function DashboardFeatures() {
   }, [currentQuiz, summaryQuiz, isMultiplayerMode]);
 
   return (
-    <BentoGrid className="max-w-5xl mx-auto md:auto-rows-[20rem] md:grid-cols-3 gap-6">
+    <BentoGrid className="max-w-5xl mx-auto md:auto-rows-[20rem] md:grid-cols-3 gap-6 px-4 py-6">
       {items.map((item, i) => (
         <motion.div
           key={i}
