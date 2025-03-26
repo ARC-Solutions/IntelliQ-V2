@@ -73,6 +73,7 @@ export default function VerifyOTPForm({ email }: { email: string }) {
             maxLength={6}
             value={otp}
             onChange={(value) => setOtp(value)}
+            
           >
             <InputOTPGroup>
               <InputOTPSlot index={0} />

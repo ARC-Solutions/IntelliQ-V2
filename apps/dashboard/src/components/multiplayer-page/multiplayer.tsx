@@ -16,10 +16,12 @@ import Lottie from "lottie-react";
 import { ChevronRight, CircleCheck, CircleX, Timer } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import Summarizing from "../../../public/IntelliQ summarizing.json";
-import Answer_Waiting from "../../../public/answer_wait_animation-light.json";
+import Answer_Waiting_Light from "../../../public/answer_wait_animation-light.json";
+import Answer_Waiting from "../../../public/answer_wait_animation.json";
+import Summarizing from "../../../public/intelliq_summarizing.json";
 import QAndA from "../single-player-quiz/q-and-a";
 import QAndASkeleton from "../single-player-quiz/q-and-a-skeleton";
+import { useTheme } from "next-themes";
 
 const Quiz = () => {
   const { currentQuiz, getLeaderboard, leaderboard } = useQuiz();
@@ -36,9 +38,8 @@ const Quiz = () => {
 
     setIsMultiplayer,
   } = useQuizLogic();
-  const { setPlayers, isCreator, channel, setChannel, timeLimit, roomId } =
-    useMultiplayer();
 
+  const { setPlayers, isCreator, channel, setChannel, timeLimit, roomId } = useMultiplayer();
   const { currentUser } = useAuth();
   const routerParams = useParams();
   const router = useRouter();
@@ -313,6 +314,7 @@ const Quiz = () => {
     dispatch({ type: "SET_SELECTED_ANSWER", payload: answer });
   };
 
+  const { resolvedTheme } = useTheme();
   useEffect(() => {
     if (currentQuiz) {
       setQuizFinished(false);
@@ -335,13 +337,18 @@ const Quiz = () => {
     //load the waiting animation after the user selects an answer
     return (
       <div className="absolute left-1/2 top-1/2 flex w-[40] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[30vw]">
+        <Lottie
+          animationData={
+            resolvedTheme === "dark" ? Answer_Waiting_Light : Answer_Waiting
+          }
+        />
         <Lottie animationData={Answer_Waiting} />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto flex w-[400] flex-col items-center justify-center p-4 text-white sm:w-[800px] ">
+    <div className="mx-auto flex w-[400] flex-col items-center justify-center p-4 dark:text-white sm:w-[800px] ">
       <header className="mb-4 text-2xl font-bold text-center sm:text-4xl">
         {currentQuiz.quiz[questionNumber].questionTitle}
       </header>

@@ -21,12 +21,14 @@ import { CornerDownLeft, Paperclip, Plus, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import Loading from "../../../public/Loading.json";
+import Loading from "@/assets/loading.json";
+import LoadingDark from "@/assets/loading-dark.json";
 import { useToast } from "../ui/use-toast";
 import { DocumentCard } from "./document-card";
 import { DocumentCardSkeleton } from "./document-card-skeleton";
 import { FileUpload } from "./file-upload";
 import { Pagination } from "./pagination";
+import { useTheme } from "next-themes";
 
 interface Document {
   id: number;
@@ -70,6 +72,7 @@ export function DocumentDashboard() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const { resolvedTheme } = useTheme();
   const [mostQuizzedDocs, setMostQuizzedDocs] = useState<Document[]>([]);
   const RECENT_ITEMS_LIMIT = 6;
   const [isSearching, setIsSearching] = useState(false);
@@ -238,7 +241,7 @@ export function DocumentDashboard() {
           documentId,
           number: 5, // Fixed at 5 questions
           quizLanguage: "en" as SupportedLanguages,
-          language: "en", // Add this line to fix the validation error
+          language: "en",
           showCorrectAnswers: true,
           passingScore: 50, // Fixed at 50% passing score
           quizType: QuizType.Enum.document,
@@ -593,14 +596,14 @@ export function DocumentDashboard() {
   if (isGenerating) {
     return (
       <div className="absolute left-1/2 top-1/2 flex w-[40] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[30vw]">
-        <Lottie animationData={Loading} />
+        <Lottie animationData={resolvedTheme === "dark" ? LoadingDark : Loading} />
       </div>
     );
   }
 
   return (
-    <div className="flex items-center justify-center h-screen w-full overflow-hidden">
-      <div className="w-full max-w-4xl mx-auto h-full overflow-y-auto px-4 py-6">
+    <div className="flex items-center justify-center w-full h-screen overflow-hidden">
+      <div className="w-full h-full max-w-4xl px-4 py-6 mx-auto overflow-y-auto">
         <div className="flex flex-col gap-6">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold">Document Library</h1>
@@ -609,7 +612,7 @@ export function DocumentDashboard() {
                 "Cancel"
               ) : (
                 <>
-                  <Plus className="mr-2 h-4 w-4" />
+                  <Plus className="w-4 h-4 mr-2" />
                   Upload Document
                 </>
               )}
@@ -724,7 +727,7 @@ export function DocumentDashboard() {
             className="w-full"
             onValueChange={setActiveTab}
           >
-            <TabsList className="mb-4 w-full justify-center">
+            <TabsList className="justify-center w-full mb-4">
               <TabsTrigger value="recent">Recent</TabsTrigger>
               <TabsTrigger value="all">All Documents</TabsTrigger>
               <TabsTrigger value="quizzed">Most Quizzed</TabsTrigger>
@@ -732,12 +735,12 @@ export function DocumentDashboard() {
 
             <TabsContent value="recent" className="mt-0">
               {isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   {renderSkeletons()}
                 </div>
               ) : filteredDocuments.length === 0 ? (
-                <div className="text-center py-12">
-                  <Paperclip className="mx-auto h-12 w-12 text-muted-foreground" />
+                <div className="py-12 text-center">
+                  <Paperclip className="w-12 h-12 mx-auto text-muted-foreground" />
                   <h3 className="mt-4 text-lg font-medium">
                     No recent documents found
                   </h3>
@@ -746,7 +749,7 @@ export function DocumentDashboard() {
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   {filteredDocuments.map((doc) => (
                     <DocumentCard
                       key={doc.id}
@@ -764,12 +767,12 @@ export function DocumentDashboard() {
 
             <TabsContent value="all" className="mt-0">
               {isInitialLoading || isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   {renderSkeletons()}
                 </div>
               ) : documents.length === 0 ? (
-                <div className="text-center py-12">
-                  <Paperclip className="mx-auto h-12 w-12 text-muted-foreground" />
+                <div className="py-12 text-center">
+                  <Paperclip className="w-12 h-12 mx-auto text-muted-foreground" />
                   <h3 className="mt-4 text-lg font-medium">
                     No documents found
                   </h3>
@@ -781,7 +784,7 @@ export function DocumentDashboard() {
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     {documents.map((doc) => (
                       <DocumentCard
                         key={doc.id}
@@ -810,12 +813,12 @@ export function DocumentDashboard() {
 
             <TabsContent value="quizzed" className="mt-0">
               {isInitialLoading || isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   {renderSkeletons()}
                 </div>
               ) : mostQuizzedDocs.length === 0 ? (
-                <div className="text-center py-12">
-                  <Paperclip className="mx-auto h-12 w-12 text-muted-foreground" />
+                <div className="py-12 text-center">
+                  <Paperclip className="w-12 h-12 mx-auto text-muted-foreground" />
                   <h3 className="mt-4 text-lg font-medium">
                     No documents found
                   </h3>
@@ -824,7 +827,7 @@ export function DocumentDashboard() {
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   {mostQuizzedDocs.map((doc) => (
                     <DocumentCard
                       key={doc.id}
