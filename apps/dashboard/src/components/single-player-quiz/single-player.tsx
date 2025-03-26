@@ -9,7 +9,7 @@ import { Card, CardDescription } from "@/components/ui/card";
 import { Timer, CircleCheck, CircleX, ChevronRight } from "lucide-react";
 import QAndA from "./q-and-a";
 import Lottie from "lottie-react";
-import Summarizing from "../../../public/IntelliQ summarizing.json";
+import Summarizing from "../../../public/intelliq_summarizing.json";
 import { Progress } from "@/components/ui/progress";
 import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
 import { motion } from "framer-motion";
@@ -137,14 +137,14 @@ const Quiz = () => {
 
   return (
     <div className="mx-auto flex w-[400] flex-col items-center justify-center p-4 dark:text-white sm:w-[800px] ">
-      <header className="mb-4 text-center text-2xl font-bold sm:text-4xl">
+      <header className="mb-4 text-2xl font-bold text-center sm:text-4xl">
         {currentQuiz.quiz[questionNumber].questionTitle}
       </header>
-      <section className="w-full rounded-lg p-6 text-center shadow-none">
-        <div className="mb-4 flex items-center justify-between">
+      <section className="w-full p-6 text-center rounded-lg shadow-none">
+        <div className="flex items-center justify-between mb-4">
           <motion.div
             layout
-            className="inline-flex items-center rounded p-2 pr-3 text-sm font-medium text-black sm:text-xl bg-primary"
+            className="inline-flex items-center p-2 pr-3 text-sm font-medium text-black rounded sm:text-xl bg-primary"
             animate={{
               width: time.minutes > 0 ? "7.75rem" : "5.5rem",
             }}
@@ -179,14 +179,14 @@ const Quiz = () => {
             </span>
           </motion.div>
           <Card className="flex items-center rounded-lg border-b-[0.5px] border-white border-opacity-20 text-2xl font-bold text-green-500">
-            <div className="mx-2 flex items-center">
+            <div className="flex items-center mx-2">
               <CircleCheck className="text-2xl sm:text-3xl " />
               <NumberFlow
                 value={correctAnswer}
                 className="ml-1 text-2xl sm:text-3xl"
               />
             </div>
-            <div className="mx-2 flex items-center text-red-500">
+            <div className="flex items-center mx-2 text-red-500">
               <NumberFlow
                 value={wrongAnswer}
                 className="mr-1 text-2xl sm:text-3xl"
@@ -195,7 +195,7 @@ const Quiz = () => {
             </div>
           </Card>
         </div>
-        <CardDescription className="my-3 flex items-start text-sm sm:text-base">
+        <CardDescription className="flex items-start my-3 text-sm sm:text-base">
           <NumberFlow value={questionNumber + 1} suffix=" out of " />
           {currentQuiz.quiz.length}
         </CardDescription>
@@ -270,7 +270,7 @@ const Quiz = () => {
               );
             }
           }}
-          className="w-full/50 mt-4 rounded-lg px-6 py-2 text-center text-base font-bold hover:bg-primary/90 active:bg-primary/80"
+          className="px-6 py-2 mt-4 text-base font-bold text-center rounded-lg w-full/50 hover:bg-primary/90 active:bg-primary/80"
         >
           Next <ChevronRight />
         </Button>

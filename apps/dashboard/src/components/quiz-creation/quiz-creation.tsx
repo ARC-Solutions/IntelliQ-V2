@@ -2,7 +2,9 @@
 import { useState } from 'react';
 import { Controller } from 'react-hook-form';
 import Lottie from 'lottie-react';
-import Loading from '../../../public/Loading.json';
+import Loading from '@/assets/loading.json';
+import LoadingDark from '@/assets/loading-dark.json';
+import { useTheme } from 'next-themes';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -49,7 +51,7 @@ export default function QuizCreator() {
     setQuizLanguageValue,
   } = useQuizCreation();
   const { isLoading, fetchingFinished, currentQuiz, isMultiplayerMode } = useQuiz();
-
+  const { resolvedTheme } = useTheme();
   // UI nuqs
   const [activeTab, setActiveTab] = useQueryState("activeTab", {
     defaultValue: "general",
@@ -68,14 +70,14 @@ export default function QuizCreator() {
   if (isLoading) {
     return (
       <div className="absolute left-1/2 top-1/2 flex w-[40] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[30vw]">
-        <Lottie animationData={Loading} />
+        <Lottie animationData={resolvedTheme === "dark" ? LoadingDark : Loading} />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 flex flex-col justify-start">
-      <h1 className="text-3xl font-bold mb-6">Create Your Quiz</h1>
+    <div className="container flex flex-col justify-start p-6 mx-auto">
+      <h1 className="mb-6 text-3xl font-bold">Create Your Quiz</h1>
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
@@ -93,7 +95,7 @@ export default function QuizCreator() {
               <Label htmlFor="topic">Quiz Topic</Label>
               <div className="relative">
                 <BookOpen
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                  className="absolute text-gray-500 transform -translate-y-1/2 left-3 top-1/2"
                   size={18}
                 />
                 <Input
@@ -129,7 +131,7 @@ export default function QuizCreator() {
               <Label htmlFor="number">Number of Questions</Label>
               <div className="relative">
                 <Hash
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                  className="absolute text-gray-500 transform -translate-y-1/2 left-3 top-1/2"
                   size={18}
                 />
                 <Input
@@ -229,7 +231,7 @@ export default function QuizCreator() {
                         }}
                         value={field.value}
                       >
-                        <SelectTrigger className="w-full dark:bg-black border-gray-800">
+                        <SelectTrigger className="w-full border-gray-800 dark:bg-black">
                           <SelectValue placeholder='Select Language' />
                         </SelectTrigger>
                         <SelectContent>
@@ -252,7 +254,7 @@ export default function QuizCreator() {
                 {formValues.tags?.map((tag: string) => (
                   <span
                     key={tag}
-                    className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center"
+                    className="flex items-center px-2 py-1 text-sm text-blue-800 bg-blue-100 rounded-full"
                   >
                     {tag}
                     <button
@@ -294,7 +296,7 @@ export default function QuizCreator() {
 
         <TabsContent value="questions">
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <h2 className="text-2xl font-semibold">Questions</h2>
               <Button onClick={addQuestion}>
                 <Plus size={16} className="mr-2" /> Add Question
@@ -307,9 +309,9 @@ export default function QuizCreator() {
                     (question: Question, index: number) => (
                       <div
                         key={index}
-                        className="border p-4 rounded-lg space-y-4"
+                        className="p-4 space-y-4 border rounded-lg"
                       >
-                        <div className="flex justify-between items-center">
+                        <div className="flex items-center justify-between">
                           <Label htmlFor={`question-${index}`}>
                             Question {index + 1}
                           </Label>
@@ -418,7 +420,7 @@ export default function QuizCreator() {
                   {formValues.tags?.map((tag) => (
                     <span
                       key={tag}
-                      className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm"
+                      className="px-2 py-1 text-sm text-blue-800 bg-blue-100 rounded-full"
                     >
                       {tag}
                     </span>
@@ -429,12 +431,12 @@ export default function QuizCreator() {
                 <h3 className="font-semibold">Questions:</h3>
                 {formValues.questions.length > 0 ? (
                   <ScrollArea className="h-[300px]">
-                    <ol className="list-decimal list-inside space-y-4">
+                    <ol className="space-y-4 list-decimal list-inside">
                       {formValues.questions.map((question, index) => (
-                        <li key={index} className="border p-4 rounded-lg">
+                        <li key={index} className="p-4 border rounded-lg">
                           <p className="font-medium">{question.text}</p>
 
-                          <ul className="list-disc list-inside ml-4 mt-2">
+                          <ul className="mt-2 ml-4 list-disc list-inside">
                             {question.options?.map((option, optionIndex) => (
                               <li
                                 key={optionIndex}

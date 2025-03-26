@@ -16,13 +16,16 @@ import { useQuizCreation } from '@/contexts/quiz-creation-context';
 import type { QuizData } from '@/contexts/quiz-creation-context';
 import { QuizType } from '@intelliq/api';
 import Lottie from 'lottie-react';
-import Loading from '../../../public/Loading.json';
+import Loading from '@/assets/loading.json';
+import LoadingDark from '@/assets/loading-dark.json';
+import { useTheme } from 'next-themes';
 import { useLocalStorage } from 'usehooks-ts';
 import ReactConfetti from 'react-confetti';
 import { useRouter } from 'next/navigation';
 
 const Summary = () => {
   const { dispatch, summaryQuiz, fetchQuestions, isLoading, currentQuiz } = useQuiz();
+  const { resolvedTheme } = useTheme();
   const { formValues } = useQuizCreation();
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const [replay, setReplay] = useState<boolean>(false);
@@ -67,7 +70,7 @@ const Summary = () => {
   if (isLoading) {
     return (
       <div className='absolute left-1/2 top-1/2 flex w-[40] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[30vw]'>
-        <Lottie animationData={Loading} />
+        <Lottie animationData={resolvedTheme === 'dark' ? LoadingDark : Loading} />
       </div>
     );
   }
@@ -102,28 +105,28 @@ const Summary = () => {
   );
 
   return (
-    <div className='mx-auto flex w-full flex-col px-6 py-3 text-white sm:w-10/12'>
+    <div className='flex flex-col w-full px-6 py-3 mx-auto text-white sm:w-10/12'>
       {particlesEnabled && correctPercentage >= summaryQuiz.passingScore && (
         <ReactConfetti recycle={false} numberOfPieces={200} gravity={0.2} />
       )}
-      <header className='mb-14 flex w-full flex-col items-center justify-center'>
+      <header className='flex flex-col items-center justify-center w-full mb-14'>
         <Image src='/logo-dark.svg' alt='IntelliQ' width={250} height={250} />
         <h1 className='text-2xl font-bold sm:text-4xl text-primary'>{summaryQuiz.quizTitle}</h1>
       </header>
 
-      <Card className='w-full border-b border-white border-opacity-15 p-4 rounded-lg shadow-lg'>
+      <Card className='w-full p-4 border-b border-white rounded-lg shadow-lg border-opacity-15'>
         <CardHeader>
-          <div className='flex flex-col lg:flex-row items-center justify-between'>
+          <div className='flex flex-col items-center justify-between lg:flex-row'>
             <div className='flex items-center justify-center gap-4'>
               <Award size={40} className='text-primary' />
-              <div className='flex flex-col justify-center text-5xl mb-2'>
+              <div className='flex flex-col justify-center mb-2 text-5xl'>
                 <span className='text-xl'>Your Score</span>
-                <span className='text-primary text-4xl font-bold'>
+                <span className='text-4xl font-bold text-primary'>
                   {correctPercentage.toFixed(2)}%
                 </span>
               </div>
             </div>
-            <div className="flex flex-col lg:flex-row items-center justify-center gap-6 mt-4 lg:mt-0">
+            <div className="flex flex-col items-center justify-center gap-6 mt-4 lg:flex-row lg:mt-0">
               
         <div className="flex flex-col items-center justify-center">
           
@@ -132,7 +135,7 @@ const Summary = () => {
 
             <span className="text-lg">Total Time</span>
           </div>
-          <span className="text-primary text-2xl font-semibold text-center">
+          <span className="text-2xl font-semibold text-center text-primary">
             {formatTime(timeTaken)}
           </span>
         </div>
@@ -142,28 +145,28 @@ const Summary = () => {
             <CheckCircle2 className="text-primary" />
             <span className="text-lg">Correct Answers</span>
           </div>
-          <span className="text-primary text-2xl font-semibold text-center">
+          <span className="text-2xl font-semibold text-center text-primary">
             {summaryQuiz.quizScore}/{totalQuestions}
           </span>
         </div>
       </div>
     </div>
         </CardHeader>
-        <CardDescription className='flex flex-col justify-between items-center px-6 gap-2'>
+        <CardDescription className='flex flex-col items-center justify-between gap-2 px-6'>
           {isMounted && (
             <>
               <Progress
                 className='w-full mb-4 outline outline-1 outline-slate-600'
                 value={(100 / totalQuestions) * correctAnswersCount}
               />
-              <h4 className='text-lg text-primary font-semibold'>
+              <h4 className='text-lg font-semibold text-primary'>
                 {(100 / totalQuestions) * correctAnswersCount >= summaryQuiz.passingScore
                   ? 'YOU PASSED!'
                   : 'YOU FAILED!'}
               </h4>
             </>
           )}
-          <span className='text-lg text-white text-center'>{descriptionText}</span>
+          <span className='text-lg text-center text-white'>{descriptionText}</span>
         </CardDescription>
       </Card>
 
@@ -216,7 +219,7 @@ const Summary = () => {
                   setReplay(true);
                 }}
               >
-                <RefreshCw className='h-4 w-4' />
+                <RefreshCw className='w-4 h-4' />
                 Replay Quiz
               </Button>
             </div>

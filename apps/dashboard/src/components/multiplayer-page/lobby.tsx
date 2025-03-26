@@ -42,7 +42,6 @@ import { RoomResponse, RoomDetailsResponse, QuizType } from "@intelliq/api";
 import { useDebouncedCallback } from "use-debounce";
 import { SupportedLanguages, useQuiz } from "@/contexts/quiz-context";
 import { languages, QuizData } from "../../contexts/quiz-creation-context";
-
 import { SparklesText } from "../magicui/sparkles-text";
 import { useTheme } from "next-themes";
 
@@ -95,8 +94,7 @@ export default function Lobby() {
   const [isRoomFull, setIsRoomFull] = useState(false);
   const supabase = createClient();
   const { toast } = useToast();
-  const theme = useTheme();
-  const shadowColor = theme.resolvedTheme === "dark" ? "white" : "black";
+  const { resolvedTheme } = useTheme();
 
   const checkAndJoinRoom = async (channel: RealtimeChannel) => {
     try {
@@ -523,11 +521,11 @@ export default function Lobby() {
                       return (
                         <div
                           key={i}
-                          className="flex items-center gap-2 p-4 rounded-lg dark:bg-gray-900/50 bg-gray-200"
+                          className="flex items-center gap-2 p-4 bg-gray-200 rounded-lg dark:bg-gray-900/50"
                         >
                           <Avatar className="w-8 h-8">
                             <AvatarImage src={leader?.avatar} />
-                            <AvatarFallback className="bg-primary/20 text-black dark:text-primary">
+                            <AvatarFallback className="text-black bg-primary/20 dark:text-primary">
                               {leader?.userName.charAt(0)}
                             </AvatarFallback>
                           </Avatar>
@@ -550,7 +548,7 @@ export default function Lobby() {
                       return (
                         <div
                           key={i}
-                          className="flex items-center gap-2 p-4 rounded-lg dark:bg-gray-900/50 bg-gray-200"
+                          className="flex items-center gap-2 p-4 bg-gray-200 rounded-lg dark:bg-gray-900/50"
                         >
                           <Avatar className="w-8 h-8">
                             <AvatarImage src={player?.avatar} />
@@ -573,7 +571,7 @@ export default function Lobby() {
                     return (
                       <div
                         key={i}
-                        className="flex items-center gap-2 p-4 rounded-lg dark:bg-gray-900/50 bg-gray-200"
+                        className="flex items-center gap-2 p-4 bg-gray-200 rounded-lg dark:bg-gray-900/50"
                       >
                         <div className="w-8 h-8 border border-gray-800 rounded-full" />
                         <span className="text-gray-400">Empty</span>
@@ -591,7 +589,7 @@ export default function Lobby() {
                   <Brain className="w-8 h-8 text-primary" />
                   <span>Default</span>
                 </Card>
-                <Card className="dark:bg-black dark:border-gray-800 p-6 flex flex-col items-center justify-center gap-2">
+                <Card className="flex flex-col items-center justify-center gap-2 p-6 dark:bg-black dark:border-gray-800">
                   <Zap className="w-8 h-8 text-primary" />
                   <span>Fast</span>
                 </Card>
