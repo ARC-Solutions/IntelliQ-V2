@@ -8,12 +8,12 @@ export const LONG_CACHE = 1800; // 30 minutes
 
 export const createCacheMiddleware = (
   cacheName: string,
-  maxAge: number = SHORT_CACHE
+  maxAge: number = SHORT_CACHE,
 ): MiddlewareHandler<{ Bindings: CloudflareEnv }> => {
   return cache({
     cacheName,
-    cacheControl: `public, max-age=${maxAge}`,
-    vary: ["Accept-Encoding", "Accept", "Authorization"],
+    cacheControl: `private, max-age=${maxAge}`,
+    vary: ["Authorization"],
     wait: true,
     keyGenerator: async (c: Context<{ Bindings: CloudflareEnv }>) => {
       // 1. Identify user via Supabase or some auth

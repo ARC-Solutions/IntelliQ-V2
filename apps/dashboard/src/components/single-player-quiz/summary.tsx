@@ -1,44 +1,42 @@
-"use client";
-import { useEffect, useRef, useState } from "react";
-import { useQuiz } from "@/contexts/quiz-context";
-import type { HistoryQuestions } from "@/contexts/quiz-context";
-import { redirect } from "next/navigation";
-import { Card, CardHeader, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { formatTime } from "@/lib/format-time";
-import QuestionsList from "./summary-questions";
-import Image from "next/image";
-import { Award, Clock, RefreshCw, CheckCircle2 } from "lucide-react";
-import { Progress } from "../ui/progress";
-import { useQuizCreation } from "@/contexts/quiz-creation-context";
-import type { QuizData } from "@/contexts/quiz-creation-context";
-import { QuizType } from "@intelliq/api";
-import Lottie from "lottie-react";
-import Loading from "../../../public/Loading.json";
-import { useLocalStorage } from "usehooks-ts";
-import ReactConfetti from "react-confetti";
-import { useRouter } from "next/navigation";
+'use client';
+import { useEffect, useRef, useState } from 'react';
+import { useQuiz } from '@/contexts/quiz-context';
+import type { HistoryQuestions } from '@/contexts/quiz-context';
+import { redirect } from 'next/navigation';
+import { Card, CardHeader, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { formatTime } from '@/lib/format-time';
+import QuestionsList from './summary-questions';
+import Image from 'next/image';
+import { Award, Clock, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { Progress } from '../ui/progress';
+import { useQuizCreation } from '@/contexts/quiz-creation-context';
+import type { QuizData } from '@/contexts/quiz-creation-context';
+import { QuizType } from '@intelliq/api';
+import Lottie from 'lottie-react';
+import Loading from '../../../public/Loading.json';
+import { useLocalStorage } from 'usehooks-ts';
+import ReactConfetti from 'react-confetti';
+import { useRouter } from 'next/navigation';
 
 const Summary = () => {
-  const { dispatch, summaryQuiz, fetchQuestions, isLoading, currentQuiz } =
-    useQuiz();
+  const { dispatch, summaryQuiz, fetchQuestions, isLoading, currentQuiz } = useQuiz();
   const { formValues } = useQuizCreation();
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const [replay, setReplay] = useState<boolean>(false);
-  const [soundEnabled] = useLocalStorage<boolean>("soundEnabled", true);
-  const [particlesEnabled] = useLocalStorage<boolean>("particlesEnabled", true);
+  const [soundEnabled] = useLocalStorage<boolean>('soundEnabled', true);
+  const [particlesEnabled] = useLocalStorage<boolean>('particlesEnabled', true);
   const router = useRouter();
 
-  const successSound =
-    typeof window !== "undefined" ? new Audio("/success.mp3") : null;
+  const successSound = typeof window !== 'undefined' ? new Audio('/success.mp3') : null;
 
   useEffect(() => {
     setIsMounted(true);
     // Only reset quiz if summary data exists to prevent redirect loops
     if (summaryQuiz) {
-      dispatch({ type: "RESET_QUIZ" });
+      dispatch({ type: 'RESET_QUIZ' });
     }
     setReplay(false);
   }, []);
@@ -52,7 +50,7 @@ const Summary = () => {
     ) {
       if (soundEnabled) {
         successSound!.play().catch((err) => {
-          console.error("Error playing success sound:", err);
+          console.error('Error playing success sound:', err);
         });
       }
     }
@@ -62,13 +60,13 @@ const Summary = () => {
   useEffect(() => {
     // Check if component is mounted before redirecting
     if (isMounted && !summaryQuiz) {
-      router.push("/", { scroll: false }); // Add scroll: false to prevent animation
+      router.push('/', { scroll: false }); // Add scroll: false to prevent animation
     }
   }, [isMounted, summaryQuiz, router]);
 
   if (isLoading) {
     return (
-      <div className="absolute left-1/2 top-1/2 flex w-[40] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[30vw]">
+      <div className='absolute left-1/2 top-1/2 flex w-[40] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[30vw]'>
         <Lottie animationData={Loading} />
       </div>
     );
@@ -84,14 +82,14 @@ const Summary = () => {
   const timeTaken = summaryQuiz.totalTime;
 
   // This will be modified once i work with the new database
-  let descriptionText = "";
+  let descriptionText = '';
   if (correctPercentage >= summaryQuiz.passingScore) {
     descriptionText =
-      "👏 Excellent work! Your understanding of the topic is impressive. Keep it up! 👏";
+      '👏 Excellent work! Your understanding of the topic is impressive. Keep it up! 👏';
   } else if (correctPercentage > summaryQuiz.passingScore / 2) {
-    descriptionText = "👍 Great job! Keep up the good work. 👍";
+    descriptionText = '👍 Great job! Keep up the good work. 👍';
   } else {
-    descriptionText = "😊 Nice try! Keep practicing to improve your score. 😊";
+    descriptionText = '😊 Nice try! Keep practicing to improve your score. 😊';
   }
 
   // Filter questions
@@ -104,101 +102,102 @@ const Summary = () => {
   );
 
   return (
-    <div className="mx-auto flex w-full flex-col px-6 py-3 text-white sm:w-10/12">
-      {particlesEnabled && (
+    <div className='mx-auto flex w-full flex-col px-6 py-3 text-white sm:w-10/12'>
+      {particlesEnabled && correctPercentage >= summaryQuiz.passingScore && (
         <ReactConfetti recycle={false} numberOfPieces={200} gravity={0.2} />
       )}
-      <header className="mb-14 flex w-full flex-col items-center justify-center">
-        <Image src="/logo-dark.svg" alt="IntelliQ" width={250} height={250} />
-        <h1 className="text-2xl font-bold sm:text-4xl text-primary">
-          {summaryQuiz.quizTitle}
-        </h1>
+      <header className='mb-14 flex w-full flex-col items-center justify-center'>
+        <Image src='/logo-dark.svg' alt='IntelliQ' width={250} height={250} />
+        <h1 className='text-2xl font-bold sm:text-4xl text-primary'>{summaryQuiz.quizTitle}</h1>
       </header>
 
-      <Card className="w-full border-b-[0.5px] border-white border-opacity-[.15] p-4">
+      <Card className='w-full border-b border-white border-opacity-15 p-4 rounded-lg shadow-lg'>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center justify-center gap-2">
-              <Award size={35} className="text-primary" />
-              <div className="flex flex-col justify-center text-5xl mb-2">
-                <span className="text-xl">Your Score</span>
-                <span className="text-primary text-4xl font-bold">
+          <div className='flex flex-col lg:flex-row items-center justify-between'>
+            <div className='flex items-center justify-center gap-4'>
+              <Award size={40} className='text-primary' />
+              <div className='flex flex-col justify-center text-5xl mb-2'>
+                <span className='text-xl'>Your Score</span>
+                <span className='text-primary text-4xl font-bold'>
                   {correctPercentage.toFixed(2)}%
                 </span>
               </div>
             </div>
-            <div className="flex items-center justify-center gap-6">
-              <div className="flex items-center justify-center gap-2">
-                <Clock className="text-primary" />
-                <div className="flex flex-col justify-center">
-                  <span className="text-lg">Total Time</span>
-                  <span className="text-primary text-2xl font-semibold">
-                    {formatTime(timeTaken)}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center justify-center gap-2">
-                <CheckCircle2 className="text-primary" />
-                <div className="flex flex-col justify-center">
-                  <span className="text-lg">Correct Answers</span>
-                  <span className="text-primary text-2xl font-semibold">
-                    {summaryQuiz.quizScore}/{totalQuestions}
-                  </span>
-                </div>
-              </div>
-            </div>
+            <div className="flex flex-col lg:flex-row items-center justify-center gap-6 mt-4 lg:mt-0">
+              
+        <div className="flex flex-col items-center justify-center">
+          
+          <div className="flex items-center justify-center gap-2">
+          <Clock className="text-primary" />
+
+            <span className="text-lg">Total Time</span>
           </div>
+          <span className="text-primary text-2xl font-semibold text-center">
+            {formatTime(timeTaken)}
+          </span>
+        </div>
+        
+        <div className="flex flex-col items-center justify-center">
+          <div className="flex items-center justify-center gap-2">
+            <CheckCircle2 className="text-primary" />
+            <span className="text-lg">Correct Answers</span>
+          </div>
+          <span className="text-primary text-2xl font-semibold text-center">
+            {summaryQuiz.quizScore}/{totalQuestions}
+          </span>
+        </div>
+      </div>
+    </div>
         </CardHeader>
-        <CardDescription className="flex flex-col justify-between items-center px-6 gap-2">
+        <CardDescription className='flex flex-col justify-between items-center px-6 gap-2'>
           {isMounted && (
             <>
               <Progress
-                className="w-full mb-4 outline outline-1 outline-slate-600"
+                className='w-full mb-4 outline outline-1 outline-slate-600'
                 value={(100 / totalQuestions) * correctAnswersCount}
               />
-              <h4 className="text-lg text-primary font-semibold">
-                {(100 / totalQuestions) * correctAnswersCount >=
-                summaryQuiz.passingScore
-                  ? "YOU PASSED!"
-                  : "YOU FAILED!"}
+              <h4 className='text-lg text-primary font-semibold'>
+                {(100 / totalQuestions) * correctAnswersCount >= summaryQuiz.passingScore
+                  ? 'YOU PASSED!'
+                  : 'YOU FAILED!'}
               </h4>
             </>
           )}
-          <span className="text-lg text-white">{descriptionText}</span>
+          <span className='text-lg text-white text-center'>{descriptionText}</span>
         </CardDescription>
       </Card>
 
-      <div className="mt-6">
-        <Tabs defaultValue="all">
-          <TabsList className="flex justify-around">
-            <TabsTrigger className="w-full" value="all">
+      <div className='mt-6'>
+        <Tabs defaultValue='all'>
+          <TabsList className='flex justify-around'>
+            <TabsTrigger className='w-full' value='all'>
               All Questions
             </TabsTrigger>
-            <TabsTrigger className="w-full" value="correct">
+            <TabsTrigger className='w-full' value='correct'>
               Correct
             </TabsTrigger>
-            <TabsTrigger className="w-full" value="incorrect">
+            <TabsTrigger className='w-full' value='incorrect'>
               Incorrect
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="all">
-            <ScrollArea className="h-[350px] w-full">
+          <TabsContent value='all'>
+            <ScrollArea className='h-[350px] w-full'>
               <QuestionsList questions={allQuestions} />
             </ScrollArea>
           </TabsContent>
-          <TabsContent value="correct">
-            <ScrollArea className="h-[350px] w-full">
+          <TabsContent value='correct'>
+            <ScrollArea className='h-[350px] w-full'>
               <QuestionsList questions={correctQuestions} />
             </ScrollArea>
           </TabsContent>
-          <TabsContent value="incorrect">
-            <ScrollArea className="h-[350px] w-full">
+          <TabsContent value='incorrect'>
+            <ScrollArea className='h-[350px] w-full'>
               <QuestionsList questions={incorrectQuestions} />
             </ScrollArea>
           </TabsContent>
           {formValues.topic && (
-            <div className="flex justify-center mt-2">
+            <div className='flex justify-center mt-2'>
               <Button
                 onClick={() => {
                   const quizCreation = {
@@ -217,7 +216,7 @@ const Summary = () => {
                   setReplay(true);
                 }}
               >
-                <RefreshCw className="h-4 w-4" />
+                <RefreshCw className='h-4 w-4' />
                 Replay Quiz
               </Button>
             </div>

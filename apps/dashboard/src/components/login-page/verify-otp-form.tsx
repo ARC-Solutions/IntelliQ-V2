@@ -68,7 +68,7 @@ export default function VerifyOTPForm({ email }: { email: string }) {
         <div className="space-y-2">
           <Label htmlFor="otp-1" className="sr-only">
             OTP
-          </Label>
+          </Label>  
           <InputOTP
             maxLength={6}
             value={otp}

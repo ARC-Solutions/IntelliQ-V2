@@ -147,7 +147,7 @@ export function FileUpload({
               Select File
             </Button>
             <p className="text-xs text-muted-foreground mt-4">
-              Supported format: PDF
+              Supported format: PDF • Max file size: 150KB
             </p>
           </>
         )}

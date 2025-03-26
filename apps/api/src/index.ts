@@ -1,14 +1,14 @@
 import { Hono } from "hono";
+import { openAPISpecs } from "hono-openapi";
+import { cors } from "hono/cors";
+import { showRoutes } from "hono/dev";
 import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
-import { cors } from "hono/cors";
-import {
-  supabaseMiddleware,
-  getSupabase,
-} from "./api/v1/middleware/auth.middleware";
 import api from "./api/index";
-import { openAPISpecs } from "hono-openapi";
-import { bearerAuth } from "hono/bearer-auth";
+import {
+  getSupabase,
+  supabaseMiddleware,
+} from "./api/v1/middleware/auth.middleware";
 
 const app = new Hono();
 // Middleware

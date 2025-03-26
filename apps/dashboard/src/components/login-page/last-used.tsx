@@ -11,7 +11,7 @@ const useLastUsed = () => {
 
 const LastUsed = () => {
   return (
-    <span className="absolute right-4 text-xs text-white/60">Last used</span>
+    <span className="hidden sm:block absolute right-4 text-xs text-white/60 ">Last used</span>
   );
 };
 

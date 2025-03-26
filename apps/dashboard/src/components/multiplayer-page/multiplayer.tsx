@@ -1,4 +1,5 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -39,7 +40,6 @@ const Quiz = () => {
   } = useQuizLogic();
 
   const { setPlayers, isCreator, channel, setChannel, timeLimit, roomId } = useMultiplayer();
-
   const { currentUser } = useAuth();
   const routerParams = useParams();
   const router = useRouter();
@@ -315,6 +315,14 @@ const Quiz = () => {
   };
 
   const { resolvedTheme } = useTheme();
+  useEffect(() => {
+    if (currentQuiz) {
+      setQuizFinished(false);
+      setShowCorrectAnswer(false);
+      dispatch({ type: "RESET_GAME_LOGIC" });
+      setQuestionNumber(0);
+    }
+  }, [currentQuiz?.quizId]);
 
   if (quizFinished) {
     return (
@@ -334,22 +342,23 @@ const Quiz = () => {
             resolvedTheme === "dark" ? Answer_Waiting_Light : Answer_Waiting
           }
         />
+        <Lottie animationData={Answer_Waiting} />
       </div>
     );
   }
 
   return (
     <div className="mx-auto flex w-[400] flex-col items-center justify-center p-4 dark:text-white sm:w-[800px] ">
-      <header className="mb-4 text-center text-2xl font-bold sm:text-4xl">
+      <header className="mb-4 text-2xl font-bold text-center sm:text-4xl">
         {currentQuiz.quiz[questionNumber].questionTitle}
       </header>
-      <section className="w-full rounded-lg p-6 text-center shadow-none">
-        <div className="mb-4 flex items-center justify-between">
+      <section className="w-full p-6 text-center rounded-lg shadow-none">
+        <div className="flex items-center justify-between mb-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
-            className="inline-flex items-center rounded p-2 pr-3 text-sm font-medium text-black sm:text-xl bg-primary"
+            className="inline-flex items-center p-2 pr-3 text-sm font-medium text-black rounded sm:text-xl bg-primary"
             layout
           >
             <Timer className="mr-2 text-base sm:text-2xl" />
@@ -380,12 +389,12 @@ const Quiz = () => {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <div className="mx-2 flex items-center">
+                    <div className="flex items-center mx-2">
                       <CircleCheck className="text-2xl text-gray-300 sm:text-3xl" />
-                      <Skeleton className="ml-1 h-8 w-8" />
+                      <Skeleton className="w-8 h-8 ml-1" />
                     </div>
-                    <div className="mx-2 flex items-center">
-                      <Skeleton className="mr-1 h-8 w-8" />
+                    <div className="flex items-center mx-2">
+                      <Skeleton className="w-8 h-8 mr-1" />
                       <CircleX className="text-2xl text-gray-300 sm:text-3xl" />
                     </div>
                   </motion.div>
@@ -396,13 +405,13 @@ const Quiz = () => {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <div className="mx-2 flex items-center text-green-500">
+                    <div className="flex items-center mx-2 text-green-500">
                       <CircleCheck className="text-2xl sm:text-3xl" />
                       <span className="ml-1 text-2xl sm:text-3xl">
                         {correctAnswersCount}
                       </span>
                     </div>
-                    <div className="mx-2 flex items-center text-red-500">
+                    <div className="flex items-center mx-2 text-red-500">
                       <span className="mr-1 text-2xl sm:text-3xl">
                         {wrongAnswersCount}
                       </span>
@@ -414,7 +423,7 @@ const Quiz = () => {
             </motion.div>
           )}
         </div>
-        <CardDescription className="my-3 flex items-start text-sm sm:text-base">
+        <CardDescription className="flex items-start my-3 text-sm sm:text-base">
           <span>{questionNumber + 1}</span>&nbsp;out of{" "}
           {currentQuiz.quiz.length} Questions
         </CardDescription>

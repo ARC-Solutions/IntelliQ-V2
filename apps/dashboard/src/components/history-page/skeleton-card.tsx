@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
 export function SkeletonCard() {
   return (
-    <Card className="bg-[#0c0d0d] border-[#c8b6ff]/20">
+    <Card className="bg-[#faf9f6] dark:bg-[#0c0d0d] border-[#c8b6ff]/20">
       <CardHeader>
         <div className="flex justify-between items-start">
           <div className="space-y-2">
