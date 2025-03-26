@@ -284,273 +284,272 @@ export default function SettingsPage() {
   const currentName = currentUser?.name || form.watch("name");
 
   return (
-    <div className="container max-w-4xl py-10">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">
-          Manage your account settings and preferences.
-        </p>
-      </div>
+<div className="container max-w-4xl px-4 py-6 sm:py-10">
+  <div className="mb-6 sm:mb-8">
+    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Settings</h1>
+    <p className="text-sm sm:text-base text-muted-foreground">
+      Manage your account settings and preferences.
+    </p>
+  </div>
 
-      <div className="grid gap-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Profile</CardTitle>
-            <CardDescription>
-              Update your personal information and how others see you on the
-              site.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSaveProfile)}>
-                <div className="flex flex-col md:flex-row gap-8">
-                  <div className="flex flex-col items-center space-y-4">
-                    {/* Fixed height container for avatar */}
-                    <div className="h-32 w-32 relative">
-                      {isAvatarLoading ? (
-                        <Skeleton className="h-32 w-32 rounded-full absolute" />
-                      ) : (
-                        <Avatar className="h-32 w-32 border-2 border-primary/20 absolute">
-                          <AvatarImage
-                            src={currentAvatar}
-                            alt="Selected avatar"
-                          />
-                          <AvatarFallback>
-                            {currentName.substring(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex-1 space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Display Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Your display name" {...field} />
-                          </FormControl>
-                          <FormDescription>
-                            This is your public display name.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="text-sm text-muted-foreground">
-                      Email:{" "}
-                      {isAvatarLoading ? (
-                        <Skeleton className="h-4 w-[180px] inline-block ml-1 align-middle" />
-                      ) : (
-                        currentUser?.email
-                      )}
-                    </div>
-                  </div>
+  <div className="grid gap-6 sm:gap-8">
+    <Card>
+      <CardHeader className="px-4 sm:px-6">
+        <CardTitle>Profile</CardTitle>
+        <CardDescription>
+          Update your personal information and how others see you on the
+          site.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="px-4 sm:px-6">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSaveProfile)}>
+            <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+              <div className="flex flex-col items-center space-y-4">
+                {/* Fixed height container for avatar */}
+                <div className="h-24 w-24 sm:h-32 sm:w-32 relative">
+                  {isAvatarLoading ? (
+                    <Skeleton className="h-24 w-24 sm:h-32 sm:w-32 rounded-full absolute" />
+                  ) : (
+                    <Avatar className="h-24 w-24 sm:h-32 sm:w-32 border-2 border-primary/20 absolute">
+                      <AvatarImage
+                        src={currentAvatar}
+                        alt="Selected avatar"
+                      />
+                      <AvatarFallback>
+                        {currentName.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
                 </div>
+              </div>
 
-                {/* Avatar selection with tabs */}
-                <div className="space-y-4">
-                  <Label>Choose Avatar</Label>
-                  <Tabs
-                    value={activeAvatarCategory}
-                    onValueChange={setActiveAvatarCategory}
-                    className="w-full"
-                  >
-                    <TabsList className="grid w-full grid-cols-3">
-                      <TabsTrigger value="Vercel">Vercel</TabsTrigger>
-                      <TabsTrigger value="Notion Style">Notion</TabsTrigger>
-                      <TabsTrigger value="Emoji">Emoji</TabsTrigger>
-                    </TabsList>
-                    {Object.entries(avatarsByCategory).map(
-                      ([category, urls]) => (
-                        <TabsContent
-                          key={category}
-                          value={category}
-                          className="pt-4"
-                        >
-                          {/* Fixed height container for avatar grid */}
-                          <div className="min-h-[200px]">
-                            {initialLoading ? (
-                              <div className="grid grid-cols-4 md:grid-cols-6 gap-4 w-full">
-                                {Array.from({ length: 12 }).map((_, i) => (
-                                  <div
-                                    key={i}
-                                    className="flex justify-center items-center"
-                                  >
-                                    <Skeleton className="h-16 w-16 rounded-full" />
-                                  </div>
-                                ))}
+              <div className="flex-1 space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Display Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Your display name" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        This is your public display name.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="text-sm text-muted-foreground">
+                  Email:{" "}
+                  {isAvatarLoading ? (
+                    <Skeleton className="h-4 w-[180px] inline-block ml-1 align-middle" />
+                  ) : (
+                    currentUser?.email
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Avatar selection with tabs */}
+            <div className="space-y-4 mt-6">
+              <Label>Choose Avatar</Label>
+              <Tabs
+                value={activeAvatarCategory}
+                onValueChange={setActiveAvatarCategory}
+                className="w-full"
+              >
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="Vercel">Vercel</TabsTrigger>
+                  <TabsTrigger value="Notion Style">Notion</TabsTrigger>
+                  <TabsTrigger value="Emoji">Emoji</TabsTrigger>
+                </TabsList>
+                {Object.entries(avatarsByCategory).map(
+                  ([category, urls]) => (
+                    <TabsContent
+                      key={category}
+                      value={category}
+                      className="pt-4"
+                    >
+                      {/* Fixed height container for avatar grid */}
+                      <div className="min-h-[200px]">
+                        {initialLoading ? (
+                          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 sm:gap-4 w-full">
+                            {Array.from({ length: 12 }).map((_, i) => (
+                              <div
+                                key={i}
+                                className="flex justify-center items-center"
+                              >
+                                <Skeleton className="h-12 w-12 sm:h-16 sm:w-16 rounded-full" />
                               </div>
-                            ) : (
-                              <div className="grid grid-cols-4 md:grid-cols-6 gap-4 w-full">
-                                {urls.length > 0 ? (
-                                  urls.map((url) => {
-                                    const isSelected = avatar === url;
-                                    return (
-                                      <div
-                                        key={url}
-                                        className="flex justify-center items-center cursor-pointer"
-                                        onClick={() => setAvatar(url)}
-                                      >
-                                        <Avatar
-                                          className={`h-16 w-16 transition-all ${
-                                            isSelected
-                                              ? "ring-4 ring-primary ring-offset-2"
-                                              : "hover:ring-2 hover:ring-muted-foreground/20"
-                                          }`}
-                                        >
-                                          <AvatarImage
-                                            src={url}
-                                            alt="Avatar option"
-                                          />
-                                          <AvatarFallback>
-                                            {category.charAt(0).toUpperCase()}
-                                          </AvatarFallback>
-                                        </Avatar>
-                                      </div>
-                                    );
-                                  })
-                                ) : (
-                                  <div className="col-span-full text-center py-4 text-muted-foreground">
-                                    No avatars found in this category
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 sm:gap-4 w-full">
+                            {urls.length > 0 ? (
+                              urls.map((url) => {
+                                const isSelected = avatar === url;
+                                return (
+                                  <div
+                                    key={url}
+                                    className="flex justify-center items-center cursor-pointer"
+                                    onClick={() => setAvatar(url)}
+                                  >
+                                    <Avatar
+                                      className={`h-12 w-12 sm:h-16 sm:w-16 transition-all ${
+                                        isSelected
+                                          ? "ring-2 sm:ring-4 ring-primary ring-offset-1 sm:ring-offset-2"
+                                          : "hover:ring-2 hover:ring-muted-foreground/20"
+                                      }`}
+                                    >
+                                      <AvatarImage
+                                        src={url}
+                                        alt="Avatar option"
+                                      />
+                                      <AvatarFallback>
+                                        {category.charAt(0).toUpperCase()}
+                                      </AvatarFallback>
+                                    </Avatar>
                                   </div>
-                                )}
+                                );
+                              })
+                            ) : (
+                              <div className="col-span-full text-center py-4 text-muted-foreground">
+                                No avatars found in this category
                               </div>
                             )}
                           </div>
-                        </TabsContent>
-                      ),
-                    )}
-                  </Tabs>
-                </div>
-                <div className="flex justify-end">
-                  <Button type="submit" disabled={isSavingProfile}>
-                    {isSavingProfile ? "Saving..." : "Save Profile"}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Preferences</CardTitle>
-            <CardDescription>
-              Customize your application experience.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Theme toggle */}
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="theme-mode">Theme</Label>
-                <div className="text-sm text-muted-foreground">
-                  Choose your preferred theme
-                </div>
-              </div>
-              {mounted ? (
-                <div className="flex items-center space-x-2">
-                  <SunIcon
-                    ref={sunIconRef}
-                    size={24}
-                    className={`${isDarkMode ? "opacity-50" : "text-amber-500"} pointer-events-none`}
-                  />
-                  <Switch
-                    id="theme-mode"
-                    checked={isDarkMode}
-                    onCheckedChange={handleThemeToggle}
-                  />
-                  <MoonIcon
-                    ref={moonIconRef}
-                    size={24}
-                    className={`${!isDarkMode ? "opacity-50" : "text-blue-400"} pointer-events-none`}
-                  />
-                </div>
-              ) : (
-                // Show a placeholder while theme is being determined
-                <div className="flex items-center space-x-2">
-                  <SunIcon
-                    size={24}
-                    className="opacity-50 pointer-events-none"
-                  />
-                  <Skeleton className="h-6 w-11" />{" "}
-                  {/* Match Switch dimensions */}
-                  <MoonIcon
-                    size={24}
-                    className="opacity-50 pointer-events-none"
-                  />
-                </div>
-              )}
+                        )}
+                      </div>
+                    </TabsContent>
+                  ),
+                )}
+              </Tabs>
             </div>
-
-            {/* Sound toggle */}
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="sound">Sound</Label>
-                <div className="text-sm text-muted-foreground">
-                  Enable or disable notification sounds
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <VolumeIcon
-                  ref={volumeIconRef}
-                  size={24}
-                  isMuted={!soundEnabled}
-                  onMutedChange={(muted) => setSoundEnabled(!muted)}
-                  mutedColor="rgb(248 113 113)" // text-red-400
-                  unmutedColor="rgb(34 197 94)" // text-green-500
-                  className="pointer-events-none"
-                />
-                <Switch
-                  id="sound"
-                  checked={soundEnabled}
-                  onCheckedChange={handleSoundToggle}
-                />
-              </div>
-            </div>
-
-            {/* Particles toggle */}
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="particles">Particles</Label>
-                <div className="text-sm text-muted-foreground">
-                  Enable or disable particles and confetti effects
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <PartyPopperIcon
-                  size={24}
-                  color={
-                    particlesEnabled ? "rgb(34 197 94)" : "rgb(107 114 128)"
-                  }
-                  showConfetti={particlesEnabled}
-                  className="pointer-events-none"
-                />
-                <Switch
-                  id="particles"
-                  checked={particlesEnabled}
-                  onCheckedChange={handleParticlesToggle}
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end">
-              <Button
-                onClick={handleSavePreferences}
-                disabled={isSavingPreferences}
-              >
-                {isSavingPreferences ? "Saving..." : "Save Preferences"}
+            <div className="flex justify-end mt-6">
+              <Button type="submit" disabled={isSavingProfile}>
+                {isSavingProfile ? "Saving..." : "Save Profile"}
               </Button>
             </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
+
+    <Card>
+      <CardHeader className="px-4 sm:px-6">
+        <CardTitle>Preferences</CardTitle>
+        <CardDescription>
+          Customize your application experience.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="px-4 sm:px-6 space-y-4 sm:space-y-6">
+        {/* Theme toggle */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
+          <div className="space-y-0.5">
+            <Label htmlFor="theme-mode">Theme</Label>
+            <div className="text-sm text-muted-foreground">
+              Choose your preferred theme
+            </div>
+          </div>
+          {mounted ? (
+            <div className="flex items-center space-x-2">
+              <SunIcon
+                ref={sunIconRef}
+                size={20}
+                className={`${isDarkMode ? "opacity-50" : "text-amber-500"} pointer-events-none sm:size-24`}
+              />
+              <Switch
+                id="theme-mode"
+                checked={isDarkMode}
+                onCheckedChange={handleThemeToggle}
+              />
+              <MoonIcon
+                ref={moonIconRef}
+                size={20}
+                className={`${!isDarkMode ? "opacity-50" : "text-blue-400"} pointer-events-none sm:size-24`}
+              />
+            </div>
+          ) : (
+            // Show a placeholder while theme is being determined
+            <div className="flex items-center space-x-2">
+              <SunIcon
+                size={20}
+                className="opacity-50 pointer-events-none sm:size-24"
+              />
+              <Skeleton className="h-6 w-11" /> {/* Match Switch dimensions */}
+              <MoonIcon
+                size={20}
+                className="opacity-50 pointer-events-none sm:size-24"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Sound toggle */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
+          <div className="space-y-0.5">
+            <Label htmlFor="sound">Sound</Label>
+            <div className="text-sm text-muted-foreground">
+              Enable or disable notification sounds
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <VolumeIcon
+              ref={volumeIconRef}
+              size={20}
+              isMuted={!soundEnabled}
+              onMutedChange={(muted) => setSoundEnabled(!muted)}
+              mutedColor="rgb(248 113 113)" // text-red-400
+              unmutedColor="rgb(34 197 94)" // text-green-500
+              className="pointer-events-none sm:size-24"
+            />
+            <Switch
+              id="sound"
+              checked={soundEnabled}
+              onCheckedChange={handleSoundToggle}
+            />
+          </div>
+        </div>
+
+        {/* Particles toggle */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
+          <div className="space-y-0.5">
+            <Label htmlFor="particles">Particles</Label>
+            <div className="text-sm text-muted-foreground">
+              Enable or disable particles and confetti effects
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <PartyPopperIcon
+              size={20}
+              color={
+                particlesEnabled ? "rgb(34 197 94)" : "rgb(107 114 128)"
+              }
+              showConfetti={particlesEnabled}
+              className="pointer-events-none sm:size-24"
+            />
+            <Switch
+              id="particles"
+              checked={particlesEnabled}
+              onCheckedChange={handleParticlesToggle}
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end pt-2">
+          <Button
+            onClick={handleSavePreferences}
+            disabled={isSavingPreferences}
+          >
+            {isSavingPreferences ? "Saving..." : "Save Preferences"}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+</div>
   );
 }

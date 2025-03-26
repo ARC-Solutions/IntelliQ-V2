@@ -111,11 +111,11 @@ const Summary = () => {
         <h1 className='text-2xl font-bold sm:text-4xl text-primary'>{summaryQuiz.quizTitle}</h1>
       </header>
 
-      <Card className='w-full border-b-[0.5px] border-white border-opacity-[.15] p-4'>
+      <Card className='w-full border-b border-white border-opacity-15 p-4 rounded-lg shadow-lg'>
         <CardHeader>
-          <div className='flex items-center justify-between'>
-            <div className='flex items-center justify-center gap-2'>
-              <Award size={35} className='text-primary' />
+          <div className='flex flex-col lg:flex-row items-center justify-between'>
+            <div className='flex items-center justify-center gap-4'>
+              <Award size={40} className='text-primary' />
               <div className='flex flex-col justify-center text-5xl mb-2'>
                 <span className='text-xl'>Your Score</span>
                 <span className='text-primary text-4xl font-bold'>
@@ -123,27 +123,31 @@ const Summary = () => {
                 </span>
               </div>
             </div>
-            <div className='flex items-center justify-center gap-6'>
-              <div className='flex items-center justify-center gap-2'>
-                <Clock className='text-primary' />
-                <div className='flex flex-col justify-center'>
-                  <span className='text-lg'>Total Time</span>
-                  <span className='text-primary text-2xl font-semibold'>
-                    {formatTime(timeTaken)}
-                  </span>
-                </div>
-              </div>
-              <div className='flex items-center justify-center gap-2'>
-                <CheckCircle2 className='text-primary' />
-                <div className='flex flex-col justify-center'>
-                  <span className='text-lg'>Correct Answers</span>
-                  <span className='text-primary text-2xl font-semibold'>
-                    {summaryQuiz.quizScore}/{totalQuestions}
-                  </span>
-                </div>
-              </div>
-            </div>
+            <div className="flex flex-col lg:flex-row items-center justify-center gap-6 mt-4 lg:mt-0">
+              
+        <div className="flex flex-col items-center justify-center">
+          
+          <div className="flex items-center justify-center gap-2">
+          <Clock className="text-primary" />
+
+            <span className="text-lg">Total Time</span>
           </div>
+          <span className="text-primary text-2xl font-semibold text-center">
+            {formatTime(timeTaken)}
+          </span>
+        </div>
+        
+        <div className="flex flex-col items-center justify-center">
+          <div className="flex items-center justify-center gap-2">
+            <CheckCircle2 className="text-primary" />
+            <span className="text-lg">Correct Answers</span>
+          </div>
+          <span className="text-primary text-2xl font-semibold text-center">
+            {summaryQuiz.quizScore}/{totalQuestions}
+          </span>
+        </div>
+      </div>
+    </div>
         </CardHeader>
         <CardDescription className='flex flex-col justify-between items-center px-6 gap-2'>
           {isMounted && (
@@ -159,7 +163,7 @@ const Summary = () => {
               </h4>
             </>
           )}
-          <span className='text-lg text-white'>{descriptionText}</span>
+          <span className='text-lg text-white text-center'>{descriptionText}</span>
         </CardDescription>
       </Card>
 

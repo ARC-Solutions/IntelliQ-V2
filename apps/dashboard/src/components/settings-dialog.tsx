@@ -413,11 +413,12 @@ export function SettingsDialog({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              className="my-2"
             >
               Cancel
             </Button>
           </DialogClose>
-          <Button onClick={form.handleSubmit(handleSave)}>Save changes</Button>
+          <Button onClick={form.handleSubmit(handleSave)} className="my-2">Save changes</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
