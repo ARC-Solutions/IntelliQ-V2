@@ -342,7 +342,6 @@ const Quiz = () => {
             resolvedTheme === "dark" ? Answer_Waiting_Light : Answer_Waiting
           }
         />
-        <Lottie animationData={Answer_Waiting} />
       </div>
     );
   }
