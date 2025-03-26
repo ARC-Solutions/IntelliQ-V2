@@ -593,7 +593,7 @@ export default function Lobby() {
                   <Zap className="w-8 h-8 text-primary" />
                   <span>Fast</span>
                 </Card>
-                <Card className="flex flex-col items-center justify-center gap-2 p-6 bg-black border-gray-800">
+                <Card className="flex flex-col items-center justify-center gap-2 p-6 dark:bg-black dark:border-gray-800">
                   <Sparkles className="w-8 h-8 text-primary" />
                   <span>Custom</span>
                 </Card>
