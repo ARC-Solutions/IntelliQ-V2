@@ -97,8 +97,12 @@ export const Wordmark: React.FC<{ className?: string }> = ({ className }) => {
             y2="402.501"
             gradientUnits="userSpaceOnUse"
           >
-            <stop stopColor="white" stopOpacity="0.4" />
-            <stop offset="0.693236" stopColor="white" stopOpacity="0.1" />
+            <stop stopColor="currentColor" stopOpacity="0.4" />
+            <stop
+              offset="0.693236"
+              stopColor="currentColor"
+              stopOpacity="0.1"
+            />
           </linearGradient>
           <linearGradient
             id="paint1_linear_830_5782"
@@ -108,8 +112,12 @@ export const Wordmark: React.FC<{ className?: string }> = ({ className }) => {
             y2="402.501"
             gradientUnits="userSpaceOnUse"
           >
-            <stop stopColor="white" stopOpacity="0.4" />
-            <stop offset="0.693236" stopColor="white" stopOpacity="0.1" />
+            <stop stopColor="currentColor" stopOpacity="0.4" />
+            <stop
+              offset="0.693236"
+              stopColor="currentColor"
+              stopOpacity="0.1"
+            />
           </linearGradient>
           <linearGradient
             id="paint2_linear_830_5782"
@@ -119,8 +127,12 @@ export const Wordmark: React.FC<{ className?: string }> = ({ className }) => {
             y2="402.501"
             gradientUnits="userSpaceOnUse"
           >
-            <stop stopColor="white" stopOpacity="0.4" />
-            <stop offset="0.693236" stopColor="white" stopOpacity="0.1" />
+            <stop stopColor="currentColor" stopOpacity="0.4" />
+            <stop
+              offset="0.693236"
+              stopColor="currentColor"
+              stopOpacity="0.1"
+            />
           </linearGradient>
           <linearGradient
             id="paint3_linear_830_5782"
@@ -130,8 +142,12 @@ export const Wordmark: React.FC<{ className?: string }> = ({ className }) => {
             y2="402.501"
             gradientUnits="userSpaceOnUse"
           >
-            <stop stopColor="white" stopOpacity="0.4" />
-            <stop offset="0.693236" stopColor="white" stopOpacity="0.1" />
+            <stop stopColor="currentColor" stopOpacity="0.4" />
+            <stop
+              offset="0.693236"
+              stopColor="currentColor"
+              stopOpacity="0.1"
+            />
           </linearGradient>
           <linearGradient
             id="paint4_linear_830_5782"
@@ -141,8 +157,12 @@ export const Wordmark: React.FC<{ className?: string }> = ({ className }) => {
             y2="402.501"
             gradientUnits="userSpaceOnUse"
           >
-            <stop stopColor="white" stopOpacity="0.4" />
-            <stop offset="0.693236" stopColor="white" stopOpacity="0.1" />
+            <stop stopColor="currentColor" stopOpacity="0.4" />
+            <stop
+              offset="0.693236"
+              stopColor="currentColor"
+              stopOpacity="0.1"
+            />
           </linearGradient>
         </defs>
       </svg>
