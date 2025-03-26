@@ -6,10 +6,10 @@ compatibility_flags = [ "nodejs_compat" ]
 
 [vars]
 GPT_MODEL="gpt-4o-mini"
-# ENVIRONMENT="development"
+ENVIRONMENT="development"
 
-[[hyperdrive]]
-binding = "HYPERDRIVE"
+# [[hyperdrive]]
+# binding = "HYPERDRIVE"
 id = "e4ba004cd93a4e25853e135da77c9509"
 
 [[kv_namespaces]]

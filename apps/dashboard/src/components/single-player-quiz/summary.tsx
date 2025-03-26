@@ -105,102 +105,110 @@ const Summary = () => {
   );
 
   return (
-    <div className='flex flex-col w-full px-6 py-3 mx-auto text-white sm:w-10/12'>
+    <div className="flex flex-col w-full px-6 py-3 mx-auto text-black dark:text-white sm:w-10/12">
       {particlesEnabled && correctPercentage >= summaryQuiz.passingScore && (
         <ReactConfetti recycle={false} numberOfPieces={200} gravity={0.2} />
       )}
-      <header className='flex flex-col items-center justify-center w-full mb-14'>
-        <Image src='/logo-dark.svg' alt='IntelliQ' width={250} height={250} />
-        <h1 className='text-2xl font-bold sm:text-4xl text-primary'>{summaryQuiz.quizTitle}</h1>
+      <header className="flex flex-col items-center justify-center w-full mb-14">
+        <Image
+          src={resolvedTheme === "dark" ? "/logo-dark.svg" : "/logo.svg"}
+          alt="IntelliQ"
+          width={250}
+          height={250}
+        />
+        <h1 className="text-2xl font-bold sm:text-4xl text-primary">
+          {summaryQuiz.quizTitle}
+        </h1>
       </header>
 
-      <Card className='w-full p-4 border-b border-white rounded-lg shadow-lg border-opacity-15'>
+      <Card className="w-full p-4 border-b border-white rounded-lg shadow-lg border-opacity-15">
         <CardHeader>
-          <div className='flex flex-col items-center justify-between lg:flex-row'>
-            <div className='flex items-center justify-center gap-4'>
-              <Award size={40} className='text-primary' />
-              <div className='flex flex-col justify-center mb-2 text-5xl'>
-                <span className='text-xl'>Your Score</span>
-                <span className='text-4xl font-bold text-primary'>
+          <div className="flex flex-col items-center justify-between lg:flex-row">
+            <div className="flex items-center justify-center gap-4">
+              <Award size={40} className="text-primary" />
+              <div className="flex flex-col justify-center mb-2 text-5xl">
+                <span className="text-xl">Your Score</span>
+                <span className="text-4xl font-bold text-primary">
                   {correctPercentage.toFixed(2)}%
                 </span>
               </div>
             </div>
             <div className="flex flex-col items-center justify-center gap-6 mt-4 lg:flex-row lg:mt-0">
-              
-        <div className="flex flex-col items-center justify-center">
-          
-          <div className="flex items-center justify-center gap-2">
-          <Clock className="text-primary" />
+              <div className="flex flex-col items-center justify-center">
+                <div className="flex items-center justify-center gap-2">
+                  <Clock className="text-primary" />
 
-            <span className="text-lg">Total Time</span>
+                  <span className="text-lg">Total Time</span>
+                </div>
+                <span className="text-2xl font-semibold text-center text-primary">
+                  {formatTime(timeTaken)}
+                </span>
+              </div>
+
+              <div className="flex flex-col items-center justify-center">
+                <div className="flex items-center justify-center gap-2">
+                  <CheckCircle2 className="text-primary" />
+                  <span className="text-lg">Correct Answers</span>
+                </div>
+                <span className="text-2xl font-semibold text-center text-primary">
+                  {summaryQuiz.quizScore}/{totalQuestions}
+                </span>
+              </div>
+            </div>
           </div>
-          <span className="text-2xl font-semibold text-center text-primary">
-            {formatTime(timeTaken)}
-          </span>
-        </div>
-        
-        <div className="flex flex-col items-center justify-center">
-          <div className="flex items-center justify-center gap-2">
-            <CheckCircle2 className="text-primary" />
-            <span className="text-lg">Correct Answers</span>
-          </div>
-          <span className="text-2xl font-semibold text-center text-primary">
-            {summaryQuiz.quizScore}/{totalQuestions}
-          </span>
-        </div>
-      </div>
-    </div>
         </CardHeader>
-        <CardDescription className='flex flex-col items-center justify-between gap-2 px-6'>
+        <CardDescription className="flex flex-col items-center justify-between gap-2 px-6">
           {isMounted && (
             <>
               <Progress
-                className='w-full mb-4 outline outline-1 outline-slate-600'
+                className="w-full mb-4 outline outline-1 outline-slate-600"
                 value={(100 / totalQuestions) * correctAnswersCount}
               />
-              <h4 className='text-lg font-semibold text-primary'>
-                {(100 / totalQuestions) * correctAnswersCount >= summaryQuiz.passingScore
-                  ? 'YOU PASSED!'
-                  : 'YOU FAILED!'}
+              <h4 className="text-lg font-semibold text-primary">
+                {(100 / totalQuestions) * correctAnswersCount >=
+                summaryQuiz.passingScore
+                  ? "YOU PASSED!"
+                  : "YOU FAILED!"}
               </h4>
             </>
           )}
-          <span className='text-lg text-center text-white'>{descriptionText}</span>
+          <span className="text-lg text-center text-black dark:text-white">
+            {descriptionText}
+          </span>
         </CardDescription>
       </Card>
 
-      <div className='mt-6'>
-        <Tabs defaultValue='all'>
-          <TabsList className='flex justify-around'>
-            <TabsTrigger className='w-full' value='all'>
+      <div className="mt-6">
+        <Tabs defaultValue="all">
+          <TabsList className="flex justify-around">
+            <TabsTrigger className="w-full" value="all">
               All Questions
             </TabsTrigger>
-            <TabsTrigger className='w-full' value='correct'>
+            <TabsTrigger className="w-full" value="correct">
               Correct
             </TabsTrigger>
-            <TabsTrigger className='w-full' value='incorrect'>
+            <TabsTrigger className="w-full" value="incorrect">
               Incorrect
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value='all'>
-            <ScrollArea className='h-[350px] w-full'>
+          <TabsContent value="all">
+            <ScrollArea className="h-[350px] w-full">
               <QuestionsList questions={allQuestions} />
             </ScrollArea>
           </TabsContent>
-          <TabsContent value='correct'>
-            <ScrollArea className='h-[350px] w-full'>
+          <TabsContent value="correct">
+            <ScrollArea className="h-[350px] w-full">
               <QuestionsList questions={correctQuestions} />
             </ScrollArea>
           </TabsContent>
-          <TabsContent value='incorrect'>
-            <ScrollArea className='h-[350px] w-full'>
+          <TabsContent value="incorrect">
+            <ScrollArea className="h-[350px] w-full">
               <QuestionsList questions={incorrectQuestions} />
             </ScrollArea>
           </TabsContent>
           {formValues.topic && (
-            <div className='flex justify-center mt-2'>
+            <div className="flex justify-center mt-2">
               <Button
                 onClick={() => {
                   const quizCreation = {
@@ -219,7 +227,7 @@ const Summary = () => {
                   setReplay(true);
                 }}
               >
-                <RefreshCw className='w-4 h-4' />
+                <RefreshCw className="w-4 h-4" />
                 Replay Quiz
               </Button>
             </div>
