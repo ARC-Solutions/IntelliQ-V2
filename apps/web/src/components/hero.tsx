@@ -3,22 +3,23 @@ import { Button } from "./ui/button";
 import { ArrowRight } from "lucide-react";
 import dynamic from "next/dynamic";
 import ChangeTheme from "./change-theme";
+import { ROUTES } from "../../constants/routes";
 
 const Keyboard = dynamic(
   () => import("./keyboard").then((mod) => mod.Keyboard),
   {
     ssr: false,
-  }
+  },
 );
 
 export default function Hero() {
   return (
     <section className="mt-[60px] lg:mt-[180px] min-h-[530px] relative">
       <div className="flex flex-col">
-        <Link href="/">
+        <Link href={ROUTES.MULTIPLAYER}>
           <Button
             variant="outline"
-            className="rounded-full border-border flex space-x-2 items-center"
+            className="flex items-center space-x-2 rounded-full border-border"
           >
             <span className="text-sm">Introducing Multiplayer</span>
             <ArrowRight />
@@ -41,13 +42,13 @@ export default function Hero() {
             <Link href="mailto:contact@arc-solutions.xyz">
               <Button
                 variant="outline"
-                className="border border-primary h-12 px-6"
+                className="h-12 px-6 border border-primary"
               >
                 Talk to us
               </Button>
             </Link>
 
-            <a href="https://app.intelliq.dev">
+            <a href={ROUTES.HOME}>
               <Button className="h-12 px-5">Get Started</Button>
             </a>
           </div>
