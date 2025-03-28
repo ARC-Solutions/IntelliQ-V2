@@ -38,6 +38,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -339,11 +345,22 @@ export function SettingsDialog({
                 </div>
               </div>
               <div className="flex items-center space-x-2">
-                <SunIcon
-                  ref={sunIconRef}
-                  size={24}
-                  className={`${isDarkMode ? "opacity-50" : "text-amber-500"} pointer-events-none`}
-                />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div>
+                        <SunIcon
+                          ref={sunIconRef}
+                          size={24}
+                          className={`${isDarkMode ? "opacity-50" : "text-amber-500"} pointer-events-none`}
+                        />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>ShadCN Theme</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 <Switch
                   id="theme-mode"
                   checked={isDarkMode}
@@ -418,7 +435,9 @@ export function SettingsDialog({
               Cancel
             </Button>
           </DialogClose>
-          <Button onClick={form.handleSubmit(handleSave)} className="my-2">Save changes</Button>
+          <Button onClick={form.handleSubmit(handleSave)} className="my-2">
+            Save changes
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

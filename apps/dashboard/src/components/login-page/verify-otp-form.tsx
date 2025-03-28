@@ -58,7 +58,7 @@ export default function VerifyOTPForm({ email }: { email: string }) {
   return (
     <div className="flex items-center justify-center min-h-screen text-white">
       <div className="p-8 space-y-6">
-        <h1 className="text-4xl font-bold text-center mb-6">
+        <h1 className="text-4xl font-bold text-center mb-6 text-black dark:text-white">
           Security code sent!
         </h1>
         <p className="text-gray-400 text-center">
@@ -68,23 +68,22 @@ export default function VerifyOTPForm({ email }: { email: string }) {
         <div className="space-y-2">
           <Label htmlFor="otp-1" className="sr-only">
             OTP
-          </Label>  
+          </Label>
           <InputOTP
             maxLength={6}
             value={otp}
             onChange={(value) => setOtp(value)}
-            
           >
             <InputOTPGroup>
-              <InputOTPSlot index={0} />
-              <InputOTPSlot index={1} />
-              <InputOTPSlot index={2} />
+              <InputOTPSlot className="text-black dark:text-white" index={0} />
+              <InputOTPSlot className="text-black dark:text-white" index={1} />
+              <InputOTPSlot className="text-black dark:text-white" index={2} />
             </InputOTPGroup>
             <InputOTPSeparator />
             <InputOTPGroup>
-              <InputOTPSlot index={3} />
-              <InputOTPSlot index={4} />
-              <InputOTPSlot index={5} />
+              <InputOTPSlot className="text-black dark:text-white" index={3} />
+              <InputOTPSlot className="text-black dark:text-white" index={4} />
+              <InputOTPSlot className="text-black dark:text-white" index={5} />
             </InputOTPGroup>
           </InputOTP>
         </div>
