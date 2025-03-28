@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +6,7 @@ import { Bookmark, BookmarkCheck } from 'lucide-react';
 import { createApiClient } from '@/utils/api-client';
 import { useQuiz } from '@/contexts/quiz-context';
 import { useRouter } from 'next/navigation';
+import { ShareButton } from './share-button'; // Import the ShareButton
 
 export interface HistoryCardProps {
   id: string;
@@ -118,6 +118,11 @@ export function HistoryCard({
             <CardDescription className='text-black/70 dark:text-white/70'>{date}</CardDescription>
           </div>
           <div className='flex items-center gap-2'>
+            <ShareButton 
+              quizId={id} 
+              type={type === 'multiplayer' ? 'multiplayer' : 'singleplayer'} 
+              isFromHistory={true} 
+            />
             <button
               onClick={toggleBookmark}
               className='text-[#c8b6ff] hover:text-[#c8b6ff]/80 transition-colors'

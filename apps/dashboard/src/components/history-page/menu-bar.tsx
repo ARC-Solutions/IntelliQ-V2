@@ -166,7 +166,7 @@ export function MenuBar({
         className="absolute -inset-2 bg-gradient-radial from-transparent via-[#c8b6ff]/30 via-30% to-transparent rounded-3xl z-0 pointer-events-none"
         variants={navGlowVariants}
       />
-      <div className="flex items-center gap-4 relative z-10">
+      <div className="flex items-center gap-4 relative z-10 m-[2px]">
         <form
           ref={formRef}
           onSubmit={handleSearchSubmit}
