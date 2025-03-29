@@ -30,7 +30,6 @@ const QuestionsList = ({ questions }: { questions: HistoryQuestions[] }) => {
                 )}
               </span>
             </p>
-            <br />
             {question.userAnswer !== question.correctAnswer && (
               <p className='text-base mt-1'>
                 <span className='font-semibold'>Correct Answer: </span>

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useQuizLogic } from '@/contexts/quiz-logic-context';
-import { Button } from '@/components/ui/button';
-import { useQuiz } from '@/contexts/quiz-context';
+import { useQuizLogic } from "@/contexts/quiz-logic-context";
+import { Button } from "@/components/ui/button";
+import { useQuiz } from "@/contexts/quiz-context";
 
 type Props = {
   answer: string;
@@ -11,7 +11,8 @@ type Props = {
 };
 
 const Answer = ({ answer, letter, onAnswerSelected }: Props) => {
-  const { dispatch, selectedAnswer, questionNumber, isMultiplayer } = useQuizLogic();
+  const { dispatch, selectedAnswer, questionNumber, isMultiplayer } =
+    useQuizLogic();
   const { currentQuiz } = useQuiz();
 
   // Reconstruct the full answer with prefix for backend submission
@@ -25,7 +26,7 @@ const Answer = ({ answer, letter, onAnswerSelected }: Props) => {
         if (onAnswerSelected) {
           onAnswerSelected(fullAnswer);
         } else {
-          dispatch({ type: 'SET_SELECTED_ANSWER', payload: fullAnswer });
+          dispatch({ type: "SET_SELECTED_ANSWER", payload: fullAnswer });
         }
 
         // Keep the existing multiplayer validation with FULL answer
@@ -41,11 +42,11 @@ const Answer = ({ answer, letter, onAnswerSelected }: Props) => {
           });
         }
       }}
-      className="group my-3 w-full justify-start rounded-lg border border-primary border-opacity-30 bg-white dark:bg-black p-7 text-sm font-normal text-black dark:text-white hover:border-none hover:text-white dark:hover:text-black focus:bg-primary focus:text-black sm:text-lg"
+      className="group my-3 w-full justify-start rounded-lg border border-primary border-opacity-30 bg-white dark:bg-black p-7 text-sm font-normal text-black dark:text-white hover:border-none hover:bg-primary hover:text-white dark:hover:text-black focus:bg-primary focus:text-white dark:focus:text-black sm:text-lg dark:hover:bg-primary dark:focus:bg-primary "
     >
       <span
         id="letter"
-        className="me-4 rounded-md border border-primary/60 border-opacity-20 px-2 py-1 text-base group-hover:border-white dark:group-hover:border-black group-focus:border-black sm:text-2xl"
+        className="me-4 rounded-md border border-primary/60 border-opacity-20 px-2 py-1 text-base group-hover:border-white dark:group-hover:border-black group-focus:border-white dark:group-focus:border-black sm:text-2xl"
       >
         {letter}
       </span>
