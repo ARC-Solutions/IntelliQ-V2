@@ -1,19 +1,20 @@
 "use client";
 
-import * as React from "react";
 import {
-  UsersRound,
-  UserRound,
-  House,
-  GalleryVerticalEnd,
-  Settings2,
-  History,
+  BookOpen,
   Bookmark,
+  Dices,
+  GalleryVerticalEnd,
+  History,
+  House,
+  Paperclip,
+  Settings2,
+  UsersRound
 } from "lucide-react";
+import * as React from "react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
-import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -48,12 +49,22 @@ const data = {
     {
       title: "Quiz Me",
       url: "/single-player/quiz",
-      icon: UserRound,
+      icon: BookOpen,
     },
     {
       title: "Multiplayer",
       url: "/multiplayer",
       icon: UsersRound,
+    },
+    {
+      title: "Documents",
+      url: "/documents",
+      icon: Paperclip,
+    },
+    {
+      title: "Random",
+      url: "/random-quiz",
+      icon: Dices,
     },
     {
       title: "History",
