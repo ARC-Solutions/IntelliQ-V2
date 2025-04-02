@@ -12,7 +12,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
         {/* Main Content */}
         <div className="flex-1 overflow-auto">
-          <main className="relative flex items-start justify-center w-full h-full">
+          <main className="relative flex items-start justify-center w-full h-full pt-14 md:pt-0">
             {children}
             {/* <AnimatedGridPattern
               numSquares={30}
