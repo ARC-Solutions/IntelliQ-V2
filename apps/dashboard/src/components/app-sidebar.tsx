@@ -9,9 +9,9 @@ import {
   House,
   Paperclip,
   Settings2,
-  UsersRound
+  UsersRound,
 } from "lucide-react";
-import * as React from "react";
+import type * as React from "react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
@@ -26,67 +26,86 @@ import {
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/user-context";
 
-const data = {
-  user: {
-    name: "",
-    email: "",
-    avatar: "",
-    id: "",
-  },
-  teams: [
-    {
-      name: "IntelliQ",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-  ],
-  navMain: [
-    {
-      title: "Home",
-      url: "/",
-      icon: House,
-    },
-    {
-      title: "Quiz Me",
-      url: "/single-player/quiz",
-      icon: BookOpen,
-    },
-    {
-      title: "Multiplayer",
-      url: "/multiplayer",
-      icon: UsersRound,
-    },
-    {
-      title: "Documents",
-      url: "/documents",
-      icon: Paperclip,
-    },
-    {
-      title: "Random",
-      url: "/random-quiz",
-      icon: Dices,
-    },
-    {
-      title: "History",
-      url: "/history",
-      icon: History,
-    },
-    {
-      title: "Bookmarks",
-      url: "/bookmarks",
-      icon: Bookmark,
-    },
-    {
-      title: "Settings",
-      url: "/settings",
-      icon: Settings2,
-    },
-  ],
-};
+interface FeatureFlags {
+  singlePlayerEnabled: boolean;
+  multiplayerEnabled: boolean;
+  documentsEnabled: boolean;
+  bookmarksEnabled: boolean;
+  randomQuizEnabled: boolean;
+}
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  featureFlags: FeatureFlags;
+}
+
+export function AppSidebar({ featureFlags, ...props }: AppSidebarProps) {
   const { currentUser } = useAuth();
   const { state, isMobile } = useSidebar();
+
+  const data = {
+    user: {
+      name: currentUser?.name || "",
+      email: currentUser?.email || "",
+      avatar: currentUser?.img || "",
+      id: currentUser?.id || "",
+    },
+    teams: [
+      {
+        name: "IntelliQ",
+        logo: GalleryVerticalEnd,
+        plan: "Enterprise",
+      },
+    ],
+    navMain: [
+      {
+        title: "Home",
+        url: "/",
+        icon: House,
+      },
+      {
+        title: "Quiz Me",
+        url: "/single-player/quiz",
+        icon: BookOpen,
+        locked: !featureFlags.singlePlayerEnabled,
+      },
+      {
+        title: "Multiplayer",
+        url: "/multiplayer",
+        icon: UsersRound,
+        locked: !featureFlags.multiplayerEnabled,
+      },
+      {
+        title: "Documents",
+        url: "/documents",
+        icon: Paperclip,
+        locked: !featureFlags.documentsEnabled,
+      },
+      {
+        title: "Random",
+        url: "/random-quiz",
+        icon: Dices,
+        locked: !featureFlags.randomQuizEnabled,
+      },
+      {
+        title: "History",
+        url: "/history",
+        icon: History,
+        locked: !featureFlags.singlePlayerEnabled,
+      },
+      {
+        title: "Bookmarks",
+        url: "/bookmarks",
+        icon: Bookmark,
+        locked: !featureFlags.bookmarksEnabled,
+      },
+      {
+        title: "Settings",
+        url: "/settings",
+        icon: Settings2,
+      },
+    ],
+  };
+
   if (currentUser) {
     data.user.avatar = currentUser.img;
     data.user.name = currentUser.name;
