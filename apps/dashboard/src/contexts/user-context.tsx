@@ -101,7 +101,8 @@ export const AuthProvider = ({ children }: Props) => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: "http://localhost:3000/dashboard",
+          redirectTo:
+            process.env.NEXT_PUBLIC_WEBAPP_URL ?? "http://localhost:3000",
         },
       });
 
@@ -194,7 +195,6 @@ export const AuthProvider = ({ children }: Props) => {
       });
     }
     const user = session?.user;
-
     const avatar = user.user_metadata.avatar_url as string;
     const name = user.user_metadata.name as string;
     const userID = user?.id as string;
