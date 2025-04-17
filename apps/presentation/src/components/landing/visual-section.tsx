@@ -73,14 +73,16 @@ export default function VisualEnhance() {
   }, []);
 
   return (
-    <div className='justify-items-center '>
-      <h2 className='text-4xl md:text-5xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-neutral-800 to-neutral-500 dark:from-neutral-100 dark:to-neutral-400 mb-4
-      '>
+    <div className="flex flex-col items-center justify-center w-full">
+      <h2
+        className="text-4xl md:text-5xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-neutral-800 to-neutral-500 dark:from-neutral-100 dark:to-neutral-400 mb-4
+      "
+      >
         Global Infrastructure
       </h2>
       <canvas
         ref={canvasRef}
-        style={{ width: 650, height: 650, maxWidth: '100%', aspectRatio: 1 }}
+        style={{ width: 650, height: 650, maxWidth: "100%", aspectRatio: 1 }}
       />
     </div>
   );
