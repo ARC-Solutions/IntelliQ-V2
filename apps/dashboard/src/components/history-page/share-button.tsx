@@ -19,32 +19,25 @@ import { toast } from "@/components/ui/use-toast";
 interface ShareButtonProps {
   quizId: string;
   roomId?: string;
-  type: "singleplayer" | "multiplayer";
+  type: string;
   className?: string;
-}
-
-// Define the expected response type
-interface ShareResponse {
-  shareUrl: string;
-  // Add other properties as needed
 }
 
 export function ShareButton({ quizId, roomId, type, className = "" }: ShareButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isPublic, setIsPublic] = useState(true);
+  const [isPublic] = useState(true);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
   const [isShared, setIsShared] = useState(false);
 
   const handleShare = async () => {
     setIsLoading(true);
-    
     try {
       const client = createApiClient();
-      let response; // Explicitly define the type for response
+      let response; 
       
-      if (type === "singleplayer") {
+      if (type !== "multiplayer") {
         response = await client.api.v1.share.singleplayer.$post({
           json: {
             quizId,
@@ -52,6 +45,7 @@ export function ShareButton({ quizId, roomId, type, className = "" }: ShareButto
             isPublic
           }
         });
+        console.log(response)
       } else {
         // For multiplayer quizzes
         if (!roomId) {
@@ -69,8 +63,8 @@ export function ShareButton({ quizId, roomId, type, className = "" }: ShareButto
       }
       
       const data = await response.json();
-      
-      if (data && data.shareUrl) {
+        console.log(data.shareId)
+      if (data) {
         const frontendShareUrl = `${window.location.origin}/share/${data.shareId}`;
         setShareUrl(frontendShareUrl);
         setIsShared(true);
@@ -86,7 +80,7 @@ export function ShareButton({ quizId, roomId, type, className = "" }: ShareButto
       console.error("Failed to share quiz:", error);
       toast({
         title: "Failed to share quiz",
-        description: "Please try again later.",
+        description: "Something went wrong.",
         variant: "destructive",
       });
     } finally {
@@ -151,16 +145,7 @@ export function ShareButton({ quizId, roomId, type, className = "" }: ShareButto
           
           {!isShared ? (
             <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="public" 
-                  checked={isPublic}
-                  onCheckedChange={(checked) => setIsPublic(checked as boolean)}
-                />
-                <Label htmlFor="public" className="text-[#c8b6ff]">
-                  Make quiz publicly accessible
-                </Label>
-              </div>
+
               <div className="flex items-center space-x-2">
                 <Checkbox 
                   id="anonymous" 
@@ -175,9 +160,7 @@ export function ShareButton({ quizId, roomId, type, className = "" }: ShareButto
           ) : (
             <div className="space-y-4">
               <div className="flex items-center">
-                <Badge variant="outline" className="bg-[#c8b6ff]/10 text-[#c8b6ff] border-[#c8b6ff]/20">
-                  {isPublic ? "Public" : "Private"}
-                </Badge>
+    
                 <Badge variant="outline" className="ml-2 bg-[#c8b6ff]/10 text-[#c8b6ff] border-[#c8b6ff]/20">
                   {isAnonymous ? "Anonymous" : "Named"}
                 </Badge>

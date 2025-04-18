@@ -120,8 +120,7 @@ export function HistoryCard({
           <div className='flex items-center gap-2'>
             <ShareButton 
               quizId={id} 
-              type={type === 'multiplayer' ? 'multiplayer' : 'singleplayer'} 
-              isFromHistory={true} 
+              type={type} 
             />
             <button
               onClick={toggleBookmark}
