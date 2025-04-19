@@ -225,7 +225,7 @@ export default function SharedQuizPage({
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {quiz.quiz.topic?.map((topic) => (
-                    <Badge key={topic} variant="primary" className="text-sm">
+                    <Badge key={topic} variant="default" className="text-sm">
                       {topic}
                     </Badge>
                   ))}
