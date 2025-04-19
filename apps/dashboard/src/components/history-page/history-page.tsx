@@ -22,6 +22,7 @@ interface QuizHistory {
   passed?: boolean;
   type: string;
   isBookmarked?: boolean;
+  roomId?: string;
 }
 
 interface PaginationInfo {
@@ -137,6 +138,7 @@ export default function HistoryPage() {
           passed: item.passed,
           type: item.type || 'singleplayer',
           isBookmarked: item.isBookmarked,
+          roomId: item.roomId,
         }),
       );
 
@@ -279,7 +281,7 @@ export default function HistoryPage() {
 
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               {quizHistory.map((item) => (
-                <HistoryCard key={item.id} {...item} isBookmarked={item.isBookmarked} />
+                <HistoryCard key={item.id} {...item} isBookmarked={item.isBookmarked} roomId={item.roomId} />
               ))}
             </div>
 

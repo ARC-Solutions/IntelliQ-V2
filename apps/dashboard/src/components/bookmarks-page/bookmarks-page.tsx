@@ -22,6 +22,7 @@ interface QuizHistory {
   passed?: boolean;
   type: string;
   isBookmarked?: boolean;
+  roomId?: string;
 }
 
 interface PaginationInfo {
@@ -135,6 +136,7 @@ export default function BookmarksPage() {
           totalTime: item.totalTime,
           passed: item.passed,
           type: item.type || 'singleplayer',
+          roomId: item.roomId,
           isBookmarked: item.isBookmarked,
         }),
       );
@@ -282,6 +284,7 @@ export default function BookmarksPage() {
                   key={item.id}
                   {...item}
                   isBookmarked={item.isBookmarked}
+                  roomId={item.roomId}
                   onBookmarkToggle={() => {
                     fetchQuizHistory();
                   }}

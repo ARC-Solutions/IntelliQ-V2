@@ -100,6 +100,7 @@ const bookmarksRoutes = new Hono<{ Bindings: CloudflareEnv }>()
             multiplayerScore: multiplayerQuizSubmissions.userScore,
             multiplayerCorrect: multiplayerQuizSubmissions.correctAnswersCount,
             questionsCount: quizzes.questionsCount,
+            roomId: multiplayerQuizSubmissions.roomId,
             isBookmarked: sql<boolean>`EXISTS (
       SELECT 1 FROM ${bookmarks}
       WHERE ${bookmarks.quizId} = ${quizzes.id}
@@ -131,6 +132,7 @@ const bookmarksRoutes = new Hono<{ Bindings: CloudflareEnv }>()
               date: format(quiz.date, "dd/MM/yyyy"),
               type: quiz.type,
               isBookmarked: quiz.isBookmarked,
+              roomId: quiz.roomId,
             };
           }
 

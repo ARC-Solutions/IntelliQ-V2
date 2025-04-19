@@ -60,6 +60,7 @@ const documentQuizHistoryItem = baseQuizHistoryItem.extend({
 
 // Multiplayer specific fields (only includes base fields)
 const multiplayerQuizHistoryItem = baseQuizHistoryItem.extend({
+  roomId: z.string(),
   type: z.literal(quizType.Enum.multiplayer),
 });
 

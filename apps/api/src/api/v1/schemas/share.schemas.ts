@@ -50,37 +50,39 @@ export const updateShareSingleplayerQuizRequestSchema = z.object({
 });
 
 export const updateShareSingleplayerQuizResponseSchema = z.object({
-  shareId: z.string().uuid(),
-  shareUrl: z.string().url(),
-  isAnonymous: z.boolean(),
-  isPublic: z.boolean(),
-  type: z.string(),
   quiz: z.object({
     id: z.string().uuid(),
     userId: z.string().uuid(),
     title: z.string(),
     description: z.string().nullable(),
-    topic: z.array(z.string()),
+    topic: z.array(z.string()).nullable(),
     tags: z.array(z.string()).nullable(),
     passingScore: z.number().nullable(),
-    documentId: z.string().uuid().nullable(),
+    documentId: z.number().nullable(),
     type: z.string(),
     createdAt: z.string(),
     language: z.string(),
     userScore: z.number().nullable(),
     correctAnswersCount: z.number().nullable(),
-    totalTimeTaken: z.number().nullable(),
-    passed: z.boolean().nullable(),
-    createdBy: z.string().optional(), 
     questionsCount: z.number(),
     roomId: z.string().uuid().nullable(),
+    totalTimeTaken: z.number().nullable(),
+    passed: z.boolean().nullable(),
+    createdBy: z.string().optional(),
   }),
+  shareId: z.string().uuid(),
+  shareUrl: z.string().url(),
+  isPublic: z.boolean(),
+  isAnonymous: z.boolean(),
+  type: z.string(),
 });
 
 // GET /api/v1/share/UUID
 export const getShareSingleplayerQuizResponseSchema =
   updateShareSingleplayerQuizResponseSchema.extend({
     quiz: updateShareSingleplayerQuizResponseSchema.shape.quiz.extend({
-      createdBy: z.string(),
+      generatedTags: z.array(z.string()).optional(),
+      generatedCategories: z.array(z.string()).optional(),
+      embedding: z.array(z.number()).optional(),
     }),
   });

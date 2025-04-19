@@ -3,7 +3,7 @@ import { createDb } from "../../db";
 import { getSupabase } from "./middleware/auth.middleware";
 import { quizzes, rooms, sharedQuizzes } from "../../../drizzle/schema";
 import { quizType } from "./schemas/common.schemas";
-import { eq, and } from "drizzle-orm";
+import { eq, and, or } from "drizzle-orm";
 import {
   createCacheMiddleware,
   MEDIUM_CACHE,
@@ -52,13 +52,24 @@ const shareRoutes = new Hono<{ Bindings: CloudflareEnv }>()
         data: { user },
       } = await supabase.auth.getUser();
 
+      console.log(quizId, user!.id);
+
       const quiz = await db.query.quizzes.findFirst({
         where: and(
           eq(quizzes.id, quizId),
-          eq(quizzes.type, quizType.Enum.singleplayer),
-          eq(quizzes.userId, user!.id)
+          or(
+            eq(quizzes.type, quizType.Enum.singleplayer),
+            eq(quizzes.type, quizType.Enum.document),
+          ),
+          eq(quizzes.userId, user!.id),
         ),
       });
+
+      if (!quiz) {
+        throw new HTTPException(404, {
+          message: "Quiz not found",
+        });
+      }
 
       const [sharedQuiz] = await db
         .insert(sharedQuizzes)
@@ -67,7 +78,7 @@ const shareRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           isAnonymous,
           isPublic,
           userId: user!.id,
-          type: quizType.Enum.singleplayer,
+          type: quiz.type,
         })
         .returning();
 
@@ -87,9 +98,9 @@ const shareRoutes = new Hono<{ Bindings: CloudflareEnv }>()
             title: quiz!.title,
           },
         },
-        201
+        201,
       );
-    }
+    },
   )
   .post(
     "/multiplayer",
@@ -111,7 +122,7 @@ const shareRoutes = new Hono<{ Bindings: CloudflareEnv }>()
     }),
     zValidator("json", shareMultiplayerQuizRequestSchema),
     async (c) => {
-      const { quizId, roomId, isAnonymous, isPublic } = await c.req.json();
+      const { quizId, roomId, isAnonymous, isPublic } = c.req.valid("json");
 
       const db = await createDb(c);
       const supabase = getSupabase(c);
@@ -124,7 +135,7 @@ const shareRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           where: and(
             eq(quizzes.id, quizId),
             eq(quizzes.type, quizType.Enum.multiplayer),
-            eq(quizzes.roomId, roomId)
+            eq(quizzes.roomId, roomId),
           ),
         });
 
@@ -181,9 +192,9 @@ const shareRoutes = new Hono<{ Bindings: CloudflareEnv }>()
             title: result.quiz!.title,
           },
         },
-        201
+        201,
       );
-    }
+    },
   )
   .patch(
     "/:shareId",
@@ -222,8 +233,8 @@ const shareRoutes = new Hono<{ Bindings: CloudflareEnv }>()
         .where(
           and(
             eq(sharedQuizzes.shareId, shareId),
-            eq(sharedQuizzes.userId, user!.id)
-          )
+            eq(sharedQuizzes.userId, user!.id),
+          ),
         )
         .returning();
 
@@ -244,7 +255,7 @@ const shareRoutes = new Hono<{ Bindings: CloudflareEnv }>()
         type: updatedShare.type,
         quiz,
       });
-    }
+    },
   )
   .get(
     "/:shareId",
@@ -273,7 +284,7 @@ const shareRoutes = new Hono<{ Bindings: CloudflareEnv }>()
       const sharedQuiz = await db.query.sharedQuizzes.findFirst({
         where: and(
           eq(sharedQuizzes.shareId, shareId),
-          eq(sharedQuizzes.isPublic, true)
+          eq(sharedQuizzes.isPublic, true),
         ),
         with: {
           quiz: true,
@@ -300,7 +311,7 @@ const shareRoutes = new Hono<{ Bindings: CloudflareEnv }>()
         isAnonymous: sharedQuiz!.isAnonymous,
         type: sharedQuiz!.type,
       });
-    }
+    },
   );
 
 export default shareRoutes;

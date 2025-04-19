@@ -73,7 +73,7 @@ export default function SharedQuizPage({ params }: { params: { shareId: string }
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center dark:bg-[#0c0d0d]">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary" />
       </div>
     );
@@ -81,7 +81,7 @@ export default function SharedQuizPage({ params }: { params: { shareId: string }
 
   if (error || !quiz) {
     return (
-      <div className="min-h-screen flex items-center justify-center dark:bg-[#0c0d0d]">
+      <div className="min-h-screen flex items-center justify-center">
         <Card className="w-full max-w-2xl">
           <CardHeader>
             <CardTitle className="text-center text-destructive">Error Loading Quiz</CardTitle>
@@ -98,7 +98,7 @@ export default function SharedQuizPage({ params }: { params: { shareId: string }
   const progressValue = (correctAnswersCount / questionsCount) * 100;
 
   return (
-    <div className="min-h-screen dark:bg-[#0c0d0d]">
+    <div className="min-h-screen">
       <div className="mx-auto flex w-full flex-col px-6 py-8 text-gray-800 sm:w-10/12 max-w-5xl">
         <header className="mb-10 flex w-full flex-col items-center justify-center">
           <Image src="/logo-dark.svg" alt="IntelliQ" width={250} height={250} className='hidden dark:block'/>
@@ -107,7 +107,7 @@ export default function SharedQuizPage({ params }: { params: { shareId: string }
           <h1 className="text-2xl font-bold sm:text-4xl text-primary mt-4">{quiz.quiz.title}</h1>
         </header>
 
-        <Card className="w-full border-b-[0.5px] border-gray-300 shadow-md p-4 text-black dark:bg-[#0c0d0d] dark:text-white">
+        <Card className="w-full border-b-[0.5px] border-gray-300 shadow-md p-4 text-black dark:text-white">
           <CardHeader>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div className="flex items-center gap-4">
