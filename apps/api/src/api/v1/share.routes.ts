@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { createDb } from "../../db";
 import { getSupabase } from "./middleware/auth.middleware";
-import { quizzes, rooms, sharedQuizzes } from "../../../drizzle/schema";
+import { multiplayerQuizSubmissions, quizzes, rooms, sharedQuizzes } from "../../../drizzle/schema";
 import { quizType } from "./schemas/common.schemas";
 import { eq, and, or } from "drizzle-orm";
 import {
@@ -296,8 +296,27 @@ const shareRoutes = new Hono<{ Bindings: CloudflareEnv }>()
         },
       });
 
+      if (!sharedQuiz) {
+        throw new HTTPException(404, {
+          message: "Shared quiz not found",
+        });
+      }
+
       const shareUrl = new URL(c.req.url);
       shareUrl.pathname = `/api/v1/share/${shareId}`;
+
+      // TODO: This is a temporary solution to get the multiplayer submission
+      let multiplayerSubmission;
+      if (sharedQuiz.type === quizType.Enum.multiplayer && sharedQuiz.roomId) {
+        multiplayerSubmission =
+          await db.query.multiplayerQuizSubmissions.findFirst({
+            where: and(
+              eq(multiplayerQuizSubmissions.quizId, sharedQuiz.quizId),
+              eq(multiplayerQuizSubmissions.roomId, sharedQuiz.roomId),
+              eq(multiplayerQuizSubmissions.userId, sharedQuiz.userId),
+            ),
+          });
+      }
 
       return c.json({
         quiz: {
@@ -310,6 +329,7 @@ const shareRoutes = new Hono<{ Bindings: CloudflareEnv }>()
         isPublic: sharedQuiz!.isPublic,
         isAnonymous: sharedQuiz!.isAnonymous,
         type: sharedQuiz!.type,
+        multiplayerSubmission: multiplayerSubmission || null,
       });
     },
   );

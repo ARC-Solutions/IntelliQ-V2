@@ -12,7 +12,11 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { createApiClient } from "@/utils/api-client";
 import { toast } from "@/components/ui/use-toast";
 
@@ -23,7 +27,12 @@ interface ShareButtonProps {
   className?: string;
 }
 
-export function ShareButton({ quizId, roomId, type, className = "" }: ShareButtonProps) {
+export function ShareButton({
+  quizId,
+  roomId,
+  type,
+  className = "",
+}: ShareButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isPublic] = useState(true);
@@ -35,35 +44,35 @@ export function ShareButton({ quizId, roomId, type, className = "" }: ShareButto
     setIsLoading(true);
     try {
       const client = createApiClient();
-      let response; 
-      
+      let response;
+
       if (type !== "multiplayer") {
         response = await client.api.v1.share.singleplayer.$post({
           json: {
             quizId,
             isAnonymous,
-            isPublic
-          }
+            isPublic,
+          },
         });
-        console.log(response)
+        console.log(response);
       } else {
         // For multiplayer quizzes
         if (!roomId) {
           throw new Error("Room ID is required for multiplayer quizzes");
         }
-        
+
         response = await client.api.v1.share.multiplayer.$post({
           json: {
             quizId,
             roomId,
             isAnonymous,
-            isPublic
-          }
+            isPublic,
+          },
         });
       }
-      
+
       const data = await response.json();
-        console.log(data.shareId)
+      console.log(data.shareId);
       if (data) {
         const frontendShareUrl = `${window.location.origin}/share/${data.shareId}`;
         setShareUrl(frontendShareUrl);
@@ -88,6 +97,8 @@ export function ShareButton({ quizId, roomId, type, className = "" }: ShareButto
     }
   };
 
+  // TODO
+  // SUGGESTION: we already have a use-copy-to-clipboard hook, we should use that instead of this
   const copyToClipboard = async () => {
     if (!shareUrl) {
       toast({
@@ -97,7 +108,7 @@ export function ShareButton({ quizId, roomId, type, className = "" }: ShareButto
       });
       return;
     }
-    
+
     try {
       await navigator.clipboard.writeText(shareUrl);
       toast({
@@ -142,15 +153,16 @@ export function ShareButton({ quizId, roomId, type, className = "" }: ShareButto
               Create a shareable link for your quiz
             </DialogDescription>
           </DialogHeader>
-          
+
           {!isShared ? (
             <div className="space-y-4">
-
               <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="anonymous" 
+                <Checkbox
+                  id="anonymous"
                   checked={isAnonymous}
-                  onCheckedChange={(checked) => setIsAnonymous(checked as boolean)}
+                  onCheckedChange={(checked) =>
+                    setIsAnonymous(checked as boolean)
+                  }
                 />
                 <Label htmlFor="anonymous" className="text-[#c8b6ff]">
                   Share anonymously (hide your name)
@@ -160,37 +172,41 @@ export function ShareButton({ quizId, roomId, type, className = "" }: ShareButto
           ) : (
             <div className="space-y-4">
               <div className="flex items-center">
-    
-                <Badge variant="outline" className="ml-2 bg-[#c8b6ff]/10 text-[#c8b6ff] border-[#c8b6ff]/20">
+                <Badge
+                  variant="outline"
+                  className="ml-2 bg-[#c8b6ff]/10 text-[#c8b6ff] border-[#c8b6ff]/20"
+                >
                   {isAnonymous ? "Anonymous" : "Named"}
                 </Badge>
               </div>
               <div className="bg-[#c8b6ff]/5 p-3 rounded-md border border-[#c8b6ff]/20">
-                <p className="text-sm font-mono text-[#c8b6ff] break-all">{shareUrl || "No share URL available"}</p>
+                <p className="text-sm font-mono text-[#c8b6ff] break-all">
+                  {shareUrl || "No share URL available"}
+                </p>
               </div>
             </div>
           )}
-          
+
           <DialogFooter>
             {!isShared ? (
-              <Button 
-                onClick={handleShare} 
-                disabled={isLoading} 
+              <Button
+                onClick={handleShare}
+                disabled={isLoading}
                 className="bg-[#c8b6ff] hover:bg-[#c8b6ff]/90 text-black"
               >
                 {isLoading ? "Generating link..." : "Generate share link"}
               </Button>
             ) : (
               <div className="flex space-x-2 w-full justify-end">
-                <Button 
-                  onClick={() => setIsShared(false)} 
-                  variant="outline" 
+                <Button
+                  onClick={() => setIsShared(false)}
+                  variant="outline"
                   className="border-[#c8b6ff]/20 text-[#c8b6ff]"
                 >
                   Back
                 </Button>
-                <Button 
-                  onClick={copyToClipboard} 
+                <Button
+                  onClick={copyToClipboard}
                   className="bg-[#c8b6ff] hover:bg-[#c8b6ff]/90 text-black"
                 >
                   Copy Link

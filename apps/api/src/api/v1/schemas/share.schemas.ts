@@ -85,4 +85,15 @@ export const getShareSingleplayerQuizResponseSchema =
       generatedCategories: z.array(z.string()).optional(),
       embedding: z.array(z.number()).optional(),
     }),
+    multiplayerSubmission: z
+      .object({
+        id: z.string().uuid(),
+        userId: z.string().uuid(),
+        quizId: z.string().uuid(),
+        roomId: z.string().uuid(),
+        userScore: z.number(),
+        correctAnswersCount: z.number(),
+        createdAt: z.string(),
+      })
+      .nullable(),
   });
