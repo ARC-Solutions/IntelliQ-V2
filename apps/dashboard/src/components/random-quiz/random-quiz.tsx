@@ -1,4 +1,5 @@
 'use client';
+export const runtime = 'edge';
 import {  useEffect } from 'react';
 import Lottie from 'lottie-react';
 import Loading from '@/assets/loading.json';
