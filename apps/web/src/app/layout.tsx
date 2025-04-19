@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     siteName: "IntelliQ",
     images: [
       {
-        url: "https://www.app.intelliq.dev/intelliq_og.png",
+        url: "https://app.intelliq.dev/intelliq_og.png",
         width: 1920,
         height: 1080,
         alt: "IntelliQ",
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     creator: "@rickyraveanu @noppin7 @nikola-petro",
     images: [
       {
-        url: "https://www.app.intelliq.dev/intelliq_og.png",
+        url: "https://app.intelliq.dev/intelliq_og.png",
         width: 1920,
         height: 1080,
         alt: "IntelliQ",
