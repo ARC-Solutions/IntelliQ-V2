@@ -1,0 +1,122 @@
+---
+title: 'Syncing Specific Directories from Main Branch'
+description: 'How to update specific directories in your branch with the latest changes from main'
+---
+
+# Syncing Specific Directories from Main
+
+When working on a feature branch, you may need to get the latest updates for specific directories from the main branch without merging or rebasing your entire branch.
+
+## When to Use This Approach
+
+This approach is useful when:
+- You need the latest version of a specific app without updating your entire codebase
+- You want to pull in changes to the documentation or API while continuing to work on your feature
+- You need to update shared components without disrupting your current work
+
+## How to Sync Specific Directories
+
+To sync a specific directory from the main branch, use the following commands:
+
+```bash
+# First, fetch the latest changes from the main branch
+git fetch origin main
+
+# Then, checkout just the directory you need from main
+git checkout origin/main -- <directory-path>
+```
+
+### Available Directories to Sync
+
+You can sync any of these app directories:
+
+```bash
+# Sync docs
+git checkout origin/main -- apps/docs
+
+# Sync web app
+git checkout origin/main -- apps/web
+
+# Sync dashboard
+git checkout origin/main -- apps/dashboard
+
+# Sync API
+git checkout origin/main -- apps/api
+
+# Sync presentation
+git checkout origin/main -- apps/presentation
+```
+
+## After Syncing
+
+After syncing a directory, you should:
+
+1. Review the changes that were brought in
+2. Make sure your project still builds correctly
+3. Commit the changes to your branch
+
+```bash
+# Review the changes
+git status
+
+# Add and commit the changes
+git add <directory-path>
+git commit -m "Sync <directory-path> with main branch"
+```
+
+## Caution
+
+Be careful when syncing directories that might have dependencies on other parts of the codebase. In some cases, you may need to sync multiple directories to maintain compatibility. 
+
+## Selectively Syncing Specific Files
+
+You can be even more granular and sync only specific files rather than entire directories:
+
+```bash
+# Sync a specific file
+git checkout origin/main -- apps/web/components/Header.tsx
+
+# Sync multiple specific files
+git checkout origin/main -- apps/api/routes/users.ts apps/api/models/User.ts
+```
+
+### Excluding Specific Files When Syncing a Directory
+
+If you want to sync a directory but exclude certain files, you can:
+
+1. First, sync the directory
+2. Then revert the specific files you don't want to sync
+
+```bash
+# First sync the entire directory
+git checkout origin/main -- apps/docs
+
+# Then revert specific files you don't want to update
+git checkout HEAD -- apps/docs/specific-file-to-exclude.mdx
+
+# You can also revert multiple files at once
+git checkout HEAD -- apps/docs/file1.mdx apps/docs/file2.mdx
+```
+
+### Using Git Add Interactive Mode
+
+For more complex selections, you can use Git's interactive add mode after syncing:
+
+```bash
+# First sync the directory
+git checkout origin/main -- apps/web
+
+# Then use interactive mode to selectively stage only what you want
+git add -i
+
+# Or use patch mode to select specific chunks within files
+git add -p
+```
+
+With the interactive mode, you'll get a menu where you can:
+- Select specific files to stage
+- Review changes before staging
+- Split files into smaller chunks for selective staging
+- Revert specific parts of the sync 
+
+Written by [Ricky Raveanu](mailto:contact@rickyraveanu.com)
