@@ -28,6 +28,8 @@ import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
 import { useTheme } from "next-themes";
 
+export const runtime = "edge";
+
 interface SharedQuiz {
   quiz: {
     id: string;
