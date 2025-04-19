@@ -22,26 +22,24 @@ export function RandomQuiz() {
   const { resolvedTheme } = useTheme();
 
   useEffect(() => {
-    // Small timeout to ensure context is ready
+    // timeout to ensure context is ready
     const timer = setTimeout(() => {
       const randomQuestionCount = Math.floor(Math.random() * 10) + 1;
       setTopicValue("random");
       setDescriptionValue("choose a topic yourself");
       setNumberValue(randomQuestionCount);
       setQuizLanguageValue("en");
-      // Only add the tag if it's not already present
       if (!formValues.tags?.includes("random")) {
         addTag("random");
       }
       
-      // Add a small delay to ensure all values are set before submitting
       setTimeout(() => {
         onSubmit();
       }, 100);
     }, 100);
 
     return () => clearTimeout(timer);
-  }, []); // Empty dependency array means this runs once on mount
+  }, []); // Empty dependency array = run once on mount
 
   if (fetchingFinished && currentQuiz) {
     redirect('/single-player/quiz/play');
@@ -54,7 +52,6 @@ export function RandomQuiz() {
     );
   }
 
-  // Since we're auto-submitting, we don't need the form and button anymore
   return (
     <div className="absolute left-1/2 top-1/2 flex w-[40] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[30vw]">
         <Lottie animationData={resolvedTheme === "dark" ? LoadingDark : Loading} />
