@@ -42,7 +42,7 @@ const Answer = ({ answer, letter, onAnswerSelected }: Props) => {
           });
         }
       }}
-      className="group my-3 w-full justify-start rounded-lg border border-primary border-opacity-30 bg-white dark:bg-black p-7 text-sm font-normal text-black dark:text-white hover:border-none hover:bg-primary hover:text-white dark:hover:text-black focus:bg-primary focus:text-white dark:focus:text-black sm:text-lg dark:hover:bg-primary dark:focus:bg-primary "
+      className="group my-3 w-full h-auto justify-start rounded-lg border border-primary border-opacity-30 bg-white dark:bg-black p-7 text-sm font-normal text-black dark:text-white hover:border-none hover:bg-primary hover:text-white dark:hover:text-black focus:bg-primary focus:text-white dark:focus:text-black sm:text-lg dark:hover:bg-primary dark:focus:bg-primary "
     >
       <span
         id="letter"
@@ -50,7 +50,7 @@ const Answer = ({ answer, letter, onAnswerSelected }: Props) => {
       >
         {letter}
       </span>
-      <span id="answer" className="capitalize">
+      <span id="answer" className="capitalize break-words whitespace-normal text-left">
         {answer}
       </span>
     </Button>
