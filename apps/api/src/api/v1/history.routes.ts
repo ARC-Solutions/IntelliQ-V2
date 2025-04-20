@@ -84,6 +84,7 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
             type: quizzes.type,
             multiplayerScore: multiplayerQuizSubmissions.userScore,
             multiplayerCorrect: multiplayerQuizSubmissions.correctAnswersCount,
+            roomId: multiplayerQuizSubmissions.roomId,
             questionsCount: quizzes.questionsCount,
             isBookmarked: sql<boolean>`EXISTS (
       SELECT 1 FROM ${bookmarks}
@@ -109,6 +110,7 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
               date: format(quiz.date, 'dd/MM/yyyy'),
               type: quiz.type,
               isBookmarked: quiz.isBookmarked,
+              roomId: quiz.roomId,
             };
           }
 

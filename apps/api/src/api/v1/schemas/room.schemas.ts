@@ -33,7 +33,7 @@ export const roomDetailsResponseSchema = z.object({
 });
 
 export const updateRoomSettingsSchema = z.object({
-  type: z.enum(['numQuestions', 'timeLimit', 'topic', 'showAnswers', 'maxPlayers', 'language']),
+  type: z.enum(['numQuestions', 'timeLimit', 'topic', 'showAnswers', 'maxPlayers', 'language', 'endedAt']),
   value: z.union([z.number(), z.string(), z.boolean()]),
 });
 

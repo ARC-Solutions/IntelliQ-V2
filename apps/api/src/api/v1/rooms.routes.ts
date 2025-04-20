@@ -118,6 +118,7 @@ const app = new Hono<{ Bindings: CloudflareEnv }>()
     zValidator('json', updateRoomSettingsSchema),
     async (c) => {
       const { roomCode } = c.req.valid('param');
+      // TODO: NOT REST CONFORMANT
       const { type, value } = c.req.valid('json');
 
       const db = await createDb(c);

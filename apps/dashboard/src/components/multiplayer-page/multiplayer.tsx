@@ -39,7 +39,8 @@ const Quiz = () => {
     setIsMultiplayer,
   } = useQuizLogic();
 
-  const { setPlayers, isCreator, channel, setChannel, timeLimit, roomId } = useMultiplayer();
+  const { setPlayers, isCreator, channel, setChannel, timeLimit, roomId } =
+    useMultiplayer();
   const { currentUser } = useAuth();
   const routerParams = useParams();
   const router = useRouter();
@@ -96,6 +97,22 @@ const Quiz = () => {
 
   useEffect(() => {
     if (quizFinished) {
+      const endRoom = async () => {
+        try {
+          const client = createApiClient();
+          await client.api.v1.rooms[":roomCode"].settings.$patch({
+            param: { roomCode: roomCode },
+            // TODO: NOT REST CONFORMANT
+            json: { type: "endedAt", value: new Date().toISOString() },
+          });
+          console.log("Room marked as ended");
+        } catch (error) {
+          console.error("Failed to mark room as ended:", error);
+        }
+      };
+
+      endRoom();
+
       setTimeout(() => {
         getLeaderboard(roomId);
         if (channel && isCreator) {
