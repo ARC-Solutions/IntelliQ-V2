@@ -108,6 +108,7 @@ export default function Lobby() {
   const { toast } = useToast();
   const { resolvedTheme } = useTheme();
   const [gameMode, setGameMode] = useState<GameMode>('default');
+  const [topicError, setTopicError] = useState<string | null>(null);
 
   const checkAndJoinRoom = async (channel: RealtimeChannel) => {
     try {
@@ -400,7 +401,18 @@ export default function Lobby() {
 
   const startQuiz = async () => {
     if (!channel || !isCreator) return;
+    
+    if (!topic?.trim()) {
+      setTopicError("Quiz topic is required");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter a quiz topic",
+      });
+      return;
+    }
 
+    setTopicError(null); // Clear error when topic is valid
     const quizCreation = {
       topic,
       number: questionCount,
@@ -413,9 +425,6 @@ export default function Lobby() {
       quizType: QuizType.Enum.multiplayer,
     } as QuizData;
     fetchQuestions(quizCreation, roomId);
-
-    // router.push(`/multiplayer/${roomCode}/play`);
-    // await channel.send({ type: 'broadcast', event: 'quiz-start', payload: {} });
   };
 
   useEffect(() => {
@@ -760,6 +769,9 @@ export default function Lobby() {
                         setTopic(e.target.value);
                       }}
                     />
+                    {topicError && isCreator && (
+                      <p className="text-red-500">{topicError}</p>
+                    )}
                   </div>
                 </div>
               </div>
