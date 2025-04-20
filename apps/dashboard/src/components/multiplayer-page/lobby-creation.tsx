@@ -109,6 +109,10 @@ export default function LobbyScreen() {
                 value={inviteCode}
                 onChange={(value) => setInviteCode(value)}
                 className="gap-2"
+                pattern="[A-Za-z0-9]*"
+                type="text"
+                inputMode="text"
+                autoComplete="off"
               >
                 <InputOTPGroup>
                   <InputOTPSlot
