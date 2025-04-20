@@ -57,6 +57,18 @@ interface PresenceData {
   presence_ref: string;
 }
 
+type GameMode = 'default' | 'fast' | 'custom';
+
+const DEFAULT_SETTINGS = {
+  timeLimit: 25,
+  questionCount: 5,
+};
+
+const FAST_SETTINGS = {
+  timeLimit: 5,
+  questionCount: 3,
+};
+
 export default function Lobby() {
   const { currentUser } = useAuth();
   const {
@@ -95,6 +107,7 @@ export default function Lobby() {
   const supabase = createClient();
   const { toast } = useToast();
   const { resolvedTheme } = useTheme();
+  const [gameMode, setGameMode] = useState<GameMode>('default');
 
   const checkAndJoinRoom = async (channel: RealtimeChannel) => {
     try {
@@ -429,6 +442,48 @@ export default function Lobby() {
     handleQuizFinished();
   }, [fetchingFinished, currentQuiz, isLoading]);
 
+  useEffect(() => {
+    if (isCreator && timeLimit === undefined && questionCount === undefined) {
+      setTimeLimit(DEFAULT_SETTINGS.timeLimit);
+      setQuestionCount(DEFAULT_SETTINGS.questionCount);
+      debouncedUpdateSettings("timeLimit", DEFAULT_SETTINGS.timeLimit);
+      debouncedUpdateSettings("numQuestions", DEFAULT_SETTINGS.questionCount);
+    }
+  }, [isCreator]);
+
+  useEffect(() => {
+    if (timeLimit === FAST_SETTINGS.timeLimit && questionCount === FAST_SETTINGS.questionCount) {
+      setGameMode('fast');
+    } else if (timeLimit === DEFAULT_SETTINGS.timeLimit && questionCount === DEFAULT_SETTINGS.questionCount) {
+      setGameMode('default');
+    } else if (timeLimit !== undefined && questionCount !== undefined) {
+      setGameMode('custom');
+    }
+  }, [timeLimit, questionCount]);
+
+  const handleModeSelect = async (mode: GameMode) => {
+    if (!isCreator) return;
+
+    let newSettings;
+    switch (mode) {
+      case 'fast':
+        newSettings = FAST_SETTINGS;
+        break;
+      case 'default':
+        newSettings = DEFAULT_SETTINGS;
+        break;
+      default:
+        return; 
+    }
+
+    setTimeLimit(newSettings.timeLimit);
+    setQuestionCount(newSettings.questionCount);
+    
+    // Update both settings
+    await debouncedUpdateSettings("timeLimit", newSettings.timeLimit);
+    await debouncedUpdateSettings("numQuestions", newSettings.questionCount);
+  };
+
   if (isLoading) {
     return (
       <div className="absolute left-1/2 top-1/2 flex w-[40] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[30vw]">
@@ -585,15 +640,35 @@ export default function Lobby() {
             <div className="space-y-8">
               {/* Game Modes */}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <Card className="flex flex-col items-center justify-center gap-2 p-6 bg-primary/10 border-primary/20">
+                <Card 
+                  className={`flex flex-col items-center justify-center gap-2 p-6 cursor-pointer ${
+                    gameMode === 'default' 
+                      ? 'bg-primary/10 border-primary' 
+                      : 'dark:bg-black dark:border-gray-800'
+                  }`}
+                  onClick={() => handleModeSelect('default')}
+                >
                   <Brain className="w-8 h-8 text-primary" />
                   <span>Default</span>
                 </Card>
-                <Card className="flex flex-col items-center justify-center gap-2 p-6 dark:bg-black dark:border-gray-800">
+                <Card 
+                  className={`flex flex-col items-center justify-center gap-2 p-6 cursor-pointer ${
+                    gameMode === 'fast' 
+                      ? 'bg-primary/10 border-primary' 
+                      : 'dark:bg-black dark:border-gray-800'
+                  }`}
+                  onClick={() => handleModeSelect('fast')}
+                >
                   <Zap className="w-8 h-8 text-primary" />
                   <span>Fast</span>
                 </Card>
-                <Card className="flex flex-col items-center justify-center gap-2 p-6 dark:bg-black dark:border-gray-800">
+                <Card 
+                  className={`flex flex-col items-center justify-center gap-2 p-6 cursor-pointer ${
+                    gameMode === 'custom' 
+                      ? 'bg-primary/10 border-primary' 
+                      : 'dark:bg-black dark:border-gray-800'
+                  }`}
+                >
                   <Sparkles className="w-8 h-8 text-primary" />
                   <span>Custom</span>
                 </Card>
