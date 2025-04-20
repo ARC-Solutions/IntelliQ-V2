@@ -645,7 +645,7 @@ export default function Filters({
   availableTags: { tag: string; count: number }[];
 }) {
   return (
-    <div className="flex gap-2">
+    <div className="flex flex-wrap gap-2">
       {filters
         .filter((filter) => filter.value?.length > 0)
         .map((filter) => (

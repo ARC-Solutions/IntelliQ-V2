@@ -1,130 +1,91 @@
-import Image from "next/image";
+"use client";
+
 import Link from "next/link";
-import React from "react";
+import Image from "next/image";
+import { useTheme } from "next-themes";
+import { SocialLinks } from "./social-links";
+import { Wordmark } from "./wordmark";
+import { ROUTES } from "../../constants/routes";
 
-export function SiteFooter() {
-  const socials = [
-    {
-      title: "Instagram",
-      href: "https://www.instagram.com/ARCTeamGroup/",
-    },
-    {
-      title: "Twitter",
-      href: "https://twitter.com/ARCTeamGroup",
-    },
-  ];
-  // const legals = [
-  //   {
-  //     title: "Privacy Policy",
-  //     href: "#",
-  //   },
-  //   {
-  //     title: "Terms of Service",
-  //     href: "#",
-  //   },
-  //   {
-  //     title: "Cookie Policy",
-  //     href: "#",
-  //   },
-  // ];
+const navigation = [
+  {
+    title: "Features",
+    links: [
+      { name: "Dashboard", href: ROUTES.HOME },
+      { name: "Singleplayer", href: ROUTES.SINGLEPLAYER },
+      { name: "Multiplayer", href: ROUTES.MULTIPLAYER },
+    ],
+  },
+  {
+    title: "Resources",
+    links: [
+      { name: "Github", href: "https://github.com/ARC-Solutions/IntelliQ-V2" },
+      { name: "Contact us", href: "mailto:contact@arc-solutions.xyz" },
+      {
+        name: "Feature Request",
+        href: "https://github.com/ARC-Solutions/IntelliQ-V2/issues",
+        target: "_blank",
+      },
+    ],
+  },
+  {
+    title: "Company",
+    links: [{ name: "About us", href: "/about" }],
+  },
+];
+
+export function Footer() {
+  const { resolvedTheme } = useTheme();
   return (
-    <div className="px-8 py-20 w-full relative overflow-hidden">
-      <div className="max-w-7xl mx-auto text-sm text-neutral-500 flex sm:flex-row flex-col justify-between items-start  md:px-8">
-        <div>
-          <div className="mr-0 md:mr-4  md:flex mb-4">
-            <Logo />
+    <div className="ml-5 mr-5">
+      <footer className="border-t-[1px] border-border px-4 md:px-6 pt-10 md:pt-16 overflow-hidden md:max-h-[820px]">
+        <div className="container w-full mx-auto">
+          <div className="flex justify-between items-center border-border border-b-[1px] pb-10 md:pb-16 mb-12">
+            <Link href="/" className="scale-50 -ml-[52px] md:ml-0 md:scale-100">
+              <Image
+                src={resolvedTheme === "dark" ? "/logo.svg" : "/logo-dark.svg"}
+                alt="IntelliQ"
+                width={100}
+                height={100}
+              />
+            </Link>
+            <span className="font-normal text-right md:text-2xl">
+              Start your AI quiz today!
+            </span>
           </div>
-
-          <div className="mt-2 ml-2">&copy; Copyright ARC-Solutions 2024.</div>
-        </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 items-start mt-10 sm:mt-0 md:mt-0">
-          {/* <div className="flex justify-center space-y-4 flex-col w-full">
-            <p className="transition-colors hover:text-text-neutral-800 text-neutral-600 dark:text-neutral-300 font-bold">
-              Pages
-            </p>
-            <ul className="transition-colors hover:text-text-neutral-800 text-neutral-600 dark:text-neutral-300 list-none space-y-4">
-              {pages.map((page, idx) => (
-                <li key={"pages" + idx} className="list-none">
-                  <Link
-                    className="transition-colors hover:text-text-neutral-800 "
-                    href="/products"
-                  >
-                    {page.title}
-                  </Link>
-                </li>
+          <div className="flex flex-col w-full md:flex-row">
+            <div className="flex flex-col justify-between space-y-8 leading-8 md:space-y-0 md:flex-row md:w-6/12">
+              {navigation.map((section) => (
+                <div key={section.title}>
+                  <span className="font-medium">{section.title}</span>
+                  <ul>
+                    {section.links.map((link) => (
+                      <li
+                        key={link.name}
+                        className="transition-colors text-[#878787]"
+                      >
+                        <Link href={link.href} target={link.target}>
+                          {link.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
-          </div> */}
-
-          <div className="flex justify-center space-y-4 flex-col">
-            <p className="transition-colors hover:text-text-neutral-800 text-neutral-600 dark:text-neutral-300 font-bold">
-              Socials
-            </p>
-            <ul className="transition-colors hover:text-text-neutral-800 text-neutral-600 dark:text-neutral-300 list-none space-y-4">
-              {socials.map((social, idx) => (
-                <li key={"social" + idx} className="list-none">
-                  <Link
-                    className="transition-colors hover:text-text-neutral-800 "
-                    href={social.href}
-                  >
-                    {social.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            </div>
+            <div className="flex mt-8 md:w-6/12 md:mt-0 md:justify-end">
+              <div className="flex flex-col md:items-end">
+                <div className="flex flex-col items-start mb-8 space-y-6 md:items-center md:flex-row md:space-y-0">
+                  <SocialLinks />
+                </div>
+              </div>
+            </div>
           </div>
-
-          {/* <div className="flex justify-center space-y-4 flex-col">
-            <p className="transition-colors hover:text-text-neutral-800 text-neutral-600 dark:text-neutral-300 font-bold">
-              Legal
-            </p>
-            <ul className="transition-colors hover:text-text-neutral-800 text-neutral-600 dark:text-neutral-300 list-none space-y-4">
-              {legals.map((legal, idx) => (
-                <li key={"legal" + idx} className="list-none">
-                  <Link
-                    className="transition-colors hover:text-text-neutral-800 "
-                    href="/products"
-                  >
-                    {legal.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div> */}
-          {/* <div className="flex justify-center space-y-4 flex-col">
-            <p className="transition-colors hover:text-text-neutral-800 text-neutral-600 dark:text-neutral-300 font-bold">
-              Register
-            </p>
-            <ul className="transition-colors hover:text-text-neutral-800 text-neutral-600 dark:text-neutral-300 list-none space-y-4">
-              {signups.map((auth, idx) => (
-                <li key={"auth" + idx} className="list-none">
-                  <Link
-                    className="transition-colors hover:text-text-neutral-800 "
-                    href="/products"
-                  >
-                    {auth.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div> */}
         </div>
+      </footer>
+      <div className="container mt-8 h-[200px] mx-auto w-full">
+        <Wordmark className="flex w-full text-gray-800 dark:text-white" />
       </div>
-      <p className="text-center mt-20 text-5xl md:text-9xl lg:text-[12rem] xl:text-[13rem] font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 dark:from-neutral-950 to-neutral-200 dark:to-neutral-800 inset-x-0">
-        IntelliQ
-      </p>
     </div>
   );
 }
-
-const Logo = () => {
-  return (
-    <Link
-      href="/"
-      className="font-normal flex space-x-2 items-center text-sm mr-4  text-black px-2 py-1  relative z-20"
-    >
-      <Image src="/ARC-TextLogo.png" alt="logo" width={32} height={32} />
-      <span className="font-medium text-black dark:text-white">IntelliQ</span>
-    </Link>
-  );
-};

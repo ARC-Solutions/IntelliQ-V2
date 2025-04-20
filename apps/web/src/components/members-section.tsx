@@ -11,7 +11,7 @@ export default function MembersSection() {
   const members = [
     {
       name: "Ricky Raveanu",
-      image: "./ricky.jpg",
+      image: "./members/ricky.jpg",
       skills: [
         "Lead System Architect",
         "Full-Stack Engineer",
@@ -20,12 +20,12 @@ export default function MembersSection() {
     },
     {
       name: "Nippon Lama",
-      image: "./nippon.jpg",
+      image: "./members/nippon.jpg",
       skills: ["Frontend Engineer", "Full-Stack Developer", "Designer"],
     },
     {
       name: "Nikola Petrovic",
-      image: "./nikolaPFP.png",
+      image: "./members/nikolaPFP.png",
       skills: ["Frontend Developer", "Designer", "Backend Developer"],
     },
   ];

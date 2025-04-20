@@ -1,19 +1,20 @@
 "use client";
 
-import * as React from "react";
 import {
-  UsersRound,
-  UserRound,
-  House,
-  GalleryVerticalEnd,
-  Settings2,
-  History,
+  BookOpen,
   Bookmark,
+  Dices,
+  GalleryVerticalEnd,
+  History,
+  House,
+  Paperclip,
+  Settings2,
+  UsersRound,
 } from "lucide-react";
+import type * as React from "react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
-import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -25,57 +26,86 @@ import {
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/user-context";
 
-const data = {
-  user: {
-    name: "",
-    email: "",
-    avatar: "",
-    id: "",
-  },
-  teams: [
-    {
-      name: "IntelliQ",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-  ],
-  navMain: [
-    {
-      title: "Home",
-      url: "/",
-      icon: House,
-    },
-    {
-      title: "Quiz Me",
-      url: "/single-player/quiz",
-      icon: UserRound,
-    },
-    {
-      title: "Multiplayer",
-      url: "/multiplayer",
-      icon: UsersRound,
-    },
-    {
-      title: "History",
-      url: "/history",
-      icon: History,
-    },
-    {
-      title: "Bookmarks",
-      url: "/bookmarks",
-      icon: Bookmark,
-    },
-    {
-      title: "Settings",
-      url: "/settings",
-      icon: Settings2,
-    },
-  ],
-};
+interface FeatureFlags {
+  singlePlayerEnabled: boolean;
+  multiplayerEnabled: boolean;
+  documentsEnabled: boolean;
+  bookmarksEnabled: boolean;
+  randomQuizEnabled: boolean;
+}
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  featureFlags: FeatureFlags;
+}
+
+export function AppSidebar({ featureFlags, ...props }: AppSidebarProps) {
   const { currentUser } = useAuth();
   const { state, isMobile } = useSidebar();
+
+  const data = {
+    user: {
+      name: currentUser?.name || "",
+      email: currentUser?.email || "",
+      avatar: currentUser?.img || "",
+      id: currentUser?.id || "",
+    },
+    teams: [
+      {
+        name: "IntelliQ",
+        logo: GalleryVerticalEnd,
+        plan: "Enterprise",
+      },
+    ],
+    navMain: [
+      {
+        title: "Home",
+        url: "/",
+        icon: House,
+      },
+      {
+        title: "Quiz Me",
+        url: "/single-player/quiz",
+        icon: BookOpen,
+        locked: !featureFlags.singlePlayerEnabled,
+      },
+      {
+        title: "Multiplayer",
+        url: "/multiplayer",
+        icon: UsersRound,
+        locked: !featureFlags.multiplayerEnabled,
+      },
+      {
+        title: "Documents",
+        url: "/documents",
+        icon: Paperclip,
+        locked: !featureFlags.documentsEnabled,
+      },
+      {
+        title: "Random",
+        url: "/random-quiz",
+        icon: Dices,
+        locked: !featureFlags.randomQuizEnabled,
+      },
+      {
+        title: "History",
+        url: "/history",
+        icon: History,
+        locked: !featureFlags.singlePlayerEnabled,
+      },
+      {
+        title: "Bookmarks",
+        url: "/bookmarks",
+        icon: Bookmark,
+        locked: !featureFlags.bookmarksEnabled,
+      },
+      {
+        title: "Settings",
+        url: "/settings",
+        icon: Settings2,
+      },
+    ],
+  };
+
   if (currentUser) {
     data.user.avatar = currentUser.img;
     data.user.name = currentUser.name;
@@ -86,7 +116,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <>
       {/* Mobile Header - Always visible on mobile */}
       {isMobile && (
-        <div className="fixed top-0 z-[10] flex items-center w-full px-4 border-b h-14 bg-background">
+        <div className="fixed top-0 z-50 flex items-center w-full px-4 border-b h-14 bg-background backdrop-blur-sm">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-3">
               <SidebarTrigger className="w-8 h-8" />

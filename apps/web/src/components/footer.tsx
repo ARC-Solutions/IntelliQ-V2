@@ -43,7 +43,7 @@ export function Footer() {
           <div className="flex justify-between items-center border-border border-b-[1px] pb-10 md:pb-16 mb-12">
             <Link href="/" className="scale-50 -ml-[52px] md:ml-0 md:scale-100">
               <Image
-                src={resolvedTheme === "dark" ? "/logo-dark.svg" : "/logo.svg"}
+                src={resolvedTheme === "dark" ? "/logo.svg" : "/logo-dark.svg"}
                 alt="IntelliQ"
                 width={100}
                 height={100}

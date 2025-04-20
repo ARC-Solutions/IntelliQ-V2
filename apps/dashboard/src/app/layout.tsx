@@ -17,6 +17,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { QuizCreationProvider } from "@/contexts/quiz-creation-context";
 import { MultiplayerProvider } from "@/contexts/multiplayer-context";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
+import { siteConfig } from "@/lib/site-config";
 
 // const geistSans = localFont({
 //   src: './fonts/GeistVF.woff',
@@ -30,51 +31,7 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 // });
 
 export const revalidate = 0;
-export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_WEBAPP_URL ?? "http://localhost:3000/"
-  ),
-  title: {
-    default: "IntelliQ",
-    template: "%s | IntelliQ",
-  },
-  description: "Test your expertise across various subjects with IntelliQ",
-  openGraph: {
-    title: "IntelliQ",
-    description: "Test your expertise across various subjects with IntelliQ",
-    url: "www.intelliq.dev",
-    siteName: "IntelliQ",
-    images: [
-      {
-        url: "https://www.intelliq.dev/intelliq_og.png",
-        width: 1920,
-        height: 1080,
-      },
-    ],
-    locale: "en-US",
-    type: "website",
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
-  twitter: {
-    title: "IntelliQ",
-    card: "summary_large_image",
-  },
-  icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.png",
-    apple: "/apple-touch-icon.png",
-  },
-};
+export const metadata: Metadata = siteConfig;
 
 export default function RootLayout({
   children,
