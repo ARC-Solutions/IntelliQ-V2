@@ -31,7 +31,9 @@ import Lottie from "lottie-react";
 import { ArrowLeft, BookOpen } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Loading from "../../../public/Loading.json";
+import Loading from "@/assets/loading.json";
+import LoadingDark from "@/assets/loading-dark.json";
+import { useTheme } from "next-themes";
 
 interface Document {
   id: string;
@@ -57,6 +59,7 @@ export function CustomizeQuiz({ documentId }: { documentId: string }) {
     setShowCorrectAnswersValue,
     setPassingScoreValue,
   } = useQuizCreation();
+  const { resolvedTheme } = useTheme();
 
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
@@ -155,7 +158,7 @@ export function CustomizeQuiz({ documentId }: { documentId: string }) {
   if (isGenerating) {
     return (
       <div className="absolute left-1/2 top-1/2 flex w-[40] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[30vw]">
-        <Lottie animationData={Loading} />
+        <Lottie animationData={resolvedTheme === "dark" ? LoadingDark : Loading} />
       </div>
     );
   }
@@ -177,7 +180,7 @@ export function CustomizeQuiz({ documentId }: { documentId: string }) {
                 variant="default"
                 onClick={() => router.push("/documents")}
               >
-                <ArrowLeft className="mr-2 h-4 w-4" />
+                <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Documents
               </Button>
             </CardFooter>
@@ -193,48 +196,48 @@ export function CustomizeQuiz({ documentId }: { documentId: string }) {
       <div className="flex items-center justify-center min-h-screen py-8">
         <div className="w-full max-w-3xl px-4">
           <div className="mb-4">
-            <Skeleton className="h-10 w-40" />
+            <Skeleton className="w-40 h-10" />
           </div>
 
           <Card>
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div>
-                  <Skeleton className="h-8 w-48 mb-2" />
-                  <Skeleton className="h-4 w-64" />
+                  <Skeleton className="w-48 h-8 mb-2" />
+                  <Skeleton className="w-64 h-4" />
                 </div>
-                <Skeleton className="h-10 w-16 rounded-md" />
+                <Skeleton className="w-16 h-10 rounded-md" />
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Skeleton className="h-5 w-40" />
+                <Skeleton className="w-40 h-5" />
                 <div className="flex items-center space-x-4">
-                  <Skeleton className="h-5 w-full" />
-                  <Skeleton className="h-5 w-12" />
+                  <Skeleton className="w-full h-5" />
+                  <Skeleton className="w-12 h-5" />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Skeleton className="h-5 w-36" />
-                <Skeleton className="h-10 w-full" />
+                <Skeleton className="w-full h-10" />
               </div>
 
               <div className="space-y-2">
-                <Skeleton className="h-5 w-64" />
+                <Skeleton className="w-64 h-5" />
                 <div className="flex items-center space-x-4">
-                  <Skeleton className="h-5 w-full" />
-                  <Skeleton className="h-5 w-12" />
+                  <Skeleton className="w-full h-5" />
+                  <Skeleton className="w-12 h-5" />
                 </div>
               </div>
 
               <div className="flex items-center space-x-2">
-                <Skeleton className="h-5 w-5 rounded-sm" />
-                <Skeleton className="h-5 w-64" />
+                <Skeleton className="w-5 h-5 rounded-sm" />
+                <Skeleton className="w-64 h-5" />
               </div>
             </CardContent>
             <CardFooter>
-              <Skeleton className="h-11 w-full" />
+              <Skeleton className="w-full h-11" />
             </CardFooter>
           </Card>
         </div>
@@ -250,7 +253,7 @@ export function CustomizeQuiz({ documentId }: { documentId: string }) {
           className="mb-4"
           onClick={() => router.push("/documents")}
         >
-          <ArrowLeft className="mr-2 h-4 w-4" />
+          <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Documents
         </Button>
 
@@ -277,7 +280,7 @@ export function CustomizeQuiz({ documentId }: { documentId: string }) {
                   }
                   className="flex-1"
                 />
-                <span className="w-12 text-center font-medium">
+                <span className="w-12 font-medium text-center">
                   <NumberFlow
                     value={quizSettings.questionCount}
                     format={{ useGrouping: false }}
@@ -304,7 +307,7 @@ export function CustomizeQuiz({ documentId }: { documentId: string }) {
                   }
                   className="flex-1"
                 />
-                <span className="w-12 text-center font-medium">
+                <span className="w-12 font-medium text-center">
                   <NumberFlow
                     value={quizSettings.passingScore}
                     format={{ useGrouping: false }}
@@ -359,7 +362,7 @@ export function CustomizeQuiz({ documentId }: { documentId: string }) {
               onClick={handleStartQuiz}
               disabled={isGenerating}
             >
-              <BookOpen className="mr-2 h-4 w-4" />
+              <BookOpen className="w-4 h-4 mr-2" />
               Start Quiz
             </Button>
           </CardFooter>
