@@ -28,7 +28,7 @@ export function NavMain({
   const { resetValues } = useQuizCreation();
   const { dispatch } = useQuiz();
   const router = useRouter();
-  const { state } = useSidebar();
+  const { state, setOpenMobile, isMobile } = useSidebar();
   const isCollapsed = state === "collapsed";
   return (
     <SidebarGroup>
@@ -40,6 +40,10 @@ export function NavMain({
                 e.preventDefault();
                 resetValues();
                 dispatch({ type: "RESET_ALL" });
+                
+                if (isMobile) {
+                  setOpenMobile(false);
+                }
 
                 setTimeout(() => {
                   item.locked ? null : router.push(item.url);

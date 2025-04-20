@@ -116,7 +116,7 @@ export function AppSidebar({ featureFlags, ...props }: AppSidebarProps) {
     <>
       {/* Mobile Header - Always visible on mobile */}
       {isMobile && (
-        <div className="fixed top-0 z-[10] flex items-center w-full px-4 border-b h-14 bg-background">
+        <div className="fixed top-0 z-50 flex items-center w-full px-4 border-b h-14 bg-background backdrop-blur-sm">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-3">
               <SidebarTrigger className="w-8 h-8" />

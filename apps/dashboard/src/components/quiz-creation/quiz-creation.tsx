@@ -266,6 +266,7 @@ export default function QuizCreator() {
                     </button>
                   </span>
                 ))}
+                
               </div>
               <div className="flex items-center space-x-2">
                 <Input
@@ -287,7 +288,11 @@ export default function QuizCreator() {
                 >
                   <Tag size={16} className="mr-2" /> Add Tag
                 </Button>
+                
               </div>
+              {errors.tags && (
+                <p className="text-red-500">At least one tag is required</p>
+              )}
             </div>
 
             <Button type="submit">Create Quiz</Button>
