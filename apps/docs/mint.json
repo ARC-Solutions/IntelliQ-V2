@@ -56,7 +56,7 @@
     },
     {
       "group": "Open source",
-      "pages": ["local-development"]
+      "pages": ["local-development", "syncing-from-main"]
     },
     {
       "group": "ARC Developers",

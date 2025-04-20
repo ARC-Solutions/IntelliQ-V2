@@ -678,6 +678,7 @@ export default function Lobby() {
                       : 'dark:bg-black dark:border-gray-800'
                   }`}
                 >
+
                   <Sparkles className="w-8 h-8 text-primary" />
                   <span>Custom</span>
                 </Card>
