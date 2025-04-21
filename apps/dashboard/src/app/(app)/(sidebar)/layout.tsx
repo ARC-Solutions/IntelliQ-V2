@@ -9,6 +9,7 @@ import {
   allowBookmarks,
   allowRandomQuiz,
 } from "@/flags";
+import { OpenPanelComponent } from '@openpanel/nextjs';
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
   const [
@@ -42,6 +43,12 @@ export default async function Layout({ children }: { children: React.ReactNode }
         {/* Main Content */}
         <div className="flex-1 overflow-auto">
           <main className="relative flex items-start justify-center w-full h-full pt-14 md:pt-0">
+            <OpenPanelComponent
+						clientId={process.env.OPEN_PANEL_CLIENT_ID!}
+						trackScreenViews={true}
+						trackAttributes={true}
+						trackOutgoingLinks={true}
+					/>
             {children}
             {/* <AnimatedGridPattern
               numSquares={30}

@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Footer } from "@/components/footer";
 import { Toaster } from "@/components/ui/toaster";
+import { OpenPanelComponent } from '@openpanel/nextjs';
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -30,7 +31,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "IntelliQ",
     description: "Test your expertise across various subjects with IntelliQ.",
-    url: "www.beta.intelliq.dev",
+    url: "www.intelliq.dev",
     siteName: "IntelliQ",
     images: [
       {
@@ -112,6 +113,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+        <OpenPanelComponent
+						clientId={process.env.OPEN_PANEL_CLIENT_ID!}
+						trackScreenViews={true}
+						trackAttributes={true}
+						trackOutgoingLinks={true}
+					/>
           <main className="container mx-auto overflow-hidden md:overflow-visible">
             {children}
             <Toaster />
