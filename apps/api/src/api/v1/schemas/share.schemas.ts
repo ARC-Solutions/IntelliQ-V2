@@ -81,9 +81,10 @@ export const updateShareSingleplayerQuizResponseSchema = z.object({
 export const getShareSingleplayerQuizResponseSchema =
   updateShareSingleplayerQuizResponseSchema.extend({
     quiz: updateShareSingleplayerQuizResponseSchema.shape.quiz.extend({
-      generatedTags: z.array(z.string()).optional(),
-      generatedCategories: z.array(z.string()).optional(),
-      embedding: z.array(z.number()).optional(),
+      // TODO: this is just so that it works for the Launch, make better
+      generatedTags: z.array(z.string()).optional().nullable(),
+      generatedCategories: z.array(z.string()).optional().nullable(),
+      embedding: z.array(z.number()).optional().nullable(),
     }),
     multiplayerSubmission: z
       .object({
@@ -95,5 +96,6 @@ export const getShareSingleplayerQuizResponseSchema =
         correctAnswersCount: z.number(),
         createdAt: z.string(),
       })
-      .nullable(),
+      // So is this
+      .optional().nullable(),
   });
