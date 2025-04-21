@@ -15,7 +15,7 @@ const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
       lastModified: new Date().toISOString(),
     },
     {
-      url: "https://docs.intelliq.dev/",
+      url: 'https://docs.intelliq.dev/',
       lastModified: new Date().toISOString(),
     },
   ];
