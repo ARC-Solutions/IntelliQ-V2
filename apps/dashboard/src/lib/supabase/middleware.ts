@@ -34,7 +34,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // special for hackers news
-  if (request.nextUrl.pathname === "/hn") {
+  if (request.nextUrl.pathname.startsWith("/hn")) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     const response = NextResponse.redirect(url);
