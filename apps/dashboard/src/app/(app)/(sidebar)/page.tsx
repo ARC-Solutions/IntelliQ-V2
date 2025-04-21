@@ -6,6 +6,7 @@ import {
   allowDocuments,
   allowBookmarks,
   allowRandomQuiz,
+  allowHNMode,
 } from "@/flags";
 
 export const runtime = "edge";
@@ -17,12 +18,14 @@ const Dashboard = async () => {
     documentsEnabled,
     bookmarksEnabled,
     randomQuizEnabled,
+    hnModeEnabled,
   ] = await Promise.all([
     allowSinglePlayerQuiz(),
     allowMultiplayerQuiz(),
     allowDocuments(),
     allowBookmarks(),
     allowRandomQuiz(),
+    allowHNMode(),
   ]);
 
   const featureFlags = {
@@ -31,6 +34,7 @@ const Dashboard = async () => {
     documentsEnabled,
     bookmarksEnabled,
     randomQuizEnabled,
+    hnModeEnabled
   };
 
   return (
