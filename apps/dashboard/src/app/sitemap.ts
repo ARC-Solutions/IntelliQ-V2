@@ -7,11 +7,11 @@ const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
       lastModified: new Date().toISOString(),
     },
     {
-      url: "https://beta.intelliq.dev/",
+      url: "https://intelliq.dev/",
       lastModified: new Date().toISOString(),
     },
     {
-      url: "https://beta.intelliq.dev/about",
+      url: "https://intelliq.dev/about",
       lastModified: new Date().toISOString(),
     },
     {
