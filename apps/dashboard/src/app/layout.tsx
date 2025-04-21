@@ -18,6 +18,7 @@ import { QuizCreationProvider } from "@/contexts/quiz-creation-context";
 import { MultiplayerProvider } from "@/contexts/multiplayer-context";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { siteConfig } from "@/lib/site-config";
+import { OpenPanelComponent } from '@openpanel/nextjs';
 
 // const geistSans = localFont({
 //   src: './fonts/GeistVF.woff',
@@ -56,6 +57,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <OpenPanelComponent
+						clientId={process.env.OPEN_PANEL_CLIENT_ID!}
+						trackScreenViews={true}
+						trackAttributes={true}
+						trackOutgoingLinks={true}
+					/>
           <NuqsAdapter>
             <SupabaseProvider>
               <AuthProvider>
