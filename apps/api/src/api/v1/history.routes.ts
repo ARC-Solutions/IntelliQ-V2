@@ -1,31 +1,38 @@
-import { createOpenAI } from '@ai-sdk/openai';
-import { embed } from 'ai';
-import { format } from 'date-fns';
-import { and, arrayContains, count, desc, eq, sql } from 'drizzle-orm';
-import { Hono } from 'hono';
-import { describeRoute } from 'hono-openapi';
-import { resolver, validator as zValidator } from 'hono-openapi/zod';
-import prettyMilliseconds from 'pretty-ms';
-import { z } from 'zod';
-import { bookmarks, multiplayerQuizSubmissions, quizzes } from '../../../drizzle/schema';
-import { createDb } from '../../db/index';
-import { getSupabase } from './middleware/auth.middleware';
-import { quizType } from './schemas/common.schemas';
-import { historyQuerySchema, quizHistoryResponseSchema } from './schemas/history.schemas';
+import { createOpenAI } from "@ai-sdk/openai";
+import { embed } from "ai";
+import { format } from "date-fns";
+import { and, arrayContains, count, desc, eq, sql } from "drizzle-orm";
+import { Hono } from "hono";
+import { describeRoute } from "hono-openapi";
+import { resolver, validator as zValidator } from "hono-openapi/zod";
+import prettyMilliseconds from "pretty-ms";
+import { z } from "zod";
+import {
+  bookmarks,
+  multiplayerQuizSubmissions,
+  quizzes,
+} from "../../../drizzle/schema";
+import { createDb } from "../../db/index";
+import { getSupabase } from "./middleware/auth.middleware";
+import { quizType } from "./schemas/common.schemas";
+import {
+  historyQuerySchema,
+  quizHistoryResponseSchema,
+} from "./schemas/history.schemas";
 
 const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
   .get(
-    '/',
+    "/",
     describeRoute({
-      tags: ['History'],
+      tags: ["History"],
       summary: "Get user's quiz history",
       description: "Get user's quiz history with optional filtering",
       validateResponse: true,
       responses: {
         200: {
-          description: 'Quiz history retrieved successfully',
+          description: "Quiz history retrieved successfully",
           content: {
-            'application/json': {
+            "application/json": {
               schema: resolver(quizHistoryResponseSchema),
             },
           },
@@ -33,14 +40,18 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
       },
     }),
     zValidator(
-      'query',
+      "query",
       historyQuerySchema.transform((data) => ({
         ...data,
-        tags: data.tags ? (Array.isArray(data.tags) ? data.tags : [data.tags]) : undefined,
+        tags: data.tags
+          ? Array.isArray(data.tags)
+            ? data.tags
+            : [data.tags]
+          : undefined,
       })),
     ),
     async (c) => {
-      const { tags, type, status, page, limit } = c.req.valid('query');
+      const { tags, type, status, page, limit } = c.req.valid("query");
 
       const supabase = getSupabase(c);
       const {
@@ -50,7 +61,15 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
       const db = await createDb(c);
 
       const userQuizzes = await db.transaction(async (tx) => {
-        const whereConditions = [eq(quizzes.userId, user!.id)];
+        const whereConditions = [
+          // TODO: This is temporary, just to make it work for LAUNCHWEEK-01
+          sql`(${eq(quizzes.userId, user!.id)} OR 
+               EXISTS (
+                 SELECT 1 FROM ${multiplayerQuizSubmissions} 
+                 WHERE ${multiplayerQuizSubmissions.quizId} = ${quizzes.id} 
+                 AND ${multiplayerQuizSubmissions.userId} = ${user!.id}
+               ))`,
+        ];
 
         if (type) {
           whereConditions.push(eq(quizzes.type, type));
@@ -77,9 +96,10 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
             totalTime: quizzes.totalTimeTaken,
             date: quizzes.createdAt,
             correct: quizzes.correctAnswersCount,
-            incorrect: sql`${quizzes.questionsCount} - ${quizzes.correctAnswersCount}`.as(
-              'incorrect',
-            ),
+            incorrect:
+              sql`${quizzes.questionsCount} - ${quizzes.correctAnswersCount}`.as(
+                "incorrect",
+              ),
             passed: quizzes.passed,
             type: quizzes.type,
             multiplayerScore: multiplayerQuizSubmissions.userScore,
@@ -90,10 +110,14 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
       SELECT 1 FROM ${bookmarks}
       WHERE ${bookmarks.quizId} = ${quizzes.id}
       AND ${bookmarks.userId} = ${user!.id}
-    )`.as('isBookmarked'),
+    )`.as("isBookmarked"),
           })
           .from(quizzes)
-          .leftJoin(multiplayerQuizSubmissions, eq(multiplayerQuizSubmissions.quizId, quizzes.id))
+          // TODO: This is temporary, just to make it work for LAUNCHWEEK-01
+          .leftJoin(
+            multiplayerQuizSubmissions,
+            sql`${multiplayerQuizSubmissions.quizId} = ${quizzes.id} AND ${multiplayerQuizSubmissions.userId} = ${user!.id}`,
+          )
           .where(sql`${and(...whereConditions)}`)
           .orderBy(desc(quizzes.createdAt))
           .limit(limit)
@@ -107,7 +131,7 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
               score: quiz.multiplayerScore,
               correct: quiz.multiplayerCorrect,
               incorrect: quiz.questionsCount - quiz.multiplayerCorrect!,
-              date: format(quiz.date, 'dd/MM/yyyy'),
+              date: format(quiz.date, "dd/MM/yyyy"),
               type: quiz.type,
               isBookmarked: quiz.isBookmarked,
               roomId: quiz.roomId,
@@ -123,7 +147,7 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
                 colonNotation: true,
                 secondsDecimalDigits: 0,
               })} min`,
-              date: format(quiz.date, 'dd/MM/yyyy'),
+              date: format(quiz.date, "dd/MM/yyyy"),
               correct: quiz.correct,
               incorrect: quiz.incorrect,
               passed: quiz.passed,
@@ -135,7 +159,7 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           return {
             ...quiz,
             score: (100 / quiz.questionsCount) * quiz.score!,
-            date: format(quiz.date, 'dd/MM/yyyy'),
+            date: format(quiz.date, "dd/MM/yyyy"),
             totalTime: `${prettyMilliseconds(quiz.totalTime! * 1000, {
               colonNotation: true,
               secondsDecimalDigits: 0,
@@ -161,17 +185,17 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
     },
   )
   .post(
-    '/search',
+    "/search",
     describeRoute({
-      tags: ['History'],
+      tags: ["History"],
       summary: "Search user's quiz history",
       description: "Search user's quiz history with optional filtering",
       validateResponse: true,
       responses: {
         200: {
-          description: 'Quiz history retrieved successfully',
+          description: "Quiz history retrieved successfully",
           content: {
-            'application/json': {
+            "application/json": {
               schema: resolver(quizHistoryResponseSchema),
             },
           },
@@ -179,7 +203,7 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
       },
     }),
     zValidator(
-      'json',
+      "json",
       z.object({
         query: z.string(),
         page: z.number().default(1),
@@ -187,7 +211,7 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
       }),
     ),
     async (c) => {
-      const { query, page, limit } = c.req.valid('json');
+      const { query, page, limit } = c.req.valid("json");
 
       const supabase = getSupabase(c);
       const {
@@ -201,7 +225,7 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
         apiKey: c.env.OPENAI_API_KEY,
       });
       const { embedding } = await embed({
-        model: openai.embedding('text-embedding-3-small'),
+        model: openai.embedding("text-embedding-3-small"),
         value: query,
       });
 
@@ -211,7 +235,7 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
           SELECT COUNT(*) FROM (
             SELECT id FROM hybrid_search_quizzes(
               ${query},
-              ${sql.raw(`'[${embedding.join(',')}]'::vector(1536)`)},
+              ${sql.raw(`'[${embedding.join(",")}]'::vector(1536)`)},
               ${user!.id}::uuid,
               1000, -- Large number to get total count
               1.0,
@@ -235,7 +259,7 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
     ) AS "isBookmarked"
   FROM hybrid_search_quizzes(
     ${query},
-    ${sql.raw(`'[${embedding.join(',')}]'::vector(1536)`)},
+    ${sql.raw(`'[${embedding.join(",")}]'::vector(1536)`)},
     ${user!.id}::uuid,
     ${limit},
     1.0,
@@ -255,8 +279,10 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
               title: quiz.title,
               score: quiz.multiplayerScore,
               correct: quiz.multiplayerCorrect,
-              incorrect: (quiz.questions_count as number) - (quiz.multiplayerCorrect as number),
-              date: format(new Date(quiz.created_at as string), 'dd/MM/yyyy'),
+              incorrect:
+                (quiz.questions_count as number) -
+                (quiz.multiplayerCorrect as number),
+              date: format(new Date(quiz.created_at as string), "dd/MM/yyyy"),
               type: quiz.type,
               isBookmarked: quiz.isBookmarked,
             };
@@ -265,11 +291,14 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
               id: quiz.id,
               title: quiz.title,
               score: (quiz.user_score as number) * 10,
-              totalTime: `${prettyMilliseconds(((quiz.total_time_taken || 0) as number) * 1000, {
-                colonNotation: true,
-                secondsDecimalDigits: 0,
-              })} min`,
-              date: format(new Date(quiz.created_at as string), 'dd/MM/yyyy'),
+              totalTime: `${prettyMilliseconds(
+                ((quiz.total_time_taken || 0) as number) * 1000,
+                {
+                  colonNotation: true,
+                  secondsDecimalDigits: 0,
+                },
+              )} min`,
+              date: format(new Date(quiz.created_at as string), "dd/MM/yyyy"),
               correct: quiz.correct_answers_count,
               incorrect: quiz.incorrect,
               passed: quiz.passed,
@@ -282,11 +311,14 @@ const historyRoutes = new Hono<{ Bindings: CloudflareEnv }>()
             id: quiz.id,
             title: quiz.title,
             score: (quiz.user_score as number) * 10,
-            totalTime: `${prettyMilliseconds(((quiz.total_time_taken || 0) as number) * 1000, {
-              colonNotation: true,
-              secondsDecimalDigits: 0,
-            })} min`,
-            date: format(new Date(quiz.created_at as string), 'dd/MM/yyyy'),
+            totalTime: `${prettyMilliseconds(
+              ((quiz.total_time_taken || 0) as number) * 1000,
+              {
+                colonNotation: true,
+                secondsDecimalDigits: 0,
+              },
+            )} min`,
+            date: format(new Date(quiz.created_at as string), "dd/MM/yyyy"),
             correct: quiz.correct_answers_count,
             incorrect: quiz.incorrect,
             passed: quiz.passed,
