@@ -8,16 +8,16 @@ import { resolver, validator as zValidator } from "hono-openapi/zod";
 import prettyMilliseconds from "pretty-ms";
 import { z } from "zod";
 import {
-    bookmarks,
-    multiplayerQuizSubmissions,
-    quizzes,
+  bookmarks,
+  multiplayerQuizSubmissions,
+  quizzes,
 } from "../../../drizzle/schema";
 import { createDb } from "../../db/index";
 import { getSupabase } from "./middleware/auth.middleware";
 import { quizType } from "./schemas/common.schemas";
 import {
-    historyQuerySchema,
-    quizHistoryResponseSchema,
+  historyQuerySchema,
+  quizHistoryResponseSchema,
 } from "./schemas/history.schemas";
 
 const bookmarksRoutes = new Hono<{ Bindings: CloudflareEnv }>()
@@ -389,6 +389,7 @@ const bookmarksRoutes = new Hono<{ Bindings: CloudflareEnv }>()
             .select({
               id: quizzes.id,
               userId: quizzes.userId,
+              type: quizzes.type,
             })
             .from(quizzes)
             .where(eq(quizzes.id, id));
@@ -397,9 +398,30 @@ const bookmarksRoutes = new Hono<{ Bindings: CloudflareEnv }>()
             throw new Error("Quiz not found");
           }
 
-          // Check if quiz belongs to user
+          // TODO: This is temporary, just to make it work for LAUNCHWEEK-01
+          // Check user permission - allow if:
+          // 1. User is the quiz creator, OR
+          // 2. It's a multiplayer quiz and user has participated
           if (quiz.userId !== user!.id) {
-            throw new Error("Not authorized to bookmark this quiz");
+            // If not owner, check if it's a multiplayer quiz the user participated in
+            if (quiz.type !== quizType.Enum.multiplayer) {
+              throw new Error("Not authorized to bookmark this quiz");
+            }
+
+            // Check if user has participated in this multiplayer quiz
+            const [participation] = await tx
+              .select()
+              .from(multiplayerQuizSubmissions)
+              .where(
+                and(
+                  eq(multiplayerQuizSubmissions.quizId, id),
+                  eq(multiplayerQuizSubmissions.userId, user!.id),
+                ),
+              );
+
+            if (!participation) {
+              throw new Error("Not authorized to bookmark this quiz");
+            }
           }
 
           // Check if already bookmarked
