@@ -1,4 +1,4 @@
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { describeRoute } from 'hono-openapi';
 import { resolver, validator as zValidator } from 'hono-openapi/zod';
@@ -10,6 +10,7 @@ import {
   quizzes,
   userResponses,
   documents,
+  multiplayerQuizSubmissions,
 } from '../../../drizzle/schema';
 import { createDb } from '../../db/index';
 import { incrementUserCacheVersion } from '../../utils/kv-user-version';
@@ -62,7 +63,7 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
       const db = await createDb(c);
 
       const quiz = await db.query.quizzes.findFirst({
-        where: eq(quizzes.id, quizId),
+        where: and(eq(quizzes.id, quizId), eq(quizzes.userId, user!.id)),
         columns: {
           id: true,
           title: true,
@@ -71,6 +72,8 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
           correctAnswersCount: true,
           questionsCount: true,
           passingScore: true,
+          // TODO: This is temporary, just to make it work for LAUNCHWEEK-01
+          type: true,
         },
         with: {
           questions: {
@@ -86,6 +89,14 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
                   isCorrect: true,
                 },
               },
+            },
+          },
+          // TODO: This is temporary, just to make it work for LAUNCHWEEK-01
+          multiplayerQuizSubmissions: {
+            where: eq(multiplayerQuizSubmissions.userId, user!.id),
+            columns: {
+              userScore: true,
+              correctAnswersCount: true,
             },
           },
         },
@@ -107,6 +118,8 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
           text: q.text,
           correctAnswer: q.correctAnswer,
           userAnswer: q.userResponses[0]?.answer,
+          userScore: quiz.multiplayerQuizSubmissions[0]?.userScore,
+          correctAnswersCount: quiz.multiplayerQuizSubmissions[0]?.correctAnswersCount,
         }));
 
       return c.json({
@@ -122,6 +135,8 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
         totalQuestions: quiz.questionsCount,
         questions: formattedQuestions,
         passingScore: quiz.passingScore,
+        // TODO: This is temporary, just to make it work for LAUNCHWEEK-01
+        type: quiz.type,
       });
     },
   )

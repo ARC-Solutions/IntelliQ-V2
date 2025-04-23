@@ -33,6 +33,8 @@ export interface HistoryQuestions {
   correctAnswer: string;
   text: string;
   userAnswer: string;
+  correctAnswersCount: number;
+  userScore: number;
 }
 interface CurrentQuiz {
   quizId?: string;
@@ -53,6 +55,7 @@ export interface QuizHistory {
   totalQuestions: number;
   passingScore: number;
   questions: HistoryQuestions[];
+  type: 'singleplayer' | 'multiplayer' | 'document' | 'random';
 }
 export interface MultiplayerLeaderboardQuestions {
   text: string;

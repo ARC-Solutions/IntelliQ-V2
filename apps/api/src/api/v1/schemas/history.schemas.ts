@@ -49,6 +49,8 @@ const singleplayerQuizHistoryItem = baseQuizHistoryItem.extend({
   totalTime: z.string(),
   passed: z.boolean().optional(),
   type: z.literal(quizType.Enum.singleplayer),
+  multiplayerScore: z.number().nullable(),
+  multiplayerCorrect: z.number().nullable(),
 });
 
 // Document quiz specific fields
@@ -60,7 +62,7 @@ const documentQuizHistoryItem = baseQuizHistoryItem.extend({
 
 // Multiplayer specific fields (only includes base fields)
 const multiplayerQuizHistoryItem = baseQuizHistoryItem.extend({
-  roomId: z.string(),
+  roomId: z.string().nullable(),
   type: z.literal(quizType.Enum.multiplayer),
 });
 
