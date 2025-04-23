@@ -6,9 +6,9 @@ Quiz Yourself on Your Chosen Topic with IntelliQ
 
 [App](https://app.intelliq.dev)
 
-[API Documentation](https://docs.intelliq.dev/)
+[API Documentation](https://docs.intelliq.dev/api-reference/introduction)
 
-[Landing Page](https://beta.intelliq.dev)
+[Landing Page](https://intelliq.dev)
 
 [Presentation Page](https://presentation.intelliq.dev)
 
