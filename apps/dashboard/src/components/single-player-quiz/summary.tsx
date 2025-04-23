@@ -79,9 +79,17 @@ const Summary = () => {
     return null; // Return null instead of showing loading animation
   }
 
-  const correctAnswersCount = summaryQuiz.correctAnswersCount;
+  // TODO: This is temporary, just to make it work for LAUNCHWEEK-01
+  const isMultiplayer = summaryQuiz.type === "multiplayer";
+  const correctAnswersCount =
+    isMultiplayer && summaryQuiz.questions?.[0]
+      ? summaryQuiz.questions[0].correctAnswersCount
+      : summaryQuiz.correctAnswersCount;
   const totalQuestions = summaryQuiz.totalQuestions;
-  const correctPercentage = (correctAnswersCount / totalQuestions) * 100;
+  const correctPercentage =
+    isMultiplayer && summaryQuiz.questions?.[0]?.userScore !== undefined
+      ? summaryQuiz.questions[0].userScore
+      : (correctAnswersCount / totalQuestions) * 100;
   const timeTaken = summaryQuiz.totalTime;
 
   // This will be modified once i work with the new database
@@ -129,7 +137,7 @@ const Summary = () => {
               <div className="flex flex-col justify-center mb-2 text-5xl">
                 <span className="text-xl">Your Score</span>
                 <span className="text-4xl font-bold text-primary">
-                  {correctPercentage.toFixed(2)}%
+                  {isMultiplayer ? summaryQuiz.questions[0].userScore : `${correctPercentage.toFixed(2)}%`}
                 </span>
               </div>
             </div>
@@ -151,7 +159,7 @@ const Summary = () => {
                   <span className="text-lg">Correct Answers</span>
                 </div>
                 <span className="text-2xl font-semibold text-center text-primary">
-                  {summaryQuiz.quizScore}/{totalQuestions}
+                  {isMultiplayer ? summaryQuiz.questions[0].correctAnswersCount : `${correctAnswersCount}/${totalQuestions}`}
                 </span>
               </div>
             </div>

@@ -223,12 +223,14 @@ const filteredQuizQuestionSchema = z.object({
 export const filteredQuizResponseSchema = z.object({
   quizId: z.string().uuid(),
   quizTitle: z.string(),
-  quizScore: z.number(),
-  totalTime: z.number(),
-  correctAnswersCount: z.number(),
+  quizScore: z.number().nullable(),
+  totalTime: z.number().nullable(),
+  correctAnswersCount: z.number().nullable(),
   totalQuestions: z.number(),
   questions: z.array(filteredQuizQuestionSchema),
-  passingScore: z.number(),
+  passingScore: z.number().nullable(),
+  // TODO: This is temporary, just to make it work for LAUNCHWEEK-01
+  type: quizType,
 });
 
 // Query parameter schema for filtering
