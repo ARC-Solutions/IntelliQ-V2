@@ -1,59 +1,62 @@
-import { and, eq, sql } from 'drizzle-orm';
-import { Hono } from 'hono';
-import { describeRoute } from 'hono-openapi';
-import { resolver, validator as zValidator } from 'hono-openapi/zod';
-import { HTTPException } from 'hono/http-exception';
-import prettyMilliseconds from 'pretty-ms';
-import { z } from 'zod';
+import { and, eq, sql } from "drizzle-orm";
+import { Hono } from "hono";
+import { describeRoute } from "hono-openapi";
+import { resolver, validator as zValidator } from "hono-openapi/zod";
+import { HTTPException } from "hono/http-exception";
+import prettyMilliseconds from "pretty-ms";
+import { z } from "zod";
 import {
   questions as questionsTable,
   quizzes,
   userResponses,
   documents,
   multiplayerQuizSubmissions,
-} from '../../../drizzle/schema';
-import { createDb } from '../../db/index';
-import { incrementUserCacheVersion } from '../../utils/kv-user-version';
-import { getSupabase } from './middleware/auth.middleware';
-import { MEDIUM_CACHE, createCacheMiddleware } from './middleware/cache.middleware';
-import { quizType } from './schemas/common.schemas';
+} from "../../../drizzle/schema";
+import { createDb } from "../../db/index";
+import { incrementUserCacheVersion } from "../../utils/kv-user-version";
+import { getSupabase } from "./middleware/auth.middleware";
+import {
+  MEDIUM_CACHE,
+  createCacheMiddleware,
+} from "./middleware/cache.middleware";
+import { quizType } from "./schemas/common.schemas";
 import {
   filterQuerySchema,
   filteredQuizResponseSchema,
   singlePlayerQuizSubmissionRequestSchema,
   singlePlayerQuizSubmissionResponseSchema,
   documentQuizSubmissionRequestSchema,
-} from './schemas/quiz.schemas';
-import { queueEmbeddings } from './services/queue-embeddings';
-import { queueTagAnalysis } from './services/queue-tag-analysis';
+} from "./schemas/quiz.schemas";
+import { queueEmbeddings } from "./services/queue-embeddings";
+import { queueTagAnalysis } from "./services/queue-tag-analysis";
 
 const singleplayerQuizSubmissionsRoutes = new Hono<{
   Bindings: CloudflareEnv;
 }>()
   .get(
-    '/:quizId/questions',
-    createCacheMiddleware('quiz-questions', MEDIUM_CACHE),
+    "/:quizId/questions",
+    createCacheMiddleware("quiz-questions", MEDIUM_CACHE),
     describeRoute({
-      tags: ['Quiz Submissions Singleplayer'],
-      summary: 'Get the questions for a single player quiz',
-      description: 'Get the questions for a single player quiz',
+      tags: ["Quiz Submissions Singleplayer"],
+      summary: "Get the questions for a single player quiz",
+      description: "Get the questions for a single player quiz",
       validateResponse: true,
       responses: {
         200: {
-          description: 'Questions retrieved successfully',
+          description: "Questions retrieved successfully",
           content: {
-            'application/json': {
+            "application/json": {
               schema: resolver(filteredQuizResponseSchema),
             },
           },
         },
       },
     }),
-    zValidator('param', z.object({ quizId: z.string().uuid() })),
-    zValidator('query', filterQuerySchema),
+    zValidator("param", z.object({ quizId: z.string().uuid() })),
+    zValidator("query", filterQuerySchema),
     async (c) => {
-      const { quizId } = c.req.valid('param');
-      const { filter } = c.req.valid('query');
+      const { quizId } = c.req.valid("param");
+      const { filter } = c.req.valid("query");
 
       const supabase = getSupabase(c);
       const {
@@ -63,7 +66,14 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
       const db = await createDb(c);
 
       const quiz = await db.query.quizzes.findFirst({
-        where: and(eq(quizzes.id, quizId), eq(quizzes.userId, user!.id)),
+        where: and(
+          eq(quizzes.id, quizId),
+          sql`(${eq(quizzes.userId, user!.id)} OR EXISTS (
+            SELECT 1 FROM multiplayer_quiz_submissions
+            WHERE quiz_id = ${quizId}
+            AND user_id = ${user!.id}
+          ))`,
+        ),
         columns: {
           id: true,
           title: true,
@@ -104,14 +114,16 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
 
       if (!quiz) {
         throw new HTTPException(404, {
-          message: 'Quiz not found',
+          message: "Quiz not found",
         });
       }
 
       const formattedQuestions = quiz.questions
         .filter((q) => {
-          if (filter === 'correct') return q.userResponses[0]?.isCorrect === true;
-          if (filter === 'incorrect') return q.userResponses[0]?.isCorrect === false;
+          if (filter === "correct")
+            return q.userResponses[0]?.isCorrect === true;
+          if (filter === "incorrect")
+            return q.userResponses[0]?.isCorrect === false;
           return true;
         })
         .map((q) => ({
@@ -119,7 +131,8 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
           correctAnswer: q.correctAnswer,
           userAnswer: q.userResponses[0]?.answer,
           userScore: quiz.multiplayerQuizSubmissions[0]?.userScore,
-          correctAnswersCount: quiz.multiplayerQuizSubmissions[0]?.correctAnswersCount,
+          correctAnswersCount:
+            quiz.multiplayerQuizSubmissions[0]?.correctAnswersCount,
         }));
 
       return c.json({
@@ -141,24 +154,24 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
     },
   )
   .post(
-    '/submit',
+    "/submit",
     describeRoute({
-      tags: ['Quiz Submissions Singleplayer'],
-      summary: 'Submit a single player quiz',
-      description: 'Submit a single player quiz',
+      tags: ["Quiz Submissions Singleplayer"],
+      summary: "Submit a single player quiz",
+      description: "Submit a single player quiz",
       validateResponse: true,
       responses: {
         201: {
-          description: 'Quiz submission successful',
+          description: "Quiz submission successful",
           content: {
-            'application/json': {
+            "application/json": {
               schema: resolver(singlePlayerQuizSubmissionResponseSchema),
             },
           },
         },
       },
     }),
-    zValidator('json', singlePlayerQuizSubmissionRequestSchema),
+    zValidator("json", singlePlayerQuizSubmissionRequestSchema),
     async (c) => {
       const {
         quizTitle,
@@ -170,7 +183,7 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
         userScore,
         questions,
         timeTaken,
-      } = c.req.valid('json');
+      } = c.req.valid("json");
 
       const supabase = getSupabase(c);
       const {
@@ -199,7 +212,8 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
           .returning();
 
         const correctAnswersCount = questions.reduce(
-          (count, question) => count + (question.userAnswer === question.correctAnswer ? 1 : 0),
+          (count, question) =>
+            count + (question.userAnswer === question.correctAnswer ? 1 : 0),
           0,
         );
 
@@ -256,27 +270,34 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
     },
   )
   .post(
-    '/document/submit',
+    "/document/submit",
     describeRoute({
-      tags: ['Quiz Submissions Singleplayer'],
-      summary: 'Submit a document-based quiz',
-      description: 'Submit a quiz generated from a document',
+      tags: ["Quiz Submissions Singleplayer"],
+      summary: "Submit a document-based quiz",
+      description: "Submit a quiz generated from a document",
       validateResponse: true,
       responses: {
         201: {
-          description: 'Document quiz submission successful',
+          description: "Document quiz submission successful",
           content: {
-            'application/json': {
+            "application/json": {
               schema: resolver(singlePlayerQuizSubmissionResponseSchema),
             },
           },
         },
       },
     }),
-    zValidator('json', documentQuizSubmissionRequestSchema),
+    zValidator("json", documentQuizSubmissionRequestSchema),
     async (c) => {
-      const { documentId, quizTitle, language, passingScore, userScore, questions, timeTaken } =
-        c.req.valid('json');
+      const {
+        documentId,
+        quizTitle,
+        language,
+        passingScore,
+        userScore,
+        questions,
+        timeTaken,
+      } = c.req.valid("json");
 
       const supabase = getSupabase(c);
       const {
@@ -303,7 +324,8 @@ const singleplayerQuizSubmissionsRoutes = new Hono<{
           .returning();
 
         const correctAnswersCount = questions.reduce(
-          (count, question) => count + (question.userAnswer === question.correctAnswer ? 1 : 0),
+          (count, question) =>
+            count + (question.userAnswer === question.correctAnswer ? 1 : 0),
           0,
         );
 
