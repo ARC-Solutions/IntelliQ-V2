@@ -11,7 +11,7 @@ const navigation = [
   {
     title: "Features",
     links: [
-      { name: "Dashboard", href: ROUTES.HOME},
+      { name: "Dashboard", href: ROUTES.HOME },
       { name: "Singleplayer", href: ROUTES.SINGLEPLAYER },
       { name: "Multiplayer", href: ROUTES.MULTIPLAYER },
     ],
@@ -44,7 +44,7 @@ export function Footer() {
             <Link href="/" className="scale-50 -ml-[52px] md:ml-0 md:scale-100">
               <Image
                 src={resolvedTheme === "dark" ? "/logo.svg" : "/logo-dark.svg"}
-                alt="IntelliQ"
+                alt="IntelliQ Logo"
                 width={100}
                 height={100}
               />

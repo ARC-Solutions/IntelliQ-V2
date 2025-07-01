@@ -6,11 +6,7 @@ export function SocialLinks() {
   return (
     <ul className="flex space-x-4 items-center md:ml-5">
       <li>
-        <a
-          target="_blank"
-          rel="noreferrer"
-          href="https://twitter.com/ARCTeamGroup"
-        >
+        <a target="_blank" rel="noreferrer" href="https://x.com/intelliqdotdev">
           <span className="sr-only">Twitter</span>
           <FaXTwitter size={22} className="fill-[#878787]" />
         </a>
@@ -39,7 +35,7 @@ export function SocialLinks() {
         <a
           target="_blank"
           rel="noreferrer"
-          href="https://www.tiktok.com/@arcteamgroup"
+          href="https://www.tiktok.com/@intelliqdotdev"
         >
           <span className="sr-only">TikTok</span>
           <FaTiktok size={22} className="fill-[#878787]" />
