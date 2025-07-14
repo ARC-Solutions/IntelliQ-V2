@@ -16,15 +16,16 @@ export default function Hero() {
   return (
     <section className="mt-[60px] lg:mt-[180px] min-h-[530px] relative">
       <div className="flex flex-col">
-        <Link href={ROUTES.MULTIPLAYER}>
+        <Link href={ROUTES.THESIS} className="w-fit">
           <Button
             variant="outline"
             className="flex items-center space-x-2 rounded-full border-border"
           >
-            <span className="text-sm">Introducing Multiplayer</span>
+            <span className="text-sm">IntelliQ THESIS</span>
             <ArrowRight />
           </Button>
         </Link>
+
 
         <h1 className="text-[30px] md:text-[90px] font-medium mt-6 leading-none">
           Start your
