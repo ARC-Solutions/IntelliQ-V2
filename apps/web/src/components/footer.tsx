@@ -20,7 +20,7 @@ const navigation = [
     title: "Resources",
     links: [
       { name: "Github", href: "https://github.com/ARC-Solutions/IntelliQ-V2" },
-      { name: "Contact us", href: "mailto:contact@arc-solutions.xyz" },
+      { name: "Contact us", href: "mailto:contact@intelliq.dev" },
       {
         name: "Feature Request",
         href: "https://github.com/ARC-Solutions/IntelliQ-V2/issues",
