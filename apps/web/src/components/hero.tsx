@@ -26,7 +26,6 @@ export default function Hero() {
           </Button>
         </Link>
 
-
         <h1 className="text-[30px] md:text-[90px] font-medium mt-6 leading-none">
           Start your
           <br /> AI quiz today!
@@ -40,7 +39,7 @@ export default function Hero() {
 
         <div className="mt-8">
           <div className="flex items-center space-x-4">
-            <Link href="mailto:contact@arc-solutions.xyz">
+            <Link href="mailto:contact@intelliq.dev">
               <Button
                 variant="outline"
                 className="h-12 px-6 border border-primary"
