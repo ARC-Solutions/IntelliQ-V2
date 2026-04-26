@@ -1,6 +1,9 @@
-import QuizLeaderboard from '@/components/multiplayer-page/leaderboard';
-import React from 'react';
+import dynamic from 'next/dynamic';
+
 export const runtime = 'edge';
+
+const QuizLeaderboard = dynamic(() => import('@/components/multiplayer-page/leaderboard'), { ssr: false });
+
 const Leaderboard = () => {
   return <QuizLeaderboard />;
 };
