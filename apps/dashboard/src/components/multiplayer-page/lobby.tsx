@@ -112,17 +112,13 @@ export default function Lobby() {
 
   const checkAndJoinRoom = async (channel: RealtimeChannel) => {
     try {
-      // Get current room data
       const client = createApiClient();
       const response = await client.api.v1.rooms[":roomCode"].$get({
-        param: {
-          roomCode: roomCode,
-        },
+        param: { roomCode: roomCode },
       });
       const room = (await response.json()) as RoomResponse;
 
       if (room) {
-        // Get current player count from presence state
         const presenceState = channel.presenceState();
         const currentPlayerCount = Object.values(presenceState).flat().length;
 
@@ -142,19 +138,14 @@ export default function Lobby() {
   const updatePlayers = async (roomChannel: RealtimeChannel) => {
     const newState = roomChannel.presenceState();
 
-    // Convert presence state to players array
     const playersList = Object.entries(newState).flatMap(
       ([_, players]) =>
         players
           .map((player, i) => {
-            // Check if the player data has the expected structure
             const presenceData = player as PresenceData;
             if (!presenceData.currentUser) {
-              console.warn(
-                "Received player data without currentUser:",
-                presenceData,
-              );
-              return null; // Skip invalid player data
+              console.warn("Received player data without currentUser:", presenceData);
+              return null;
             }
 
             return {
@@ -168,7 +159,7 @@ export default function Lobby() {
               },
             } as Player;
           })
-          .filter(Boolean), // Remove any null entries from invalid data
+          .filter(Boolean),
     );
     console.log("PLAYERS LIST:", playersList);
 
@@ -238,6 +229,19 @@ export default function Lobby() {
       })
       .subscribe(async (status) => {
         if (status === "SUBSCRIBED" && currentUser) {
+          // Supabase Realtime no longer sends presence_state for empty channels,
+          // so presence.joinRef stays null and all presence_diffs get buffered
+          // forever inside pendingDiffs. Bootstrap joinRef manually so
+          // inPendingSyncState() returns false and track() diffs are applied.
+          const presenceInternal = roomChannel.presence as unknown as {
+            joinRef: string | null;
+          };
+          if (!presenceInternal.joinRef) {
+            presenceInternal.joinRef = (
+              roomChannel as unknown as { _joinRef: () => string }
+            )._joinRef();
+          }
+
           const maxPlayers = await checkAndJoinRoom(roomChannel);
 
           const presenceData = {
